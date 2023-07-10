@@ -55,7 +55,8 @@ public class LoginC2SPacket implements Packet<ServerPacketHandler> {
 	public void handle(ServerPacketHandler handler) {
 		boolean usernameTaken = handler.server().isUsernameTaken(this.username);
 		handler.server().setUsername(handler.client(), this.username);
-		handler.server().log(this.username + " logged in with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
+		// todo
+		//handler.server().log(this.username + " logged in with IP " + handler.client().getInetAddress().toString() + ":" + handler.client().getPort());
 
 		if (!Arrays.equals(this.password, handler.server().getPassword())) {
 			handler.server().kick(handler.client(), "disconnect.wrong_password");

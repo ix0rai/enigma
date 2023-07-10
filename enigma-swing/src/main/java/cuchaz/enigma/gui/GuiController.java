@@ -592,17 +592,17 @@ public class GuiController implements ClientPacketHandler {
 		return this.enigma;
 	}
 
-	public void createClient(String username, String ip, int port, char[] password) throws IOException {
+	public void createClient(String username, String ip, int port, char[] password) {
 		this.client = new EnigmaClient(this, ip, port);
 		this.client.connect();
 		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, username));
 		this.gui.setConnectionState(ConnectionState.CONNECTED);
 	}
 
-	public void createServer(int port, char[] password) throws IOException {
+	public void createServer(int port, char[] password) {
 		this.server = new IntegratedEnigmaServer(this.project.getJarChecksum(), password, EntryRemapper.mapped(this.project.getJarIndex(), new HashEntryTree<>(this.project.getMapper().getObfToDeobf())), port);
 		this.server.start();
-		this.client = new EnigmaClient(this, "127.0.0.1", port);
+		this.client = new EnigmaClient(this, "ws://localhost", port);
 		this.client.connect();
 		this.client.sendPacket(new LoginC2SPacket(this.project.getJarChecksum(), password, NetConfig.getUsername()));
 		this.gui.setConnectionState(ConnectionState.HOSTING);

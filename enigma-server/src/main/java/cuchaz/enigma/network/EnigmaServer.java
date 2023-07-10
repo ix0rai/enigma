@@ -10,16 +10,22 @@ import cuchaz.enigma.translation.mapping.EntryChange;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
+import org.glassfish.tyrus.server.Server;
 import org.tinylog.Logger;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 public abstract class EnigmaServer {
 	// https://discordapp.com/channels/507304429255393322/566418023372816394/700292322918793347
@@ -38,10 +45,10 @@ public abstract class EnigmaServer {
 	public static final int MAX_PASSWORD_LENGTH = 255; // length is written as a byte in the login packet
 
 	private final int port;
-	private ServerSocket socket;
-	private final List<Socket> clients = new CopyOnWriteArrayList<>();
-	private final Map<Socket, String> usernames = new HashMap<>();
-	private final Set<Socket> unapprovedClients = new HashSet<>();
+	private Server server;
+	private final List<Session> clients = new CopyOnWriteArrayList<>();
+	private final Map<Session, String> usernames = new HashMap<>();
+	private final Set<Session> unapprovedClients = new HashSet<>();
 
 	private final byte[] jarChecksum;
 	private final char[] password;
@@ -50,89 +57,58 @@ public abstract class EnigmaServer {
 	private final EntryRemapper mappings;
 	private final Map<Entry<?>, Integer> syncIds = new HashMap<>();
 	private final Map<Integer, Entry<?>> inverseSyncIds = new HashMap<>();
-	private final Map<Integer, Set<Socket>> clientsNeedingConfirmation = new HashMap<>();
+	private final Map<Integer, Set<Session>> clientsNeedingConfirmation = new HashMap<>();
 	private int nextSyncId = DUMMY_SYNC_ID + 1;
 
 	private static int nextIoId = 0;
 
-	public EnigmaServer(byte[] jarChecksum, char[] password, EntryRemapper mappings, int port) {
+	protected EnigmaServer(byte[] jarChecksum, char[] password, EntryRemapper mappings, int port) {
 		this.jarChecksum = jarChecksum;
 		this.password = password;
 		this.mappings = mappings;
 		this.port = port;
 	}
 
-	public void start() throws IOException {
-		this.socket = new ServerSocket(this.port);
-		this.log("Server started on " + this.socket.getInetAddress() + ":" + this.port);
+	public void start() {
+		this.server = new Server("localhost", this.port, "/main", null, Endpoint.class);
+		// todo
+		//this.log("Server started on " + address + ":" + this.port);
+		CountDownLatch startLatch = new CountDownLatch(1);
 		Thread thread = new Thread(() -> {
 			try {
-				while (!this.socket.isClosed()) {
-					this.acceptClient();
-				}
-			} catch (SocketException e) {
-				Logger.info("Server closed");
-			} catch (IOException e) {
-				Logger.error("Failed to accept client!", e);
+				this.server.start();
+				startLatch.countDown();
+			} catch (DeploymentException e) {
+				throw new RuntimeException("failed to deploy server!", e);
 			}
 		});
-		thread.setName("Server client listener");
+		thread.setName("main server thread");
 		thread.setDaemon(true);
 		thread.start();
-	}
-
-	private void acceptClient() throws IOException {
-		Socket client = this.socket.accept();
-		this.clients.add(client);
-		Thread thread = new Thread(() -> {
-			try {
-				DataInput input = new DataInputStream(client.getInputStream());
-				while (true) {
-					int packetId;
-					try {
-						packetId = input.readUnsignedByte();
-					} catch (EOFException | SocketException e) {
-						break;
-					}
-
-					Packet<ServerPacketHandler> packet = PacketRegistry.createC2SPacket(packetId);
-					if (packet == null) {
-						throw new IOException("Received invalid packet id " + packetId);
-					}
-
-					packet.read(input);
-					this.runOnThread(() -> packet.handle(new ServerPacketHandler(client, this)));
-				}
-			} catch (IOException e) {
-				this.kick(client, e.toString());
-				Logger.error("Failed to read packet from client!", e);
-				return;
-			}
-
-			this.kick(client, "disconnect.disconnected");
-		});
-		thread.setName("Server I/O thread #" + (nextIoId++));
-		thread.setDaemon(true);
-		thread.start();
+		try {
+			startLatch.await();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("interrupted while waiting for server to start!", e);
+		}
 	}
 
 	public void stop() {
 		this.runOnThread(() -> {
-			if (this.socket != null && !this.socket.isClosed()) {
-				for (Socket client : this.clients) {
+			if (this.server != null) {
+				for (Session client : this.clients) {
 					this.kick(client, "disconnect.server_closed");
 				}
 
 				try {
-					this.socket.close();
-				} catch (IOException e) {
+					this.server.stop();
+				} catch (Exception e) {
 					Logger.error(e, "Failed to close server socket!");
 				}
 			}
 		});
 	}
 
-	public void kick(Socket client, String reason) {
+	public void kick(Session client, String reason) {
 		if (!this.clients.remove(client)) {
 			return;
 		}
@@ -163,26 +139,26 @@ public abstract class EnigmaServer {
 		return this.usernames.containsValue(username);
 	}
 
-	public void setUsername(Socket client, String username) {
+	public void setUsername(Session client, String username) {
 		this.usernames.put(client, username);
 		this.sendUsernamePacket();
 	}
 
 	private void sendUsernamePacket() {
-		List<String> usernames = new ArrayList<>(this.usernames.values());
-		Collections.sort(usernames);
-		this.sendToAll(new UserListS2CPacket(usernames));
+		List<String> usernameList = new ArrayList<>(this.usernames.values());
+		Collections.sort(usernameList);
+		this.sendToAll(new UserListS2CPacket(usernameList));
 	}
 
-	public String getUsername(Socket client) {
+	public String getUsername(Session client) {
 		return this.usernames.get(client);
 	}
 
-	public void sendPacket(Socket client, Packet<ClientPacketHandler> packet) {
-		if (!client.isClosed()) {
+	public void sendPacket(Session client, Packet<ClientPacketHandler> packet) {
+		if (client.isOpen()) {
 			int packetId = PacketRegistry.getS2CId(packet);
 			try {
-				DataOutput output = new DataOutputStream(client.getOutputStream());
+				DataOutput output = new DataOutputStream(client.getBasicRemote().getSendStream());
 				output.writeByte(packetId);
 				packet.write(output);
 			} catch (IOException e) {
@@ -195,20 +171,20 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendToAll(Packet<ClientPacketHandler> packet) {
-		for (Socket client : this.clients) {
+		for (Session client : this.clients) {
 			this.sendPacket(client, packet);
 		}
 	}
 
-	public void sendToAllExcept(Socket excluded, Packet<ClientPacketHandler> packet) {
-		for (Socket client : this.clients) {
+	public void sendToAllExcept(Session excluded, Packet<ClientPacketHandler> packet) {
+		for (Session client : this.clients) {
 			if (client != excluded) {
 				this.sendPacket(client, packet);
 			}
 		}
 	}
 
-	public boolean canModifyEntry(Socket client, Entry<?> entry) {
+	public boolean canModifyEntry(Session client, Entry<?> entry) {
 		if (this.unapprovedClients.contains(client)) {
 			return false;
 		}
@@ -218,11 +194,11 @@ public abstract class EnigmaServer {
 			return true;
 		}
 
-		Set<Socket> clients = this.clientsNeedingConfirmation.get(syncId);
+		Set<Session> clients = this.clientsNeedingConfirmation.get(syncId);
 		return clients == null || !clients.contains(client);
 	}
 
-	public int lockEntry(Socket exception, Entry<?> entry) {
+	public int lockEntry(Session exception, Entry<?> entry) {
 		int syncId = this.nextSyncId;
 		this.nextSyncId++;
 		// sync id is sent as an unsigned short, can't have more than 65536
@@ -237,18 +213,18 @@ public abstract class EnigmaServer {
 
 		this.syncIds.put(entry, syncId);
 		this.inverseSyncIds.put(syncId, entry);
-		Set<Socket> clients = new HashSet<>(this.clients);
+		Set<Session> clients = new HashSet<>(this.clients);
 		clients.remove(exception);
 		this.clientsNeedingConfirmation.put(syncId, clients);
 		return syncId;
 	}
 
-	public void confirmChange(Socket client, int syncId) {
+	public void confirmChange(Session client, int syncId) {
 		if (this.usernames.containsKey(client)) {
 			this.unapprovedClients.remove(client);
 		}
 
-		Set<Socket> clients = this.clientsNeedingConfirmation.get(syncId);
+		Set<Session> clients = this.clientsNeedingConfirmation.get(syncId);
 		if (clients != null) {
 			clients.remove(client);
 			if (clients.isEmpty()) {
@@ -258,7 +234,7 @@ public abstract class EnigmaServer {
 		}
 	}
 
-	public void sendCorrectMapping(Socket client, Entry<?> entry, boolean refreshClassTree) {
+	public void sendCorrectMapping(Session client, Entry<?> entry) {
 		EntryMapping oldMapping = this.mappings.getDeobfMapping(entry);
 		String oldName = oldMapping.targetName();
 		if (oldName == null) {
@@ -272,10 +248,6 @@ public abstract class EnigmaServer {
 
 	public void log(String message) {
 		Logger.info("[server] {}", message);
-	}
-
-	protected boolean isRunning() {
-		return !this.socket.isClosed();
 	}
 
 	public byte[] getJarChecksum() {
@@ -293,5 +265,57 @@ public abstract class EnigmaServer {
 	public void sendMessage(ServerMessage message) {
 		Logger.info("[chat] {}", message.translate());
 		this.sendToAll(new MessageS2CPacket(message));
+	}
+
+	@ServerEndpoint(value = "/enigma")
+	public class Endpoint {
+		@OnOpen
+		public void onOpen() {
+			System.out.println("Connected!");
+		}
+
+		@OnMessage
+		public String onMessage(String message, Session session) {
+			EnigmaServer.this.clients.add(session);
+
+			Thread thread = new Thread(() -> {
+				try {
+					DataInput input = new DataInputStream(new ByteArrayInputStream(message.getBytes()));
+					while (true) {
+						int packetId;
+						try {
+							packetId = input.readUnsignedByte();
+						} catch (EOFException | SocketException e) {
+							break;
+						}
+
+						Packet<ServerPacketHandler> packet = PacketRegistry.createC2SPacket(packetId);
+						if (packet == null) {
+							throw new IOException("Received invalid packet id " + packetId);
+						}
+
+						packet.read(input);
+						EnigmaServer.this.runOnThread(() -> packet.handle(new ServerPacketHandler(session, EnigmaServer.this)));
+					}
+				} catch (IOException e) {
+					EnigmaServer.this.kick(session, e.toString());
+					Logger.error("Failed to read packet from client!", e);
+					return;
+				}
+
+				EnigmaServer.this.kick(session, "disconnect.disconnected");
+			});
+			thread.setName("Server I/O thread #" + (nextIoId++));
+			thread.setDaemon(true);
+			thread.start();
+
+			// todo
+			return "";
+		}
+
+		@OnClose
+		public void onClose() {
+			System.out.println("Closed!");
+		}
 	}
 }

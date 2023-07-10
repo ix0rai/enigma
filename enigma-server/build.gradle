@@ -6,6 +6,10 @@ plugins {
 
 dependencies {
 	shadow(implementation project(':enigma'))
+	implementation libs.tyrus.client
+	implementation libs.tyrus.server
+	implementation libs.tyrus.grizzly.server
+	implementation libs.tyrus.grizzly.client
 	implementation libs.jopt
 }
 

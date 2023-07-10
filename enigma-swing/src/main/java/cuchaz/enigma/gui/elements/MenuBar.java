@@ -36,7 +36,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -419,7 +418,7 @@ public class MenuBar {
 			NetConfig.setRemoteAddress(result.addressStr());
 			NetConfig.setPassword(String.valueOf(result.password()));
 			NetConfig.save();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.connect.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}
@@ -448,7 +447,7 @@ public class MenuBar {
 			NetConfig.setServerPort(result.port());
 			NetConfig.setServerPassword(String.valueOf(result.password()));
 			NetConfig.save();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this.gui.getFrame(), e.toString(), I18n.translate("menu.collab.server.start.error"), JOptionPane.ERROR_MESSAGE);
 			this.gui.getController().disconnectIfConnected(null);
 		}

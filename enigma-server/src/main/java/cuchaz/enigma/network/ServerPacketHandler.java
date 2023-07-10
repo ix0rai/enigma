@@ -1,6 +1,6 @@
 package cuchaz.enigma.network;
 
-import java.net.Socket;
+import jakarta.websocket.Session;
 
-public record ServerPacketHandler(Socket client, EnigmaServer server) {
+public record ServerPacketHandler(Session client, EnigmaServer server) {
 }
