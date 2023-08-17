@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping.serde.enigma;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingPair;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
@@ -205,7 +206,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		// Empty string to concat
 		String jdLine = tokens.length > 1 ? String.join(" ", Arrays.copyOfRange(tokens, 1, tokens.length)) : "";
 		if (parent.getMapping() == null) {
-			parent.setMapping(new RawEntryMapping(parent.getEntry().getName()));
+			parent.setMapping(new RawEntryMapping(parent.getEntry().getName(), RenamableTokenType.DEOBFUSCATED));
 		}
 
 		parent.getMapping().addJavadocLine(MappingHelper.unescape(jdLine));
@@ -215,9 +216,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		String obfuscatedName = ClassEntry.getInnerName(tokens[1]);
 		ClassEntry obfuscatedEntry;
 		if (parent instanceof ClassEntry classEntry) {
-			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName);
+			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName, obfuscatedName);
 		} else {
-			obfuscatedEntry = new ClassEntry(obfuscatedName);
+			obfuscatedEntry = new ClassEntry(obfuscatedName, obfuscatedName);
 		}
 
 		String mapping = null;
@@ -227,7 +228,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("invalid class declaration: not enough tokens (" + tokens.length + " found, 2 needed)!");
 		}
 
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private static MappingPair<FieldEntry, RawEntryMapping> parseField(@Nullable Entry<?> parent, String[] tokens) {
@@ -251,8 +252,8 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Invalid field declaration");
 		}
 
-		FieldEntry obfuscatedEntry = new FieldEntry(ownerEntry, obfuscatedName, descriptor);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		FieldEntry obfuscatedEntry = new FieldEntry(ownerEntry, obfuscatedName, obfuscatedName, descriptor);
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private static MappingPair<MethodEntry, RawEntryMapping> parseMethod(@Nullable Entry<?> parent, String[] tokens) {
@@ -273,8 +274,8 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Invalid method declaration");
 		}
 
-		MethodEntry obfuscatedEntry = new MethodEntry(ownerEntry, obfuscatedName, descriptor);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		MethodEntry obfuscatedEntry = new MethodEntry(ownerEntry, obfuscatedName, obfuscatedName, descriptor);
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private static MappingPair<LocalVariableEntry, RawEntryMapping> parseArgument(@Nullable Entry<?> parent, String[] tokens) {
@@ -282,9 +283,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Method arg must be a child of a method!");
 		}
 
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", true, null);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", "", true, null);
 		String mapping = tokens[2];
 
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 }

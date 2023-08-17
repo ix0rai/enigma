@@ -89,8 +89,20 @@ public class EnigmaProject {
 	public void setMappings(EntryTree<EntryMapping> mappings) {
 		if (mappings != null) {
 			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
+			this.addMappings(this.jarIndex.getEntryIndex().getMethods());
+			this.addMappings(this.jarIndex.getEntryIndex().getClasses());
+			this.addMappings(this.jarIndex.getEntryIndex().getFields());
+			// todo local variables
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
+		}
+	}
+
+	private void addMappings(Collection<? extends Entry<?>> entries) {
+		for (Entry<?> entry : entries) {
+			if (this.mapper.getObfToDeobf().contains(entry)) {
+				entry.setMapping(this.mapper.getObfToDeobf().get(entry));
+			}
 		}
 	}
 

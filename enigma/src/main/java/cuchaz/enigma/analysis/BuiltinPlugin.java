@@ -93,7 +93,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 			super.visit(version, access, name, signature, superName, interfaces);
 			this.className = name;
-			this.clazz = new ClassEntry(name);
+			this.clazz = new ClassEntry(name, name);
 			this.enumFields.clear();
 			this.classInits.clear();
 		}
@@ -158,7 +158,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 					}
 
 					if (s != null) {
-						this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
+						this.mappings.put(new FieldEntry(this.clazz, ((FieldInsnNode) instr2).name,((FieldInsnNode) instr2).name, new TypeDescriptor(((FieldInsnNode) instr2).desc)), s);
 					}
 
 					// report otherwise?

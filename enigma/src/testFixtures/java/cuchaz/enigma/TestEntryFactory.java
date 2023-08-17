@@ -9,7 +9,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class TestEntryFactory {
 	public static ClassEntry newClass(String name) {
-		return new ClassEntry(name);
+		return new ClassEntry(name, name);
 	}
 
 	public static FieldEntry newField(String className, String fieldName, String fieldType) {
@@ -17,7 +17,7 @@ public class TestEntryFactory {
 	}
 
 	public static FieldEntry newField(ClassEntry classEntry, String fieldName, String fieldType) {
-		return new FieldEntry(classEntry, fieldName, new TypeDescriptor(fieldType));
+		return new FieldEntry(classEntry, fieldName, fieldName, new TypeDescriptor(fieldType));
 	}
 
 	public static MethodEntry newMethod(String className, String methodName, String methodSignature) {
@@ -25,7 +25,7 @@ public class TestEntryFactory {
 	}
 
 	public static MethodEntry newMethod(ClassEntry classEntry, String methodName, String methodSignature) {
-		return new MethodEntry(classEntry, methodName, new MethodDescriptor(methodSignature));
+		return new MethodEntry(classEntry, methodName, methodName, new MethodDescriptor(methodSignature));
 	}
 
 	public static EntryReference<FieldEntry, MethodEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {

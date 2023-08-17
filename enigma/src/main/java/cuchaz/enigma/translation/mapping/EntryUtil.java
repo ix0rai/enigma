@@ -18,9 +18,9 @@ public class EntryUtil {
 
 	public static EntryMapping applyChange(@Nonnull EntryMapping self, EntryChange<?> change) {
 		if (change.getDeobfName().isSet()) {
-			self = self.withName(change.getDeobfName().getNewValue());
+			self = self.withDeobfName(change.getDeobfName().getNewValue());
 		} else if (change.getDeobfName().isReset()) {
-			self = self.withName(null);
+			self = self.withDeobfName(null);
 		}
 
 		if (change.getJavadoc().isSet()) {

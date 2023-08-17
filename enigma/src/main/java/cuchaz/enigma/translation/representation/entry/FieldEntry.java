@@ -9,16 +9,17 @@ import cuchaz.enigma.translation.representation.TypeDescriptor;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {
 	protected final TypeDescriptor desc;
 
-	public FieldEntry(ClassEntry parent, String name, TypeDescriptor desc) {
-		this(parent, name, desc, null);
+	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc) {
+		this(parent, name, obfName, desc, null);
 	}
 
-	public FieldEntry(ClassEntry parent, String name, TypeDescriptor desc, String javadocs) {
-		super(parent, name, javadocs);
+	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc, @Nullable EntryMapping mapping) {
+		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Owner cannot be null");
 		Preconditions.checkNotNull(desc, "Field descriptor cannot be null");
@@ -27,7 +28,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public static FieldEntry parse(String owner, String name, String desc) {
-		return new FieldEntry(new ClassEntry(owner), name, new TypeDescriptor(desc), null);
+		return new FieldEntry(new ClassEntry(owner, owner), name, name, new TypeDescriptor(desc), null);
 	}
 
 	@Override
@@ -40,22 +41,22 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public FieldEntry withName(String name) {
-		return new FieldEntry(this.parent, name, this.desc, null);
+	public FieldEntry withName(String name, RenamableTokenType tokenType) {
+		return new FieldEntry(this.parent, name, this.obfName, this.desc, new EntryMapping(name, this.getJavadocs(), tokenType));
 	}
 
 	@Override
 	public FieldEntry withParent(ClassEntry parent) {
-		return new FieldEntry(parent, this.name, this.desc, null);
+		return new FieldEntry(parent, this.name, this.obfName, this.desc, this.mapping);
 	}
 
 	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String docs = mapping.javadoc();
+
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldEntry(this.parent, translatedName, translator.translate(this.desc), docs)
+				new FieldEntry(this.parent, translatedName, this.obfName, translator.translate(this.desc), mapping)
 		);
 	}
 

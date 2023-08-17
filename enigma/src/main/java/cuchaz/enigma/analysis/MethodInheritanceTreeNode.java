@@ -57,7 +57,7 @@ public class MethodInheritanceTreeNode extends AbstractMethodTreeNode {
 
 		boolean ret = false;
 		for (ClassEntry inheritorEntry : inheritanceIndex.getChildren(this.entry.getParent())) {
-			MethodEntry methodEntry = new MethodEntry(inheritorEntry, this.entry.getName(), this.entry.getDesc());
+			MethodEntry methodEntry = new MethodEntry(inheritorEntry, this.entry.getName(), this.entry.getObfName(), this.entry.getDesc());
 
 			MethodInheritanceTreeNode node = new MethodInheritanceTreeNode(this.translator, methodEntry, entryIndex.hasMethod(methodEntry));
 			boolean childOverride = node.load(index);

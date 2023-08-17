@@ -53,17 +53,24 @@ public class TestInnerClasses {
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
-				+ "$" + CLASS_TREE_LEVEL_1.getSimpleName());
+				+ "$" + CLASS_TREE_LEVEL_1.getSimpleName(), CLASS_TREE_ROOT.getName()
+			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName());
 		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
 			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
-			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName());
+			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName(),
+			CLASS_TREE_ROOT.getName()
+				+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
+				+ "$" + CLASS_TREE_LEVEL_2.getSimpleName());
 		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(CLASS_TREE_ROOT.getName()
+			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
+			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName()
+			+ "$" + CLASS_TREE_LEVEL_3.getSimpleName(), CLASS_TREE_ROOT.getName()
 			+ "$" + CLASS_TREE_LEVEL_1.getSimpleName()
 			+ "$" + CLASS_TREE_LEVEL_2.getSimpleName()
 			+ "$" + CLASS_TREE_LEVEL_3.getSimpleName());

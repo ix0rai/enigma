@@ -1,6 +1,7 @@
 package cuchaz.enigma.analysis.index;
 
 import com.google.common.collect.Maps;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
@@ -55,7 +56,7 @@ public class BridgeMethodIndex implements JarIndexer {
 				continue;
 			}
 
-			MethodEntry renamedSpecializedEntry = specializedEntry.withName(bridgeEntry.getName());
+			MethodEntry renamedSpecializedEntry = specializedEntry.withName(bridgeEntry.getName(), RenamableTokenType.DEOBFUSCATED);
 			this.specializedToBridge.put(renamedSpecializedEntry, this.specializedToBridge.get(specializedEntry));
 		}
 	}

@@ -20,7 +20,7 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 	private static final Path JAR = TestUtil.obfJar("bridge");
 	private static final Path MAPPINGS = getResource("/mapSpecializedMethods/");
 
-	private static final ClassEntry BASE_CLASS = new ClassEntry("a");
+	private static final ClassEntry BASE_CLASS = new ClassEntry("a", "a");
 	private static final MethodEntry BASE_FOO_1 = MethodEntry.parse("a", "d", "()La;");
 	private static final MethodEntry BASE_FOO_2 = MethodEntry.parse("a", "a", "(I)La;");
 	private static final MethodEntry BASE_FOO_3 = MethodEntry.parse("a", "a", "(II)La;");
@@ -28,12 +28,12 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 	private static final MethodEntry BASE_BAR_2 = MethodEntry.parse("a", "b", "(I)La;");
 	private static final MethodEntry BASE_BAZ_1 = MethodEntry.parse("a", "c", "(I)La;");
 	private static final MethodEntry BASE_BAZ_2 = MethodEntry.parse("a", "b", "(II)La;");
-	private static final ClassEntry OTHER_CLASS = new ClassEntry("b");
+	private static final ClassEntry OTHER_CLASS = new ClassEntry("b", "b");
 	private static final MethodEntry OTHER_GET = MethodEntry.parse("b", "a", "()Ljava/lang/Integer;");
 	private static final MethodEntry OTHER_GET_BRIDGE = MethodEntry.parse("b", "get", "()Ljava/lang/Object;");
 	private static final MethodEntry OTHER_APPLY = MethodEntry.parse("b", "a", "(Ljava/lang/String;)Ljava/lang/Integer;");
 	private static final MethodEntry OTHER_APPLY_BRIDGE = MethodEntry.parse("b", "apply", "(Ljava/lang/Object;)Ljava/lang/Object;");
-	private static final ClassEntry SUB_CLASS = new ClassEntry("c");
+	private static final ClassEntry SUB_CLASS = new ClassEntry("c", "c");
 	private static final MethodEntry SUB_FOO_1 = MethodEntry.parse("c", "f", "()Lc;");
 	private static final MethodEntry SUB_FOO_1_BRIDGE = MethodEntry.parse("c", "d", "()La;");
 	private static final MethodEntry SUB_FOO_2 = MethodEntry.parse("c", "d", "(I)Lc;");
@@ -48,7 +48,7 @@ public class MapSpecializedMethodsCommandTest extends CommandTest {
 	private static final MethodEntry SUB_BAZ_1_BRIDGE = MethodEntry.parse("c", "c", "(I)La;");
 	private static final MethodEntry SUB_BAZ_2 = MethodEntry.parse("c", "d", "(II)Lc;");
 	private static final MethodEntry SUB_BAZ_2_BRIDGE = MethodEntry.parse("c", "b", "(II)La;");
-	private static final ClassEntry INNER_SUB_CLASS = new ClassEntry("c$a");
+	private static final ClassEntry INNER_SUB_CLASS = new ClassEntry("c$a", "c$a");
 	private static final MethodEntry INNER_SUB_FOO_1_BRIDGE = MethodEntry.parse("c$a", "d", "()La;");
 	private static final MethodEntry INNER_SUB_FOO_2_BRIDGE = MethodEntry.parse("c$a", "a", "(I)La;");
 	private static final MethodEntry INNER_SUB_FOO_3_BRIDGE = MethodEntry.parse("c$a", "a", "(II)La;");

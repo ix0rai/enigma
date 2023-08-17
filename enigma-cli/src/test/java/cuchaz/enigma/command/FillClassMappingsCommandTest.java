@@ -20,28 +20,28 @@ public class FillClassMappingsCommandTest extends CommandTest {
 	private static final Path JAR = TestUtil.obfJar("innerClasses");
 	private static final Path MAPPINGS = getResource("/fillClassMappings/");
 
-	private static final ClassEntry A = new ClassEntry("a");
+	private static final ClassEntry A = new ClassEntry("a", "a");
 	private static final MethodEntry A_METHOD = MethodEntry.parse("a", "a", "()V");
-	private static final ClassEntry A_ANONYMOUS = new ClassEntry("a$1");
-	private static final ClassEntry B = new ClassEntry("b");
+	private static final ClassEntry A_ANONYMOUS = new ClassEntry("a$1", "a$1");
+	private static final ClassEntry B = new ClassEntry("b", "b");
 	private static final MethodEntry B_METHOD = MethodEntry.parse("b", "a", "(Ld;)V");
-	private static final ClassEntry B_ANONYMOUS = new ClassEntry("b$1");
-	private static final ClassEntry C = new ClassEntry("c");
+	private static final ClassEntry B_ANONYMOUS = new ClassEntry("b$1", "b$1");
+	private static final ClassEntry C = new ClassEntry("c", "c");
 	private static final FieldEntry C_FIELD = FieldEntry.parse("c", "a", "c$a");
-	private static final ClassEntry C_INNER = new ClassEntry("c$a");
+	private static final ClassEntry C_INNER = new ClassEntry("c$a", "c$a");
 	private static final FieldEntry C_INNER_FIELD = FieldEntry.parse("c$a", "a", "I");
-	private static final ClassEntry D = new ClassEntry("d");
-	private static final ClassEntry D_INNER = new ClassEntry("d$a");
-	private static final ClassEntry E = new ClassEntry("e");
+	private static final ClassEntry D = new ClassEntry("d", "d");
+	private static final ClassEntry D_INNER = new ClassEntry("d$a", "d$a");
+	private static final ClassEntry E = new ClassEntry("e", "e");
 	private static final MethodEntry E_METHOD_1 = MethodEntry.parse("e", "a", "()Ljava/lang/Object;");
 	private static final MethodEntry E_METHOD_2 = MethodEntry.parse("e", "a", "()Ljava/lang/String;");
-	private static final ClassEntry E_ANONYMOUS = new ClassEntry("e$1");
-	private static final ClassEntry F = new ClassEntry("f");
-	private static final ClassEntry F_LEVEL_1 = new ClassEntry("f$a");
+	private static final ClassEntry E_ANONYMOUS = new ClassEntry("e$1", "e$1");
+	private static final ClassEntry F = new ClassEntry("f", "f");
+	private static final ClassEntry F_LEVEL_1 = new ClassEntry("f$a", "f$a");
 	private static final FieldEntry F_LEVEL_1_FIELD = FieldEntry.parse("f$a", "a", "I");
-	private static final ClassEntry F_LEVEL_2 = new ClassEntry("f$a$a");
+	private static final ClassEntry F_LEVEL_2 = new ClassEntry("f$a$a", "f$a$a");
 	private static final FieldEntry F_LEVEL_2_FIELD = FieldEntry.parse("f$a$a", "a", "I");
-	private static final ClassEntry F_LEVEL_3 = new ClassEntry("f$a$a$a");
+	private static final ClassEntry F_LEVEL_3 = new ClassEntry("f$a$a$a", "f$a$a$a");
 	private static final FieldEntry F_LEVEL_3_FIELD = FieldEntry.parse("f$a$a$a", "a", "I");
 
 	@Test

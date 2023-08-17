@@ -48,12 +48,12 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
-		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getParents(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("a")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("a", "a")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a", "a")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("a", "a")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
 	}
 
 	@Test
@@ -126,17 +126,17 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void interfaces() {
-		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a")), is(empty()));
+		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a", "a")), is(empty()));
 	}
 
 	@Test
 	public void implementingClasses() {
-		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a")), is(empty()));
+		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a", "a")), is(empty()));
 	}
 
 	@Test
 	public void isInterface() {
-		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a")), is(false));
+		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a", "a")), is(false));
 	}
 
 	@Test

@@ -7,6 +7,7 @@ import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.service.NameProposalService;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.ProposingTranslator;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -121,7 +122,7 @@ public class InsertProposedMappingsCommand extends Command {
 
 			int p = index.getMethodAccess(method).isStatic() ? 0 : 1;
 			for (TypeDescriptor paramDesc : method.getDesc().getArgumentDescs()) {
-				LocalVariableEntry param = new LocalVariableEntry(method, p, "", true, null);
+				LocalVariableEntry param = new LocalVariableEntry(method, p, "", "", true, null);
 				if (insertMapping(param, mappings, mapper, translator)) {
 					parameters++;
 				}
@@ -139,7 +140,7 @@ public class InsertProposedMappingsCommand extends Command {
 		String name = translator.extendedTranslate(entry).getValue().getName();
 		if (!deobf.getName().equals(name) && !entry.getName().equals(name)) {
 			String javadoc = deobf.getJavadocs();
-			EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc) : new EntryMapping(name);
+			EntryMapping mapping = javadoc != null && !javadoc.isEmpty() ? new EntryMapping(name, javadoc, RenamableTokenType.PROPOSED) : new EntryMapping(name);
 			mappings.insert(entry, mapping);
 			return true;
 		}

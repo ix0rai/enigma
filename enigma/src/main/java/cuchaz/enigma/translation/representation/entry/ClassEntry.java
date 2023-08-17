@@ -10,22 +10,21 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
 	private final String fullName;
 
-	public ClassEntry(String className) {
-		this(getOuterClass(className), getInnerName(className), null);
+	public ClassEntry(String className, String obfName) {
+		this(getOuterClass(className, obfName), getInnerName(className), obfName, null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className) {
-		this(parent, className, null);
+	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName) {
+		this(parent, className, obfName, null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, @Nullable String javadocs) {
-		super(parent, className, javadocs);
+	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName, @Nullable EntryMapping mapping) {
+		super(parent, className, obfName, mapping);
 		if (parent != null) {
 			this.fullName = parent.getFullName() + "$" + this.name;
 		} else {
@@ -40,11 +39,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public Class<ClassEntry> getParentType() {
 		return ClassEntry.class;
-	}
-
-	@Override
-	public String getName() {
-		return this.name;
 	}
 
 	@Override
@@ -80,14 +74,13 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		if (this.name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, desc.toString()));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, desc.toString()));
 		}
 
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String docs = mapping.javadoc();
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, translatedName, docs)
+				new ClassEntry(this.parent, translatedName, this.obfName, mapping)
 		);
 	}
 
@@ -126,13 +119,13 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public ClassEntry withName(String name) {
-		return new ClassEntry(this.parent, name, this.javadocs);
+	public ClassEntry withName(String name, RenamableTokenType tokenType) {
+		return new ClassEntry(this.parent, name, this.obfName, new EntryMapping(name, this.getJavadocs(), tokenType));
 	}
 
 	@Override
 	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, this.name, this.javadocs);
+		return new ClassEntry(parent, this.name, this.obfName, this.getMapping());
 	}
 
 	@Override
@@ -165,25 +158,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return this.parent.getOutermostClass();
 	}
 
-	public ClassEntry buildClassEntry(List<ClassEntry> classChain) {
-		assert (classChain.contains(this));
-		StringBuilder buf = new StringBuilder();
-		for (ClassEntry chainEntry : classChain) {
-			if (buf.length() == 0) {
-				buf.append(chainEntry.getFullName());
-			} else {
-				buf.append("$");
-				buf.append(chainEntry.getSimpleName());
-			}
-
-			if (chainEntry == this) {
-				break;
-			}
-		}
-
-		return new ClassEntry(buf.toString());
-	}
-
 	public boolean isJre() {
 		String packageName = this.getPackageName();
 		return packageName != null && (packageName.startsWith("java/") || packageName.startsWith("javax/"));
@@ -213,14 +187,27 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Nullable
-	public static ClassEntry getOuterClass(String name) {
-		if (name.charAt(0) == '[') {
-			return null;
+	public static ClassEntry getOuterClass(String name, String obfName) {
+		String outerName = getOuterClassName(name);
+		String outerObfName = getOuterClassName(obfName);
+
+		if (outerName != null && outerObfName != null) {
+			return new ClassEntry(outerName, outerObfName);
 		}
 
-		int index = name.lastIndexOf('$');
-		if (index >= 0) {
-			return new ClassEntry(name.substring(0, index));
+		return null;
+	}
+
+	private static String getOuterClassName(String name) {
+		if (name != null) {
+			if (name.charAt(0) == '[') {
+				return null;
+			}
+
+			int index = name.lastIndexOf('$');
+			if (index >= 0) {
+				return name.substring(0, index);
+			}
 		}
 
 		return null;

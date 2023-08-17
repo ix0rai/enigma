@@ -1,6 +1,8 @@
 package cuchaz.enigma.network.packet;
 
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.EntryChange;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -10,6 +12,7 @@ import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.TristateChange;
 
+import javax.annotation.Nonnull;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,10 +37,11 @@ public class PacketHelper {
 		}
 
 		String name = readString(input);
+		String obfName = readString(input);
 
-		String javadocs = null;
+		EntryMapping mapping = null;
 		if (input.readBoolean()) {
-			javadocs = readString(input);
+			mapping = readEntryMapping(input);
 		}
 
 		switch (type) {
@@ -46,7 +50,7 @@ public class PacketHelper {
 					throw new IOException("Class requires class parent");
 				}
 
-				return new ClassEntry((ClassEntry) parent, name, javadocs);
+				return new ClassEntry((ClassEntry) parent, name, obfName, mapping);
 			}
 			case ENTRY_FIELD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
@@ -54,7 +58,7 @@ public class PacketHelper {
 				}
 
 				TypeDescriptor desc = new TypeDescriptor(readString(input));
-				return new FieldEntry(parentClass, name, desc, javadocs);
+				return new FieldEntry(parentClass, name, obfName, desc, mapping);
 			}
 			case ENTRY_METHOD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
@@ -62,7 +66,7 @@ public class PacketHelper {
 				}
 
 				MethodDescriptor desc = new MethodDescriptor(readString(input));
-				return new MethodEntry(parentClass, name, desc, javadocs);
+				return new MethodEntry(parentClass, name, obfName, desc, mapping);
 			}
 			case ENTRY_LOCAL_VAR -> {
 				if (!(parent instanceof MethodEntry parentMethod)) {
@@ -71,7 +75,7 @@ public class PacketHelper {
 
 				int index = input.readUnsignedShort();
 				boolean parameter = input.readBoolean();
-				return new LocalVariableEntry(parentMethod, index, name, parameter, javadocs);
+				return new LocalVariableEntry(parentMethod, index, name, obfName, parameter, mapping);
 			}
 			default -> throw new IOException("Received unknown entry type " + type);
 		}
@@ -103,13 +107,14 @@ public class PacketHelper {
 			}
 		}
 
-		// name
+		// names
 		writeString(output, entry.getName());
+		writeString(output, entry.getObfName());
 
-		// javadocs
-		output.writeBoolean(entry.getJavadocs() != null);
-		if (entry.getJavadocs() != null) {
-			writeString(output, entry.getJavadocs());
+		// mapping
+		output.writeBoolean(entry.getMapping() != null);
+		if (entry.getMapping() != null) {
+			writeEntryMapping(output, entry.getMapping());
 		}
 
 		// type-specific stuff
@@ -121,6 +126,29 @@ public class PacketHelper {
 			output.writeShort(localVar.getIndex());
 			output.writeBoolean(localVar.isArgument());
 		}
+	}
+
+	public static void writeEntryMapping(DataOutput output, @Nonnull EntryMapping mapping) throws IOException {
+		writeString(output, mapping.targetName() == null ? "" : mapping.targetName());
+		writeString(output, mapping.javadoc() == null ? "" : mapping.javadoc());
+
+		if (mapping.tokenType() == null) {
+			throw new IOException("attempted to write invalid mapping! (null token type): " + mapping);
+		} else {
+			output.writeShort(mapping.tokenType().ordinal());
+		}
+	}
+
+	public static EntryMapping readEntryMapping(DataInput input) throws IOException {
+		String targetName = readString(input);
+		String javadoc = readString(input);
+		short tokenType = input.readShort();
+
+		if (tokenType == -1) {
+			throw new IOException("attempted to read invalid mapping! (no token type)");
+		}
+
+		return new EntryMapping(targetName, javadoc, RenamableTokenType.get(tokenType));
 	}
 
 	public static String readString(DataInput input) throws IOException {

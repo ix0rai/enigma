@@ -15,16 +15,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
 	protected final MethodDescriptor descriptor;
 
-	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor) {
-		this(parent, name, descriptor, null);
+	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor) {
+		this(parent, name, obfName, descriptor, null);
 	}
 
-	public MethodEntry(ClassEntry parent, String name, MethodDescriptor descriptor, String javadocs) {
-		super(parent, name, javadocs);
+	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor, @Nullable EntryMapping mapping) {
+		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Parent cannot be null");
 		Preconditions.checkNotNull(descriptor, "Method descriptor cannot be null");
@@ -33,7 +34,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public static MethodEntry parse(String owner, String name, String desc) {
-		return new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc), null);
+		return new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc), null);
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 			int argIndex = flags.isStatic() ? 0 : 1;
 
 			for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", true, null);
+				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", "", true, null);
 				LocalVariableEntry translatedArgEntry = deobfuscator.translate(argEntry);
 
 				parameters.add(translatedArgEntry == null ? argEntry : translatedArgEntry);
@@ -79,21 +80,22 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	@Override
 	protected TranslateResult<? extends MethodEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String docs = mapping.javadoc();
+
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodEntry(this.parent, translatedName, translator.translate(this.descriptor), docs)
+				new MethodEntry(this.parent, translatedName, this.obfName, translator.translate(this.descriptor), mapping)
 		);
 	}
 
 	@Override
-	public MethodEntry withName(String name) {
-		return new MethodEntry(this.parent, name, this.descriptor, this.javadocs);
+	public MethodEntry withName(String name, RenamableTokenType tokenType) {
+		return new MethodEntry(this.parent, name, this.obfName, this.descriptor, new EntryMapping(name, this.getJavadocs(), tokenType));
 	}
 
 	@Override
 	public MethodEntry withParent(ClassEntry parent) {
-		return new MethodEntry(new ClassEntry(parent.getFullName()), this.name, this.descriptor, this.javadocs);
+		// todo note: full obf name?
+		return new MethodEntry(new ClassEntry(parent.getFullName(), parent.getObfName()), this.name, this.obfName, this.descriptor, this.mapping);
 	}
 
 	@Override

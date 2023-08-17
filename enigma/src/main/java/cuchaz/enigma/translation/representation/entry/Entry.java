@@ -1,6 +1,8 @@
 package cuchaz.enigma.translation.representation.entry;
 
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.Translatable;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -10,6 +12,16 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
+	String getObfName();
+
+	@Nullable
+	EntryMapping getMapping();
+
+	void setMapping(@Nullable EntryMapping mapping);
+
+	@Nullable
+	RenamableTokenType getTokenType();
+
 	/**
 	 * Returns the default name of this entry.
 	 *
@@ -78,6 +90,15 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return this.getName();
 	}
 
+	default boolean isObfuscated() {
+		return this.getTokenType() == RenamableTokenType.OBFUSCATED || this.getTokenType() == null;
+	}
+
+	@Nullable
+	default String getDeobfName() {
+		return this.getMapping() == null ? null : this.getMapping().targetName();
+	}
+
 	/**
 	 * Returns the parent entry of this entry.
 	 *
@@ -90,7 +111,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	Class<P> getParentType();
 
-	Entry<P> withName(String name);
+	Entry<P> withName(String name, RenamableTokenType tokenType);
 
 	Entry<P> withParent(P parent);
 

@@ -52,7 +52,7 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 
 	@Override
 	protected boolean isInterface(Type type) {
-		AccessFlags classAccess = this.entryIndex.getClassAccess(new ClassEntry(type.getInternalName()));
+		AccessFlags classAccess = this.entryIndex.getClassAccess(new ClassEntry(type.getInternalName(), type.getInternalName()));
 		if (classAccess != null) {
 			return classAccess.isInterface();
 		}
@@ -67,7 +67,7 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 
 	@Override
 	protected Type getSuperClass(Type type) {
-		ClassDefEntry definition = this.entryIndex.getDefinition(new ClassEntry(type.getInternalName()));
+		ClassDefEntry definition = this.entryIndex.getDefinition(new ClassEntry(type.getInternalName(), type.getInternalName()));
 		if (definition != null) {
 			return Type.getType('L' + definition.getSuperClass().getFullName() + ';');
 		}
@@ -103,8 +103,8 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 				return true;
 			}
 
-			ClassEntry class1 = new ClassEntry(type1.getInternalName());
-			ClassEntry class2 = new ClassEntry(type2.getInternalName());
+			ClassEntry class1 = new ClassEntry(type1.getInternalName(), type1.getInternalName());
+			ClassEntry class2 = new ClassEntry(type2.getInternalName(), type2.getInternalName());
 
 			if (this.entryIndex.hasClass(class1) && this.entryIndex.hasClass(class2)) {
 				return this.inheritanceIndex.getAncestors(class2).contains(class1);

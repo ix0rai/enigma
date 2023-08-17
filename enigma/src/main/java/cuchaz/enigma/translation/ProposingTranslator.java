@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation;
 
 import cuchaz.enigma.api.service.NameProposalService;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -36,7 +37,7 @@ public class ProposingTranslator implements Translator {
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.findFirst()
-					.map(newName -> TranslateResult.proposed((T) ((Entry<?>) deobfuscated.getValue()).withName(newName)))
+					.map(newName -> TranslateResult.proposed((T) ((Entry<?>) deobfuscated.getValue()).withName(newName, RenamableTokenType.PROPOSED)))
 					.orElse(deobfuscated);
 		}
 

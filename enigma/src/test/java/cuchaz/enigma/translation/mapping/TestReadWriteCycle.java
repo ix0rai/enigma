@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
@@ -25,28 +26,28 @@ public class TestReadWriteCycle {
 	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
-			new ClassEntry("a/b/c"),
-			new EntryMapping("alpha/beta/charlie", "this is a test class")
+			new ClassEntry("a/b/c", "a/b/c"),
+			new EntryMapping("alpha/beta/charlie", "this is a test class", RenamableTokenType.DEOBFUSCATED)
 	);
 
 	private final Pair<FieldEntry, EntryMapping> testField1 = new Pair<>(
 			FieldEntry.parse("a/b/c", "field1", "I"),
-			new EntryMapping("mapped1", "this is field 1")
+			new EntryMapping("mapped1", "this is field 1", RenamableTokenType.DEOBFUSCATED)
 	);
 
 	private final Pair<FieldEntry, EntryMapping> testField2 = new Pair<>(
 			FieldEntry.parse("a/b/c", "field2", "I"),
-			new EntryMapping("mapped2", "this is field 2")
+			new EntryMapping("mapped2", "this is field 2", RenamableTokenType.DEOBFUSCATED)
 	);
 
 	private final Pair<MethodEntry, EntryMapping> testMethod1 = new Pair<>(
 			MethodEntry.parse("a/b/c", "method1", "()V"),
-			new EntryMapping("mapped3", "this is method1")
+			new EntryMapping("mapped3", "this is method1", RenamableTokenType.DEOBFUSCATED)
 	);
 
 	private final Pair<MethodEntry, EntryMapping> testMethod2 = new Pair<>(
 			MethodEntry.parse("a/b/c", "method2", "()V"),
-			new EntryMapping("mapped4", "this is method 2")
+			new EntryMapping("mapped4", "this is method 2", RenamableTokenType.DEOBFUSCATED)
 	);
 
 	private void insertMapping(EntryTree<EntryMapping> mappings, Pair<? extends Entry<?>, EntryMapping> mappingPair) {

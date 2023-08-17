@@ -41,14 +41,14 @@ public class TranslationMethodVisitor extends MethodVisitor {
 
 	@Override
 	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-		FieldEntry entry = new FieldEntry(new ClassEntry(owner), name, new TypeDescriptor(desc));
+		FieldEntry entry = new FieldEntry(new ClassEntry(owner, owner), name, name, new TypeDescriptor(desc));
 		FieldEntry translatedEntry = this.translator.translate(entry);
 		super.visitFieldInsn(opcode, translatedEntry.getParent().getFullName(), translatedEntry.getName(), translatedEntry.getDesc().toString());
 	}
 
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-		MethodEntry entry = new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc));
+		MethodEntry entry = new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc));
 		MethodEntry translatedEntry = this.translator.translate(entry);
 		super.visitMethodInsn(opcode, translatedEntry.getParent().getFullName(), translatedEntry.getName(), translatedEntry.getDesc().toString(), itf);
 	}
@@ -68,7 +68,7 @@ public class TranslationMethodVisitor extends MethodVisitor {
 		for (int i = 0; i < count; i++) {
 			Object object = array[i];
 			if (object instanceof String type) {
-				array[i] = this.translator.translate(new ClassEntry(type)).getFullName();
+				array[i] = this.translator.translate(new ClassEntry(type, type)).getFullName();
 			}
 		}
 
@@ -98,7 +98,7 @@ public class TranslationMethodVisitor extends MethodVisitor {
 
 	@Override
 	public void visitTypeInsn(int opcode, String type) {
-		ClassEntry translatedEntry = this.translator.translate(new ClassEntry(type));
+		ClassEntry translatedEntry = this.translator.translate(new ClassEntry(type, type));
 		super.visitTypeInsn(opcode, translatedEntry.getFullName());
 	}
 
@@ -126,7 +126,7 @@ public class TranslationMethodVisitor extends MethodVisitor {
 	@Override
 	public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
 		if (type != null) {
-			ClassEntry translatedEntry = this.translator.translate(new ClassEntry(type));
+			ClassEntry translatedEntry = this.translator.translate(new ClassEntry(type, type));
 			super.visitTryCatchBlock(start, end, handler, translatedEntry.getFullName());
 		} else {
 			super.visitTryCatchBlock(start, end, handler, type);
@@ -143,7 +143,7 @@ public class TranslationMethodVisitor extends MethodVisitor {
 	}
 
 	private String translateVariableName(int index, String name) {
-		LocalVariableEntry entry = new LocalVariableEntry(this.methodEntry, index, "", true, null);
+		LocalVariableEntry entry = new LocalVariableEntry(this.methodEntry, index, "", "", true, null);
 		LocalVariableEntry translatedEntry = this.translator.translate(entry);
 		String translatedName = translatedEntry.getName();
 

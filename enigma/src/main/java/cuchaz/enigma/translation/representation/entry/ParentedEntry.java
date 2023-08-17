@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.representation.entry;
 
 import com.google.common.base.Preconditions;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMap;
@@ -14,12 +15,14 @@ import javax.annotation.Nullable;
 public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	protected final P parent;
 	protected final String name;
-	protected final @Nullable String javadocs;
+	protected final String obfName;
+	protected @Nullable EntryMapping mapping;
 
-	protected ParentedEntry(P parent, String name, String javadocs) {
+	protected ParentedEntry(P parent, String name, String obfName, @Nullable EntryMapping mapping) {
 		this.parent = parent;
 		this.name = name;
-		this.javadocs = javadocs;
+		this.mapping = mapping;
+		this.obfName = obfName;
 
 		Preconditions.checkNotNull(name, "Name cannot be null");
 	}
@@ -28,9 +31,14 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	public abstract ParentedEntry<P> withParent(P parent);
 
 	@Override
-	public abstract ParentedEntry<P> withName(String name);
+	public abstract ParentedEntry<P> withName(String name, RenamableTokenType tokenType);
 
 	protected abstract TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
+
+	@Override
+	public String getObfName() {
+		return this.obfName;
+	}
 
 	@Override
 	public String getName() {
@@ -61,7 +69,24 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	@Nullable
 	@Override
 	public String getJavadocs() {
-		return this.javadocs;
+		return this.mapping == null ? null : this.mapping.javadoc();
+	}
+
+	@Nullable
+	@Override
+	public EntryMapping getMapping() {
+		return this.mapping;
+	}
+
+	@Override
+	public void setMapping(@Nullable EntryMapping mapping) {
+		this.mapping = mapping;
+	}
+
+	@Nullable
+	@Override
+	public RenamableTokenType getTokenType() {
+		return this.mapping == null ? null : this.mapping.tokenType();
 	}
 
 	@Override

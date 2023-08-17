@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping.serde.tinyv2;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -213,40 +214,40 @@ public final class TinyV2Reader implements MappingsReader {
 	}
 
 	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {
-		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames));
+		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames), unescapeOpt(tokens[1], escapeNames));
 		if (tokens.length <= 2) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
 
 		String token2 = unescapeOpt(tokens[2], escapeNames);
 		String mapping = token2.substring(token2.lastIndexOf('$') + 1);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private MappingPair<FieldEntry, RawEntryMapping> parseField(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		TypeDescriptor descriptor = new TypeDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
+		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
 
 		String mapping = unescapeOpt(tokens[3], escapeNames);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private MappingPair<MethodEntry, RawEntryMapping> parseMethod(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		MethodDescriptor descriptor = new MethodDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
+		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
 
 		String mapping = unescapeOpt(tokens[3], escapeNames);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private void addJavadoc(MappingPair<? extends Entry<?>, RawEntryMapping> pair, String javadoc) {
@@ -264,13 +265,13 @@ public final class TinyV2Reader implements MappingsReader {
 
 		// tokens[2] is the useless obf name
 
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", true, null);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", "", true, null);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
 
 		String mapping = unescapeOpt(tokens[3], escapeNames);
-		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping));
+		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private static String unescapeOpt(String raw, boolean escapedStrings) {

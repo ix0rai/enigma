@@ -74,7 +74,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
 		MethodDescriptor desc = new MethodDescriptor(method.getOriginalDescriptor());
 
-		return new MethodEntry(this.getClassEntry(method.getOwner()), method.getName(), desc);
+		return new MethodEntry(this.getClassEntry(method.getOwner()), method.getName(), method.getName(), desc);
 	}
 
 	private LocalVariableEntry getParameterEntry(MethodPrototype method, int parameterIndex, String name) {
@@ -86,15 +86,15 @@ public class EnigmaDumper extends StringStreamDumper {
 
 		int variableIndex = method.getParameterLValues().get(parameterIndex).localVariable.getIdx();
 
-		return new LocalVariableEntry(owner, variableIndex, name, true, null);
+		return new LocalVariableEntry(owner, variableIndex, name, name, true, null);
 	}
 
 	private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {
-		return new FieldEntry(this.getClassEntry(owner), name, new TypeDescriptor(desc));
+		return new FieldEntry(this.getClassEntry(owner), name, name, new TypeDescriptor(desc));
 	}
 
 	private ClassEntry getClassEntry(JavaTypeInstance type) {
-		return new ClassEntry(type.getRawName().replace('.', '/'));
+		return new ClassEntry(type.getRawName().replace('.', '/'), type.getRawName().replace('.', '/'));
 	}
 
 	@Override

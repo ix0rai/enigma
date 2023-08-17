@@ -46,7 +46,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitSimpleType(SimpleType node, SourceIndex index) {
 		TypeReference ref = node.getUserData(Keys.TYPE_REFERENCE);
 		if (node.getIdentifierToken().getStartLocation() != TextLocation.EMPTY) {
-			ClassEntry entry = new ClassEntry(ref.getInternalName());
+			ClassEntry entry = new ClassEntry(ref.getInternalName(), ref.getInternalName());
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), entry, this.classEntry);
 		}
 

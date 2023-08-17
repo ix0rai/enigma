@@ -4,9 +4,11 @@ import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.TestUtil;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
@@ -27,12 +29,14 @@ public class TestMappingValidator {
 	public static final Path JAR = TestUtil.obfJar("validation");
 	private static EnigmaProject project;
 	private static EntryRemapper remapper;
+	private static EntryIndex index;
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
 		Enigma enigma = Enigma.create();
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.none());
 		remapper = project.getMapper();
+		index = remapper.getJarIndex().getEntryIndex();
 	}
 
 	@BeforeEach
@@ -50,124 +54,140 @@ public class TestMappingValidator {
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowPrivateFields() {
+		ClassEntry b = index.getClass("b");
+		ClassEntry a = index.getClass("a");
+
 		// static fields
-		remapper.putMapping(newVC(), newField("b", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+		remapper.putMapping(newVC(), index.getField(b, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+		remapper.validatePutMapping(vc, index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// final fields
-		remapper.putMapping(newVC(), newField("b", "a", "I"), new EntryMapping("field01"));
+		remapper.putMapping(newVC(), index.getField(b, "a", "I"), new EntryMapping("field01"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "a", "I"), new EntryMapping("field01"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc);
 
 		// instance fields
-		remapper.putMapping(newVC(), newField("b", "b", "I"), new EntryMapping("field02"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "I"), new EntryMapping("field02"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field02"));
+		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field02"));
 
 		assertMessages(vc);
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowPublicFields() {
+		ClassEntry b = index.getClass("b");
+		ClassEntry a = index.getClass("a");
+
 		// static fields
-		remapper.putMapping(newVC(), newField("b", "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// default fields
-		remapper.putMapping(newVC(), newField("b", "b", "Z"), new EntryMapping("field05"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "Z"), new EntryMapping("field05"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "a", "Z"), new EntryMapping("field05"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Z"), new EntryMapping("field05"));
 
 		assertMessages(vc);
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void shadowMethods() {
+		ClassEntry b = index.getClass("b");
+		ClassEntry a = index.getClass("a");
+
 		// static methods
-		remapper.putMapping(newVC(), newMethod("b", "c", "()V"), new EntryMapping("method01"));
+		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method01"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "a", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// private methods
-		remapper.putMapping(newVC(), newMethod("b", "a", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(newVC(), index.getMethod(b, "a", "()V"), new EntryMapping("method02"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method02"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc);
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void nonUniqueFields() {
-		remapper.putMapping(newVC(), newField("a", "a", "I"), new EntryMapping("field01"));
+		ClassEntry a = index.getClass("a");
+
+		remapper.putMapping(newVC(), index.getField(a, "a", "I"), new EntryMapping("field01"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "b", "I"), new EntryMapping("field01"));
+		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
-		remapper.putMapping(newVC(), newField("a", "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+		remapper.putMapping(newVC(), index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newField("a", "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void nonUniqueMethods() {
-		remapper.putMapping(newVC(), newMethod("a", "a", "()V"), new EntryMapping("method01"));
+		ClassEntry a = index.getClass("a");
+
+		remapper.putMapping(newVC(), index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "d", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
 
 	@RepeatedTest(value = 2, name = REPEATED_TEST_NAME)
 	public void conflictingMethods() {
+		ClassEntry b = index.getClass("b");
+		ClassEntry a = index.getClass("a");
+
 		// "overriding" w/different return descriptor
-		remapper.putMapping(newVC(), newMethod("b", "a", "()Z"), new EntryMapping("method01"));
+		remapper.putMapping(newVC(), index.getMethod(b, "a", "()Z"), new EntryMapping("method01"));
 
 		ValidationContext vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" a static method
-		remapper.putMapping(newVC(), newMethod("b", "c", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method02"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "b", "()V"), new EntryMapping("method02"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" when the original methods were not related
-		remapper.putMapping(newVC(), newMethod("b", "b", "()I"), new EntryMapping("method03"));
+		remapper.putMapping(newVC(), index.getMethod(b, "b", "()I"), new EntryMapping("method03"));
 
 		vc = new ValidationContext(notifier());
-		remapper.validatePutMapping(vc, newMethod("a", "a", "()I"), new EntryMapping("method03"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()I"), new EntryMapping("method03"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}

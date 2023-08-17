@@ -15,7 +15,7 @@ public class AsmObjectTranslator {
 		String descString = type.getDescriptor();
 		switch (type.getSort()) {
 			case Type.OBJECT -> {
-				ClassEntry classEntry = new ClassEntry(type.getInternalName());
+				ClassEntry classEntry = new ClassEntry(type.getInternalName(), type.getInternalName());
 				return Type.getObjectType(translator.translate(classEntry).getFullName());
 			}
 			case Type.ARRAY -> {
@@ -37,14 +37,14 @@ public class AsmObjectTranslator {
 	}
 
 	private static Handle translateMethodHandle(Translator translator, Handle handle) {
-		MethodEntry entry = new MethodEntry(new ClassEntry(handle.getOwner()), handle.getName(), new MethodDescriptor(handle.getDesc()));
+		MethodEntry entry = new MethodEntry(new ClassEntry(handle.getOwner(), handle.getOwner()), handle.getName(), handle.getName(), new MethodDescriptor(handle.getDesc()));
 		MethodEntry translatedMethod = translator.translate(entry);
 		ClassEntry ownerClass = translatedMethod.getParent();
 		return new Handle(handle.getTag(), ownerClass.getFullName(), translatedMethod.getName(), translatedMethod.getDesc().toString(), handle.isInterface());
 	}
 
 	private static Handle translateFieldHandle(Translator translator, Handle handle) {
-		FieldEntry entry = new FieldEntry(new ClassEntry(handle.getOwner()), handle.getName(), new TypeDescriptor(handle.getDesc()));
+		FieldEntry entry = new FieldEntry(new ClassEntry(handle.getOwner(), handle.getOwner()), handle.getName(), handle.getName(), new TypeDescriptor(handle.getDesc()));
 		FieldEntry translatedMethod = translator.translate(entry);
 		ClassEntry ownerClass = translatedMethod.getParent();
 		return new Handle(handle.getTag(), ownerClass.getFullName(), translatedMethod.getName(), translatedMethod.getDesc().toString(), handle.isInterface());

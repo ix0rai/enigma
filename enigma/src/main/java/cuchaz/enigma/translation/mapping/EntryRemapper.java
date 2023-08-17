@@ -78,12 +78,18 @@ public class EntryRemapper {
 		if (validateOnly || !vc.canProceed()) return;
 
 		for (Entry<?> resolvedEntry : resolvedEntries) {
-			if (deobfMapping.equals(EntryMapping.DEFAULT)) {
-				this.obfToDeobf.insert(resolvedEntry, null);
-			} else {
-				this.obfToDeobf.insert(resolvedEntry, deobfMapping);
-			}
+			this.insertMapping(resolvedEntry, obfuscatedEntry, deobfMapping);
 		}
+	}
+
+	private void insertMapping(Entry<?> entry, Entry<?> obfEntry, EntryMapping mapping) {
+		if (mapping.equals(EntryMapping.DEFAULT)) {
+			mapping = null;
+		}
+
+		this.obfToDeobf.insert(entry, mapping);
+		entry.setMapping(mapping);
+		obfEntry.setMapping(mapping);
 	}
 
 	// todo this needs to be fixed for hashed mappings!

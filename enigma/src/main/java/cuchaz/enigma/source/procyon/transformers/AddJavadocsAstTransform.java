@@ -90,6 +90,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 			for (ParameterDeclaration dec : node.getChildrenByRole(Roles.PARAMETER)) {
 				ParameterDefinition def = dec.getUserData(Keys.PARAMETER_DEFINITION);
 				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(), def.getName(),
+						def.getName(),
 						true,
 						EntryParser.parseTypeDescriptor(def.getParameterType()), null));
 				if (paramComments != null) {

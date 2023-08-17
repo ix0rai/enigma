@@ -56,10 +56,10 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 
 		if (ref != null) {
 			// get the behavior entry
-			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName(), ref.getDeclaringType().getInternalName());
 			MethodEntry methodEntry = null;
 			if (ref instanceof MethodReference) {
-				methodEntry = new MethodEntry(classEntry, ref.getName(), new MethodDescriptor(ref.getErasedSignature()));
+				methodEntry = new MethodEntry(classEntry, ref.getName(), ref.getName(), new MethodDescriptor(ref.getErasedSignature()));
 			}
 
 			if (methodEntry != null) {
@@ -95,8 +95,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 				throw new Error("Expected a field here! got " + ref);
 			}
 
-			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-			FieldEntry fieldEntry = new FieldEntry(classEntry, ref.getName(), new TypeDescriptor(erasedSignature));
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName(), ref.getDeclaringType().getInternalName());
+			FieldEntry fieldEntry = new FieldEntry(classEntry, ref.getName(), ref.getName(), new TypeDescriptor(erasedSignature));
 			index.addReference(TokenFactory.createToken(index, node.getMemberNameToken()), fieldEntry, this.methodEntry);
 		}
 
@@ -107,7 +107,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 	public Void visitSimpleType(SimpleType node, SourceIndex index) {
 		TypeReference ref = node.getUserData(Keys.TYPE_REFERENCE);
 		if (node.getIdentifierToken().getStartLocation() != TextLocation.EMPTY) {
-			ClassEntry classEntry = new ClassEntry(ref.getInternalName());
+			ClassEntry classEntry = new ClassEntry(ref.getInternalName(), ref.getInternalName());
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), classEntry, this.methodEntry);
 		}
 
@@ -126,7 +126,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			}
 
 			TypeDescriptor parameterType = EntryParser.parseTypeDescriptor(def.getParameterType());
-			LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, parameterIndex, node.getName(), true, parameterType, null);
+			LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, parameterIndex, node.getName(), node.getName(), true, parameterType, null);
 			Identifier identifier = node.getNameToken();
 			// cache the argument entry and the identifier
 			this.identifierEntryCache.put(identifier.getName(), localVariableEntry);
@@ -140,8 +140,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 	public Void visitIdentifierExpression(IdentifierExpression node, SourceIndex index) {
 		MemberReference ref = node.getUserData(Keys.MEMBER_REFERENCE);
 		if (ref != null) {
-			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-			FieldEntry fieldEntry = new FieldEntry(classEntry, ref.getName(), new TypeDescriptor(ref.getErasedSignature()));
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName(), ref.getDeclaringType().getInternalName());
+			FieldEntry fieldEntry = new FieldEntry(classEntry, ref.getName(), ref.getName(), new TypeDescriptor(ref.getErasedSignature()));
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), fieldEntry, this.methodEntry);
 		} else {
 			this.checkIdentifier(node, index);
@@ -177,8 +177,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 	public Void visitObjectCreationExpression(ObjectCreationExpression node, SourceIndex index) {
 		MemberReference ref = node.getUserData(Keys.MEMBER_REFERENCE);
 		if (ref != null && node.getType() instanceof SimpleType simpleTypeNode) {
-			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-			MethodEntry constructorEntry = new MethodEntry(classEntry, "<init>", new MethodDescriptor(ref.getErasedSignature()));
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName(), ref.getDeclaringType().getInternalName());
+			MethodEntry constructorEntry = new MethodEntry(classEntry, "<init>", "<init>", new MethodDescriptor(ref.getErasedSignature()));
 			index.addReference(TokenFactory.createToken(index, simpleTypeNode.getIdentifierToken()), constructorEntry, this.methodEntry);
 		}
 
@@ -202,7 +202,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 						if (variableIndex >= 0) {
 							MethodDefEntry ownerMethod = EntryParser.parse(originalVariable.getDeclaringMethod());
 							TypeDescriptor variableType = EntryParser.parseTypeDescriptor(originalVariable.getVariableType());
-							LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, variableIndex, initializer.getName(), false, variableType, null);
+							LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, variableIndex, initializer.getName(), initializer.getName(), false, variableType, null);
 							this.identifierEntryCache.put(identifier.getName(), localVariableEntry);
 							this.addDeclarationToUnmatched(identifier.getName(), index);
 							index.addDeclaration(TokenFactory.createToken(index, identifier), localVariableEntry);
@@ -221,8 +221,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 
 		if (ref instanceof MethodReference) {
 			// get the behavior entry
-			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName());
-			MethodEntry methodEntry = new MethodEntry(classEntry, ref.getName(), new MethodDescriptor(ref.getErasedSignature()));
+			ClassEntry classEntry = new ClassEntry(ref.getDeclaringType().getInternalName(), ref.getDeclaringType().getInternalName());
+			MethodEntry methodEntry = new MethodEntry(classEntry, ref.getName(), ref.getName(), new MethodDescriptor(ref.getErasedSignature()));
 
 			// get the node for the token
 			AstNode methodNameToken = node.getMethodNameToken();

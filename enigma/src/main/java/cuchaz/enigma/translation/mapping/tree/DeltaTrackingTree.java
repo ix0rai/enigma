@@ -23,10 +23,6 @@ public class DeltaTrackingTree<T> implements EntryTree<T> {
 		this.deltaReference = new HashEntryTree<>(delegate);
 	}
 
-	public DeltaTrackingTree() {
-		this(new HashEntryTree<>());
-	}
-
 	@Override
 	public void insert(Entry<?> entry, T value) {
 		this.trackChange(entry);

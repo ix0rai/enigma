@@ -1,6 +1,8 @@
 package cuchaz.enigma.analysis.index;
 
 import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.MethodDescriptor;
+import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
@@ -9,6 +11,9 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.utils.Pair;
+import org.benf.cfr.reader.bytecode.analysis.parse.utils.Triplet;
+import org.jetbrains.java.decompiler.struct.gen.FieldDescriptor;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -16,6 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntryIndex implements JarIndexer {
+	private final Map<String, ClassDefEntry> obfToClass = new HashMap<>();
+	private final Map<Triplet<ClassEntry, String, TypeDescriptor>, FieldDefEntry> obfToField = new HashMap<>();
+	private final Map<Triplet<ClassEntry, String, MethodDescriptor>, MethodDefEntry> obfToMethod = new HashMap<>();
+
 	private final Map<ClassEntry, AccessFlags> classes = new HashMap<>();
 	private final Map<FieldEntry, AccessFlags> fields = new HashMap<>();
 	private final Map<MethodEntry, AccessFlags> methods = new HashMap<>();
@@ -25,16 +34,39 @@ public class EntryIndex implements JarIndexer {
 	public void indexClass(ClassDefEntry classEntry) {
 		this.definitions.put(classEntry, classEntry);
 		this.classes.put(classEntry, classEntry.getAccess());
+		this.obfToClass.put(classEntry.getObfName(), classEntry);
 	}
 
 	@Override
 	public void indexMethod(MethodDefEntry methodEntry) {
 		this.methods.put(methodEntry, methodEntry.getAccess());
+		this.obfToMethod.put(new Triplet<>(methodEntry.getParent(), methodEntry.getObfName(), methodEntry.getDesc()), methodEntry);
 	}
 
 	@Override
 	public void indexField(FieldDefEntry fieldEntry) {
 		this.fields.put(fieldEntry, fieldEntry.getAccess());
+		this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
+	}
+
+	public ClassDefEntry getClass(String obfName) {
+		return this.obfToClass.get(obfName);
+	}
+
+	public MethodDefEntry getMethod(ClassEntry parent, String obfName, String descriptor) {
+		return this.getMethod(parent, obfName, new MethodDescriptor(descriptor));
+	}
+
+	public MethodDefEntry getMethod(ClassEntry parent, String obfName, MethodDescriptor descriptor) {
+		return this.obfToMethod.get(new Triplet<>(parent, obfName, descriptor));
+	}
+
+	public FieldDefEntry getField(ClassEntry parent, String obfName, String descriptor) {
+		return this.obfToField.get(new Triplet<>(parent, obfName, new TypeDescriptor(descriptor)));
+	}
+
+	public FieldDefEntry getField(ClassEntry parent, String obfName, TypeDescriptor descriptor) {
+		return this.obfToField.get(new Triplet<>(parent, obfName, descriptor));
 	}
 
 	public boolean hasClass(ClassEntry entry) {

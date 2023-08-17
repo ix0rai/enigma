@@ -30,8 +30,8 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		super(next);
 	}
 
-	private static ClassEntry getClassEntry(String name) {
-		return new ClassEntry(name);
+	private static ClassEntry getClassEntry(String name, String obfName) {
+		return new ClassEntry(name, obfName);
 	}
 
 	private static FieldEntry getFieldEntry(String className, String name, FieldDescriptor descriptor) {
@@ -43,11 +43,11 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private static LocalVariableEntry getParameterEntry(MethodEntry parent, int index, String name) {
-		return new LocalVariableEntry(parent, index, name, true, null);
+		return new LocalVariableEntry(parent, index, name, name, true, null);
 	}
 
 	private static LocalVariableEntry getVariableEntry(MethodEntry parent, int index, String name) {
-		return new LocalVariableEntry(parent, index, name, false, null);
+		return new LocalVariableEntry(parent, index, name, name, false, null);
 	}
 
 	private Token getToken(TextRange range) {
@@ -92,9 +92,9 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 		Token token = this.getToken(range);
 
 		if (declaration) {
-			this.addDeclaration(token, getClassEntry(name));
+			this.addDeclaration(token, getClassEntry(name, name));
 		} else {
-			this.addReference(token, getClassEntry(name), this.currentMethod);
+			this.addReference(token, getClassEntry(name, name), this.currentMethod);
 		}
 	}
 

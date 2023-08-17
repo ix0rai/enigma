@@ -8,13 +8,14 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
 	protected final int index;
 	protected final boolean parameter;
 
-	public LocalVariableEntry(MethodEntry parent, int index, String name, boolean parameter, String javadoc) {
-		super(parent, name, javadoc);
+	public LocalVariableEntry(MethodEntry parent, int index, String name, String obfName, boolean parameter, @Nullable EntryMapping mapping) {
+		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Variable owner cannot be null");
 		Preconditions.checkArgument(index >= 0, "Index must be positive");
@@ -37,28 +38,23 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	}
 
 	@Override
-	public String getName() {
-		return this.name;
-	}
-
-	@Override
 	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String javadoc = mapping.javadoc();
+
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new LocalVariableEntry(this.parent, this.index, translatedName, this.parameter, javadoc)
+				new LocalVariableEntry(this.parent, this.index, translatedName, this.obfName, this.parameter, mapping)
 		);
 	}
 
 	@Override
-	public LocalVariableEntry withName(String name) {
-		return new LocalVariableEntry(this.parent, this.index, name, this.parameter, this.javadocs);
+	public LocalVariableEntry withName(String name, RenamableTokenType tokenType) {
+		return new LocalVariableEntry(this.parent, this.index, name, this.obfName, this.parameter, new EntryMapping(name, this.getJavadocs(), tokenType));
 	}
 
 	@Override
 	public LocalVariableEntry withParent(MethodEntry parent) {
-		return new LocalVariableEntry(parent, this.index, this.name, this.parameter, this.javadocs);
+		return new LocalVariableEntry(parent, this.index, this.name, this.obfName, this.parameter, this.mapping);
 	}
 
 	@Override

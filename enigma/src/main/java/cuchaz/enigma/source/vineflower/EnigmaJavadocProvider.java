@@ -24,7 +24,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	}
 
 	private static ClassEntry getClassEntry(StructClass structClass) {
-		return new ClassEntry(structClass.qualifiedName);
+		return new ClassEntry(structClass.qualifiedName, structClass.qualifiedName);
 	}
 
 	private static FieldEntry getFieldEntry(StructClass structClass, StructField field) {

@@ -29,7 +29,7 @@ public class MappingOperations {
 
 			Entry<?> rightEntry = translator.translate(leftEntry);
 
-			result.insert(rightEntry, leftMapping == null ? null : leftMapping.withName(leftEntry.getName()));
+			result.insert(rightEntry, leftMapping == null ? null : leftMapping.withDeobfName(leftEntry.getName()));
 		}
 
 		return result;

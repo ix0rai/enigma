@@ -10,25 +10,26 @@ import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> {
 	private final AccessFlags access;
 	private final Signature signature;
 
-	public MethodDefEntry(ClassEntry owner, String name, MethodDescriptor descriptor, Signature signature, AccessFlags access) {
-		this(owner, name, descriptor, signature, access, null);
+	public MethodDefEntry(ClassEntry owner, String name, String obfName, MethodDescriptor descriptor, Signature signature, AccessFlags access) {
+		this(owner, name, obfName, descriptor, signature, access, null);
 	}
 
-	public MethodDefEntry(ClassEntry owner, String name, MethodDescriptor descriptor, Signature signature, AccessFlags access, String docs) {
-		super(owner, name, descriptor, docs);
+	public MethodDefEntry(ClassEntry owner, String name, String obfName, MethodDescriptor descriptor, Signature signature, AccessFlags access, @Nullable EntryMapping mapping) {
+		super(owner, name, obfName, descriptor, mapping);
 		Preconditions.checkNotNull(access, "Method access cannot be null");
 		Preconditions.checkNotNull(signature, "Method signature cannot be null");
 		this.access = access;
 		this.signature = signature;
 	}
 
-	public static MethodDefEntry parse(ClassEntry owner, int access, String name, String desc, String signature) {
-		return new MethodDefEntry(owner, name, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access), null);
+	public static MethodDefEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
+		return new MethodDefEntry(owner, obfName, obfName, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access), null);
 	}
 
 	@Override
@@ -45,20 +46,20 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 		MethodDescriptor translatedDesc = translator.translate(this.descriptor);
 		Signature translatedSignature = translator.translate(this.signature);
 		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-		String docs = mapping.javadoc();
+
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodDefEntry(this.parent, translatedName, translatedDesc, translatedSignature, this.access, docs)
+				new MethodDefEntry(this.parent, translatedName, this.obfName, translatedDesc, translatedSignature, this.access, mapping)
 		);
 	}
 
 	@Override
-	public MethodDefEntry withName(String name) {
-		return new MethodDefEntry(this.parent, name, this.descriptor, this.signature, this.access, this.javadocs);
+	public MethodDefEntry withName(String name, RenamableTokenType tokenType) {
+		return new MethodDefEntry(this.parent, name, this.obfName, this.descriptor, this.signature, this.access, new EntryMapping(name, this.getJavadocs(), tokenType));
 	}
 
 	@Override
 	public MethodDefEntry withParent(ClassEntry parent) {
-		return new MethodDefEntry(new ClassEntry(parent.getFullName()), this.name, this.descriptor, this.signature, this.access, this.javadocs);
+		return new MethodDefEntry(parent, this.name, this.obfName, this.descriptor, this.signature, this.access, this.mapping);
 	}
 }

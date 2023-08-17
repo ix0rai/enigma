@@ -33,25 +33,25 @@ public class RecafMappingsReader implements MappingsReader {
 		for (String line : lines) {
 			Matcher methodMatcher = METHOD_PATTERN.matcher(line);
 			if (methodMatcher.find()) {
-				ClassEntry owner = new ClassEntry(methodMatcher.group(1));
+				ClassEntry owner = new ClassEntry(methodMatcher.group(1), methodMatcher.group(1));
 				String name = methodMatcher.group(2);
 				MethodDescriptor desc = new MethodDescriptor(methodMatcher.group(3));
-				mappings.insert(new MethodEntry(owner, name, desc), new EntryMapping(methodMatcher.group(4)));
+				mappings.insert(new MethodEntry(owner, name, name, desc), new EntryMapping(methodMatcher.group(4)));
 				continue;
 			}
 
 			Matcher fieldMatcher = FIELD_PATTERN.matcher(line);
 			if (fieldMatcher.find()) {
-				ClassEntry owner = new ClassEntry(fieldMatcher.group(1));
+				ClassEntry owner = new ClassEntry(fieldMatcher.group(1), fieldMatcher.group(1));
 				String name = fieldMatcher.group(2);
 				TypeDescriptor desc = new TypeDescriptor(fieldMatcher.group(3));
-				mappings.insert(new FieldEntry(owner, name, desc), new EntryMapping(fieldMatcher.group(4)));
+				mappings.insert(new FieldEntry(owner, name, name, desc), new EntryMapping(fieldMatcher.group(4)));
 				continue;
 			}
 
 			Matcher classMatcher = CLASS_PATTERN.matcher(line);
 			if (classMatcher.find()) {
-				mappings.insert(new ClassEntry(classMatcher.group(1)), new EntryMapping(classMatcher.group(2)));
+				mappings.insert(new ClassEntry(classMatcher.group(1), classMatcher.group(1)), new EntryMapping(classMatcher.group(2)));
 			}
 		}
 

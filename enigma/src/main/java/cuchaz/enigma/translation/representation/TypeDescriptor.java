@@ -137,7 +137,7 @@ public class TypeDescriptor implements Translatable {
 				name = name.substring(0, pos);
 			}
 
-			return new ClassEntry(name);
+			return new ClassEntry(name, name);
 		} else if (this.isArray() && this.getArrayType().isType()) {
 			return this.getArrayType().getTypeEntry();
 		} else {
@@ -220,7 +220,7 @@ public class TypeDescriptor implements Translatable {
 
 	@Override
 	public TranslateResult<TypeDescriptor> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name)).getFullName()));
+		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name, name)).getFullName()));
 	}
 
 	public enum Primitive {
