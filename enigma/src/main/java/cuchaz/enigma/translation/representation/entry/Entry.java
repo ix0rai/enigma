@@ -14,6 +14,10 @@ import javax.annotation.Nullable;
 public interface Entry<P extends Entry<?>> extends Translatable {
 	String getObfName();
 
+	default String getName2() {
+		return this.getDeobfName() == null ? this.getObfName() : this.getDeobfName();
+	}
+
 	@Nullable
 	EntryMapping getMapping();
 

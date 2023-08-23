@@ -12,14 +12,11 @@ import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nullable;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MappingValidator {
 	private final Translator deobfuscator;
@@ -48,7 +45,6 @@ public class MappingValidator {
 	 */
 	private boolean validateUnique(ValidationContext context, Entry<?> entry, String name) {
 		ClassEntry containingClass = entry.getContainingClass();
-		Entry<?> translatedEntry = this.deobfuscator.translate(entry);
 
 		// parameters must be special-cased
 		if (entry instanceof LocalVariableEntry parameter) {
@@ -78,21 +74,14 @@ public class MappingValidator {
 			siblings.addAll(this.index.getChildrenByClass().get(ancestor));
 		}
 
-		// collect deobfuscated versions
-		List<? extends Entry<?>> deobfSiblings = siblings.stream()
-				.distinct() // May throw IllegalStateException otherwise
-				.toList();
-
-		if (translatedEntry != null) {
-			if (!this.isUnique(translatedEntry, deobfSiblings, name)) {
-				this.raiseConflict(context, translatedEntry.getParent(), name, false);
+		if (!this.isUnique(entry, siblings, name)) {
+			this.raiseConflict(context, entry.getParent(), name, false);
+			return true;
+		} else {
+			Entry<?> shadowedEntry = this.getShadowedEntry(entry, siblings, name);
+			if (shadowedEntry != null) {
+				this.raiseConflict(context, shadowedEntry.getParent(), name, true);
 				return true;
-			} else {
-				Entry<?> shadowedEntry = this.getShadowedEntry(translatedEntry, deobfSiblings, name);
-				if (shadowedEntry != null) {
-					this.raiseConflict(context, shadowedEntry.getParent(), name, true);
-					return true;
-				}
 			}
 		}
 
