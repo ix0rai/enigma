@@ -3,6 +3,7 @@ package cuchaz.enigma.stats;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
 import cuchaz.enigma.analysis.index.EntryIndex;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
@@ -120,7 +121,7 @@ public class StatsGenerator {
 							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
 									// skip the implicit superclass parameter for non-static inner class constructors
 									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
-								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", "", true, null));
+								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", "", true, EntryMapping.DEFAULT));
 							}
 
 							index += argument.getSize();

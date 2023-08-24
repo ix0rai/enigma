@@ -9,6 +9,7 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public interface Entry<P extends Entry<?>> extends Translatable {
@@ -18,10 +19,12 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 		return this.getDeobfName() == null ? this.getObfName() : this.getDeobfName();
 	}
 
-	@Nullable
+	/**
+	 * returns default mapping instead of null
+	 */
 	EntryMapping getMapping();
 
-	void setMapping(@Nullable EntryMapping mapping);
+	void setMapping(@Nonnull EntryMapping mapping);
 
 	@Nullable
 	RenamableTokenType getTokenType();
@@ -100,7 +103,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	@Nullable
 	default String getDeobfName() {
-		return this.getMapping() == null ? null : this.getMapping().targetName();
+		return this.getMapping().targetName();
 	}
 
 	/**

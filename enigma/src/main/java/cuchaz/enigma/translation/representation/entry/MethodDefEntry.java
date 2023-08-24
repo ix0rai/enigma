@@ -17,10 +17,10 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 	private final Signature signature;
 
 	public MethodDefEntry(ClassEntry owner, String name, String obfName, MethodDescriptor descriptor, Signature signature, AccessFlags access) {
-		this(owner, name, obfName, descriptor, signature, access, null);
+		this(owner, name, obfName, descriptor, signature, access, EntryMapping.DEFAULT);
 	}
 
-	public MethodDefEntry(ClassEntry owner, String name, String obfName, MethodDescriptor descriptor, Signature signature, AccessFlags access, @Nullable EntryMapping mapping) {
+	public MethodDefEntry(ClassEntry owner, String name, String obfName, MethodDescriptor descriptor, Signature signature, AccessFlags access, EntryMapping mapping) {
 		super(owner, name, obfName, descriptor, mapping);
 		Preconditions.checkNotNull(access, "Method access cannot be null");
 		Preconditions.checkNotNull(signature, "Method signature cannot be null");
@@ -29,7 +29,7 @@ public class MethodDefEntry extends MethodEntry implements DefEntry<ClassEntry> 
 	}
 
 	public static MethodDefEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
-		return new MethodDefEntry(owner, obfName, obfName, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access), null);
+		return new MethodDefEntry(owner, obfName, obfName, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access), EntryMapping.DEFAULT);
 	}
 
 	@Override

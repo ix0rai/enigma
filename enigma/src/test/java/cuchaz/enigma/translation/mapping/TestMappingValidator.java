@@ -9,6 +9,7 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.utils.validation.EmptyNotifier;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ParameterizedMessage;
 import cuchaz.enigma.utils.validation.ValidationContext;
@@ -60,7 +61,7 @@ public class TestMappingValidator {
 		// static fields
 		remapper.putMapping(newVC(), index.getField(b, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		// todo broken!
@@ -69,7 +70,7 @@ public class TestMappingValidator {
 		// final fields
 		remapper.putMapping(newVC(), index.getField(b, "a", "I"), new EntryMapping("field01"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "a", "I"), new EntryMapping("field01"));
 
 		// todo broken!
@@ -78,7 +79,7 @@ public class TestMappingValidator {
 		// instance fields
 		remapper.putMapping(newVC(), index.getField(b, "b", "I"), new EntryMapping("field02"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field02"));
 
 		// todo broken!
@@ -93,7 +94,7 @@ public class TestMappingValidator {
 		// static fields
 		remapper.putMapping(newVC(), index.getField(b, "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		// todo broken!
@@ -102,7 +103,7 @@ public class TestMappingValidator {
 		// default fields
 		remapper.putMapping(newVC(), index.getField(b, "b", "Z"), new EntryMapping("field05"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "a", "Z"), new EntryMapping("field05"));
 
 		// todo broken!
@@ -117,7 +118,7 @@ public class TestMappingValidator {
 		// static methods
 		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
 		// todo broken!
@@ -126,7 +127,7 @@ public class TestMappingValidator {
 		// private methods
 		remapper.putMapping(newVC(), index.getMethod(b, "a", "()V"), new EntryMapping("method02"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method02"));
 
 		// todo!
@@ -139,14 +140,14 @@ public class TestMappingValidator {
 
 		remapper.putMapping(newVC(), index.getField(a, "a", "I"), new EntryMapping("field01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		remapper.putMapping(newVC(), index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -158,12 +159,12 @@ public class TestMappingValidator {
 
 		remapper.putMapping(newVC(), index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -177,15 +178,16 @@ public class TestMappingValidator {
 		// "overriding" w/different return descriptor
 		remapper.putMapping(newVC(), index.getMethod(b, "a", "()Z"), new EntryMapping("method01"));
 
-		ValidationContext vc = new ValidationContext(notifier());
+		ValidationContext vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
+
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" a static method
 		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method02"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -193,7 +195,7 @@ public class TestMappingValidator {
 		// "overriding" when the original methods were not related
 		remapper.putMapping(newVC(), index.getMethod(b, "b", "()I"), new EntryMapping("method03"));
 
-		vc = new ValidationContext(notifier());
+		vc = newVC();
 		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()I"), new EntryMapping("method03"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
@@ -214,19 +216,6 @@ public class TestMappingValidator {
 	}
 
 	private static ValidationContext newVC() {
-		return new ValidationContext(notifier());
-	}
-
-	private static ValidationContext.Notifier notifier() {
-		return new ValidationContext.Notifier() {
-			@Override
-			public void notify(ParameterizedMessage message) {
-			}
-
-			@Override
-			public boolean verifyWarning(ParameterizedMessage message) {
-				return true;
-			}
-		};
+		return new ValidationContext(EmptyNotifier.INSTANCE);
 	}
 }

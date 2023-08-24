@@ -86,7 +86,7 @@ public class EnigmaDumper extends StringStreamDumper {
 
 		int variableIndex = method.getParameterLValues().get(parameterIndex).localVariable.getIdx();
 
-		return new LocalVariableEntry(owner, variableIndex, name, name, true, null);
+		return new LocalVariableEntry(owner, variableIndex, name, name, true, EntryMapping.DEFAULT);
 	}
 
 	private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {
@@ -147,14 +147,11 @@ public class EnigmaDumper extends StringStreamDumper {
 						continue;
 					}
 
-					EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()));
-					if (mapping == null) {
-						continue;
-					}
+					EntryMapping mapping = this.getFieldEntry(owner, field.getFieldName(), field.getField().getDescriptor()).getMapping();
 
-					String javaDoc = mapping.javadoc();
-					if (javaDoc != null) {
-						recordComponentDocs.add(String.format("@param %s %s", mapping.targetName(), javaDoc));
+					String javadoc = mapping.javadoc();
+					if (javadoc != null) {
+						recordComponentDocs.add(String.format("@param %s %s", mapping.targetName(), javadoc));
 					}
 				}
 			}

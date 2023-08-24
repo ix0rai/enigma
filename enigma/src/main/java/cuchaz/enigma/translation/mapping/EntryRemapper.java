@@ -82,7 +82,7 @@ public class EntryRemapper {
 		}
 	}
 
-	private void insertMapping(Entry<?> entry, Entry<?> obfEntry, EntryMapping mapping) {
+	private void insertMapping(Entry<?> entry, Entry<?> obfEntry, @Nonnull EntryMapping mapping) {
 		if (mapping.equals(EntryMapping.DEFAULT)) {
 			mapping = null;
 		}
@@ -126,8 +126,7 @@ public class EntryRemapper {
 
 	@Nonnull
 	public EntryMapping getDeobfMapping(Entry<?> entry) {
-		EntryMapping entryMapping = this.obfToDeobf.get(entry);
-		return entryMapping == null ? EntryMapping.DEFAULT : entryMapping;
+		return entry.getMapping();
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {
@@ -140,10 +139,6 @@ public class EntryRemapper {
 
 	public Translator getDeobfuscator() {
 		return this.deobfuscator;
-	}
-
-	public Stream<Entry<?>> getObfEntries() {
-		return this.obfToDeobf.getAllEntries();
 	}
 
 	public Collection<Entry<?>> getObfChildren(Entry<?> obfuscatedEntry) {

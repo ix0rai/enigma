@@ -70,7 +70,12 @@ public class TestStatsGeneration {
 			EntryMapping prev = project.getMapper().getDeobfMapping(entry);
 			EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
-			project.getMapper().putMapping(new ValidationContext(null), entry, mapping);
+			// TODO TODO TODO WHY IS THIS BROKEN
+			if (mapping.targetName().equals("a12")) {
+				System.out.println();
+			}
+
+			project.getMapper().putMapping(new ValidationContext(), entry, mapping);
 			i++;
 		}
 	}

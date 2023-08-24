@@ -16,15 +16,17 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	protected final P parent;
 	protected final String name;
 	protected final String obfName;
-	protected @Nullable EntryMapping mapping;
+	protected EntryMapping mapping;
 
-	protected ParentedEntry(P parent, String name, String obfName, @Nullable EntryMapping mapping) {
+	protected ParentedEntry(P parent, String name, String obfName, EntryMapping mapping) {
 		this.parent = parent;
 		this.name = name;
 		this.mapping = mapping;
 		this.obfName = obfName;
 
-		Preconditions.checkNotNull(name, "Name cannot be null");
+		Preconditions.checkNotNull(name, "Name cannot be null (ummm I think it probably can tbh)");
+		Preconditions.checkNotNull(obfName, "Obf name be null arr I'm a pirate");
+		Preconditions.checkNotNull(mapping, "Mapping cannot be null (use EntryMapping.DEFAULT when no mapping exists!)");
 	}
 
 	@Override
@@ -69,17 +71,16 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	@Nullable
 	@Override
 	public String getJavadocs() {
-		return this.mapping == null ? null : this.mapping.javadoc();
+		return this.mapping.javadoc();
 	}
 
-	@Nullable
 	@Override
 	public EntryMapping getMapping() {
 		return this.mapping;
 	}
 
 	@Override
-	public void setMapping(@Nullable EntryMapping mapping) {
+	public void setMapping(@Nonnull EntryMapping mapping) {
 		this.mapping = mapping;
 	}
 
@@ -92,6 +93,10 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	@Override
 	public TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		EntryMapping mapping = this.resolveMapping(resolver, mappings);
+		// todo remove
+		if (mapping == null) {
+			throw new RuntimeException();
+		}
 		if (this.getParent() == null) {
 			return this.extendedTranslate(translator, mapping);
 		}

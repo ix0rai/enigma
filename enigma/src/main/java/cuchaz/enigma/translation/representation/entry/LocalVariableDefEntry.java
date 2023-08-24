@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class LocalVariableDefEntry extends LocalVariableEntry {
 	protected final TypeDescriptor desc;
 
-	public LocalVariableDefEntry(MethodEntry ownerEntry, int index, String name, String obfName, boolean parameter, TypeDescriptor desc, @Nullable EntryMapping mapping) {
+	public LocalVariableDefEntry(MethodEntry ownerEntry, int index, String name, String obfName, boolean parameter, TypeDescriptor desc, EntryMapping mapping) {
 		super(ownerEntry, index, name, obfName, parameter, mapping);
 		Preconditions.checkNotNull(desc, "Variable desc cannot be null");
 

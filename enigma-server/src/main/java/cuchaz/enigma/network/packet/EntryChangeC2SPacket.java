@@ -32,7 +32,7 @@ public class EntryChangeC2SPacket implements Packet<ServerPacketHandler> {
 
 	@Override
 	public void handle(ServerPacketHandler handler) {
-		ValidationContext vc = new ValidationContext(null);
+		ValidationContext vc = new ValidationContext();
 
 		boolean valid = handler.server().canModifyEntry(handler.client(), this.change.getTarget());
 

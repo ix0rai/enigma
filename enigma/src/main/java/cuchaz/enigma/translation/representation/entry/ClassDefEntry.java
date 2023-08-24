@@ -20,14 +20,14 @@ public class ClassDefEntry extends ClassEntry implements DefEntry<ClassEntry> {
 	private final ClassEntry[] interfaces;
 
 	public ClassDefEntry(String className, String obfClassName, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces) {
-		this(getOuterClass(className, obfClassName), getInnerName(className), obfClassName, signature, access, superClass, interfaces, null);
+		this(getOuterClass(className, obfClassName), getInnerName(className), obfClassName, signature, access, superClass, interfaces, EntryMapping.DEFAULT);
 	}
 
 	public ClassDefEntry(ClassEntry parent, String className, String obfClassName, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces) {
 		this(parent, className, obfClassName, signature, access, superClass, interfaces, null);
 	}
 
-	public ClassDefEntry(ClassEntry parent, String className, String obfClassName, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces, @Nullable EntryMapping mapping) {
+	public ClassDefEntry(ClassEntry parent, String className, String obfClassName, Signature signature, AccessFlags access, @Nullable ClassEntry superClass, ClassEntry[] interfaces, EntryMapping mapping) {
 		super(parent, className, obfClassName, mapping);
 		Preconditions.checkNotNull(signature, "Class signature cannot be null");
 		Preconditions.checkNotNull(access, "Class access cannot be null");

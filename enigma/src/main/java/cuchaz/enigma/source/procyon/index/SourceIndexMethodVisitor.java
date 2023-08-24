@@ -28,6 +28,7 @@ import com.strobel.decompiler.languages.java.ast.VariableDeclarationStatement;
 import com.strobel.decompiler.languages.java.ast.VariableInitializer;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -126,7 +127,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 			}
 
 			TypeDescriptor parameterType = EntryParser.parseTypeDescriptor(def.getParameterType());
-			LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, parameterIndex, node.getName(), node.getName(), true, parameterType, null);
+			LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, parameterIndex, node.getName(), node.getName(), true, parameterType, EntryMapping.DEFAULT);
 			Identifier identifier = node.getNameToken();
 			// cache the argument entry and the identifier
 			this.identifierEntryCache.put(identifier.getName(), localVariableEntry);

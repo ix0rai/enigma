@@ -16,14 +16,14 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	private final String fullName;
 
 	public ClassEntry(String className, String obfName) {
-		this(getOuterClass(className, obfName), getInnerName(className), obfName, null);
+		this(getOuterClass(className, obfName), getInnerName(className), obfName, EntryMapping.DEFAULT);
 	}
 
 	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName) {
-		this(parent, className, obfName, null);
+		this(parent, className, obfName, EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName, @Nullable EntryMapping mapping) {
+	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName, EntryMapping mapping) {
 		super(parent, className, obfName, mapping);
 		if (parent != null) {
 			this.fullName = parent.getFullName() + "$" + this.name;
@@ -125,7 +125,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, this.name, this.obfName, this.getMapping());
+		return new ClassEntry(parent, this.name, this.obfName, this.mapping);
 	}
 
 	@Override

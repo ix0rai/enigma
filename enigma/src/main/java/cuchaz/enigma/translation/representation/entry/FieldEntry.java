@@ -15,10 +15,10 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	protected final TypeDescriptor desc;
 
 	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc) {
-		this(parent, name, obfName, desc, null);
+		this(parent, name, obfName, desc, EntryMapping.DEFAULT);
 	}
 
-	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc, @Nullable EntryMapping mapping) {
+	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc, EntryMapping mapping) {
 		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Owner cannot be null");
@@ -28,7 +28,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public static FieldEntry parse(String owner, String name, String desc) {
-		return new FieldEntry(new ClassEntry(owner, owner), name, name, new TypeDescriptor(desc), null);
+		return new FieldEntry(new ClassEntry(owner, owner), name, name, new TypeDescriptor(desc), EntryMapping.DEFAULT);
 	}
 
 	@Override

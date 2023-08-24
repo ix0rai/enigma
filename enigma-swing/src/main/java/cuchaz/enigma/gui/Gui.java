@@ -77,7 +77,7 @@ public class Gui {
 	private final List<Throwable> crashHistory;
 
 	private final MenuBar menuBar;
-	private final IdentifierPanel infoPanel;
+	private final IdentifierPanel identifierPanel;
 
 	private final EditorTabbedPane editorTabbedPane;
 
@@ -108,7 +108,8 @@ public class Gui {
 		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
-		this.infoPanel = new IdentifierPanel(this);
+		this.notificationManager = new NotificationManager(this);
+		this.identifierPanel = new IdentifierPanel(this);
 		this.crashHistory = new ArrayList<>();
 		this.menuBar = new MenuBar(this);
 		this.userModel = new DefaultListModel<>();
@@ -124,7 +125,6 @@ public class Gui {
 		this.exportSourceFileChooser = new JFileChooser();
 		this.exportJarFileChooser = new JFileChooser();
 		this.connectionStatusLabel = new JLabel();
-		this.notificationManager = new NotificationManager(this);
 		this.searchDialog = new SearchDialog(this);
 		this.statsManager = new StatsManager();
 
@@ -178,7 +178,7 @@ public class Gui {
 		Container workArea = this.mainWindow.getWorkArea();
 		workArea.setLayout(new BorderLayout());
 
-		this.centerPanel.add(this.infoPanel.getUi(), BorderLayout.NORTH);
+		this.centerPanel.add(this.identifierPanel.getUi(), BorderLayout.NORTH);
 		this.centerPanel.add(this.editorTabbedPane.getUi(), BorderLayout.CENTER);
 
 		this.messages.setCellRenderer(new MessageListCellRenderer());
@@ -394,7 +394,7 @@ public class Gui {
 	}
 
 	public void showCursorReference(EntryReference<Entry<?>, Entry<?>> reference) {
-		this.infoPanel.setReference(reference == null ? null : reference.entry);
+		this.identifierPanel.setReference(reference == null ? null : reference.entry);
 	}
 
 	public void startDocChange(EditorPanel editor) {
@@ -406,13 +406,13 @@ public class Gui {
 	public void startRename(EditorPanel editor, String text) {
 		if (editor != this.editorTabbedPane.getActiveEditor()) return;
 
-		this.infoPanel.startRenaming(text);
+		this.identifierPanel.startRenaming(text);
 	}
 
 	public void startRename(EditorPanel editor) {
 		if (editor != this.editorTabbedPane.getActiveEditor()) return;
 
-		this.infoPanel.startRenaming();
+		this.identifierPanel.startRenaming();
 	}
 
 	/**
@@ -665,7 +665,7 @@ public class Gui {
 		this.updateUiState();
 
 		this.menuBar.retranslateUi();
-		this.infoPanel.retranslateUi();
+		this.identifierPanel.retranslateUi();
 		this.editorTabbedPane.retranslateUi();
 		for (Docker docker : this.dockerManager.getDockers()) {
 			docker.retranslateUi();

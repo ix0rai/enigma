@@ -17,10 +17,10 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 	private final Signature signature;
 
 	public FieldDefEntry(ClassEntry owner, String name, String obfName, TypeDescriptor desc, Signature signature, AccessFlags access) {
-		this(owner, name, obfName, desc, signature, access, null);
+		this(owner, name, obfName, desc, signature, access, EntryMapping.DEFAULT);
 	}
 
-	public FieldDefEntry(ClassEntry owner, String name, String obfName, TypeDescriptor desc, Signature signature, AccessFlags access, @Nullable EntryMapping mapping) {
+	public FieldDefEntry(ClassEntry owner, String name, String obfName, TypeDescriptor desc, Signature signature, AccessFlags access, EntryMapping mapping) {
 		super(owner, name, obfName, desc, mapping);
 		Preconditions.checkNotNull(access, "Field access cannot be null");
 		Preconditions.checkNotNull(signature, "Field signature cannot be null");
@@ -29,7 +29,7 @@ public class FieldDefEntry extends FieldEntry implements DefEntry<ClassEntry> {
 	}
 
 	public static FieldDefEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
-		return new FieldDefEntry(owner, obfName, obfName, new TypeDescriptor(desc), Signature.createTypedSignature(signature), new AccessFlags(access), null);
+		return new FieldDefEntry(owner, obfName, obfName, new TypeDescriptor(desc), Signature.createTypedSignature(signature), new AccessFlags(access), EntryMapping.DEFAULT);
 	}
 
 	@Override

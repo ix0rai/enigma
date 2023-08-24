@@ -25,6 +25,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
 import cuchaz.enigma.utils.Pair;
 import org.objectweb.asm.ClassWriter;
@@ -39,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -235,7 +237,7 @@ public class EnigmaProject {
 			}
 		}
 
-		EntryMapping mapping = this.mapper.getDeobfMapping(entry);
+		EntryMapping mapping = entry.getMapping();
 		return mapping.targetName() == null;
 	}
 
@@ -274,7 +276,7 @@ public class EnigmaProject {
 					return null;
 				})
 				.filter(Objects::nonNull)
-				.collect(Collectors.toMap(n -> n.name, Functions.identity()));
+				.collect(Collectors.toMap(n -> n.name, n -> n));
 
 		return new JarExport(this.mapper, compiled);
 	}

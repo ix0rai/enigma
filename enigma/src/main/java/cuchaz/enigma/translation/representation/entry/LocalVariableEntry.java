@@ -14,7 +14,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 	protected final int index;
 	protected final boolean parameter;
 
-	public LocalVariableEntry(MethodEntry parent, int index, String name, String obfName, boolean parameter, @Nullable EntryMapping mapping) {
+	public LocalVariableEntry(MethodEntry parent, int index, String name, String obfName, boolean parameter, EntryMapping mapping) {
 		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Variable owner cannot be null");

@@ -16,11 +16,21 @@ public class ValidationContext {
 	private Notifier notifier;
 
 	/**
+	 * Creates a new validation context with no messages, using {@link PrintNotifier#INSTANCE} as the notifier.
+	 */
+	public ValidationContext() {
+		this(PrintNotifier.INSTANCE);
+	}
+
+	/**
 	 * Creates a new validation context with no messages.
-	 * @param notifier the notifier to pass new messages into, defaults to {@link PrintNotifier#INSTANCE} if null
+	 * @param notifier the notifier to pass new messages into
 	 */
 	public ValidationContext(Notifier notifier) {
-		this.notifier = Objects.requireNonNullElse(notifier, PrintNotifier.INSTANCE);
+		this.notifier = notifier;
+		if (this.notifier == null) {
+			throw new IllegalArgumentException("notifier cannot be null (use PrintNotifier.INSTANCE or EmptyNotifier.INSTANCE for a quick fix)!");
+		}
 	}
 
 	/**

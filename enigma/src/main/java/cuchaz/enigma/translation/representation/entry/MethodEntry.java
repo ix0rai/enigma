@@ -21,10 +21,10 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	protected final MethodDescriptor descriptor;
 
 	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor) {
-		this(parent, name, obfName, descriptor, null);
+		this(parent, name, obfName, descriptor, EntryMapping.DEFAULT);
 	}
 
-	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor, @Nullable EntryMapping mapping) {
+	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor, EntryMapping mapping) {
 		super(parent, name, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Parent cannot be null");
@@ -34,7 +34,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public static MethodEntry parse(String owner, String name, String desc) {
-		return new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc), null);
+		return new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc), EntryMapping.DEFAULT);
 	}
 
 	@Override

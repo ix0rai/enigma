@@ -4,6 +4,7 @@ import com.strobel.assembler.metadata.FieldDefinition;
 import com.strobel.assembler.metadata.MethodDefinition;
 import com.strobel.assembler.metadata.TypeDefinition;
 import com.strobel.assembler.metadata.TypeReference;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
@@ -19,7 +20,7 @@ public class EntryParser {
 		TypeDescriptor descriptor = new TypeDescriptor(definition.getErasedSignature());
 		Signature signature = Signature.createTypedSignature(definition.getSignature());
 		AccessFlags access = new AccessFlags(definition.getModifiers());
-		return new FieldDefEntry(owner, definition.getName(), definition.getName(), descriptor, signature, access, null);
+		return new FieldDefEntry(owner, definition.getName(), definition.getName(), descriptor, signature, access, EntryMapping.DEFAULT);
 	}
 
 	public static ClassDefEntry parse(TypeDefinition def) {
@@ -40,7 +41,7 @@ public class EntryParser {
 		MethodDescriptor descriptor = new MethodDescriptor(definition.getErasedSignature());
 		Signature signature = Signature.createSignature(definition.getSignature());
 		AccessFlags access = new AccessFlags(definition.getModifiers());
-		return new MethodDefEntry(classEntry, definition.getName(), definition.getName(), descriptor, signature, access, null);
+		return new MethodDefEntry(classEntry, definition.getName(), definition.getName(), descriptor, signature, access, EntryMapping.DEFAULT);
 	}
 
 	public static TypeDescriptor parseTypeDescriptor(TypeReference type) {

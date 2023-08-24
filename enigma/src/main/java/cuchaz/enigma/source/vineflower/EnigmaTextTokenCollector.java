@@ -2,6 +2,7 @@ package cuchaz.enigma.source.vineflower;
 
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
@@ -43,11 +44,11 @@ public class EnigmaTextTokenCollector extends TextTokenVisitor {
 	}
 
 	private static LocalVariableEntry getParameterEntry(MethodEntry parent, int index, String name) {
-		return new LocalVariableEntry(parent, index, name, name, true, null);
+		return new LocalVariableEntry(parent, index, name, name, true, EntryMapping.DEFAULT);
 	}
 
 	private static LocalVariableEntry getVariableEntry(MethodEntry parent, int index, String name) {
-		return new LocalVariableEntry(parent, index, name, name, false, null);
+		return new LocalVariableEntry(parent, index, name, name, false, EntryMapping.DEFAULT);
 	}
 
 	private Token getToken(TextRange range) {
