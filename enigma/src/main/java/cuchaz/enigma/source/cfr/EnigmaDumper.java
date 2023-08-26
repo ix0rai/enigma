@@ -1,5 +1,7 @@
 package cuchaz.enigma.source.cfr;
 
+import com.google.common.base.Preconditions;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.source.Token;
@@ -43,20 +45,19 @@ public class EnigmaDumper extends StringStreamDumper {
 	private final StringBuilder sb;
 	private final SourceSettings sourceSettings;
 	private final SourceIndex index;
-	private final @Nullable EntryRemapper mapper;
+	private final EntryRemapper mapper;
+	private final EntryIndex entryIndex;
 	private final Map<Object, Entry<?>> refs = new HashMap<>();
 	private final TypeUsageInformation typeUsage;
 	private final MovableDumperContext dumperContext;
 	private boolean muteLine = false;
 	private MethodEntry contextMethod = null;
 
-	public EnigmaDumper(StringBuilder sb, SourceSettings sourceSettings, TypeUsageInformation typeUsage, Options options,
-			@Nullable EntryRemapper mapper) {
+	public EnigmaDumper(StringBuilder sb, SourceSettings sourceSettings, TypeUsageInformation typeUsage, Options options, EntryRemapper mapper) {
 		this(sb, sourceSettings, typeUsage, options, mapper, new SourceIndex(), new MovableDumperContext());
 	}
 
-	protected EnigmaDumper(StringBuilder sb, SourceSettings sourceSettings, TypeUsageInformation typeUsage, Options options,
-			@Nullable EntryRemapper mapper, SourceIndex index, MovableDumperContext context) {
+	protected EnigmaDumper(StringBuilder sb, SourceSettings sourceSettings, TypeUsageInformation typeUsage, Options options, EntryRemapper mapper, SourceIndex index, MovableDumperContext context) {
 		super((m, e) -> {
 		}, sb, typeUsage, options, IllegalIdentifierDump.Nop.getInstance(), context);
 		this.sb = sb;
@@ -65,6 +66,9 @@ public class EnigmaDumper extends StringStreamDumper {
 		this.mapper = mapper;
 		this.dumperContext = context;
 		this.index = index;
+		this.entryIndex = mapper.getJarIndex().getEntryIndex();
+
+		Preconditions.checkNotNull(this.entryIndex, "Entry index cannot be null!");
 	}
 
 	private MethodEntry getMethodEntry(MethodPrototype method) {
@@ -73,11 +77,10 @@ public class EnigmaDumper extends StringStreamDumper {
 		}
 
 		MethodDescriptor desc = new MethodDescriptor(method.getOriginalDescriptor());
-
-		return new MethodEntry(this.getClassEntry(method.getOwner()), method.getName(), method.getName(), desc);
+		return this.entryIndex.getMethod(this.getClassEntry(method.getOwner()), method.getName(), desc);
 	}
 
-	private LocalVariableEntry getParameterEntry(MethodPrototype method, int parameterIndex, String name) {
+	private LocalVariableEntry getParameterEntry(MethodPrototype method, int parameterIndex) {
 		MethodEntry owner = this.getMethodEntry(method);
 		// params may be not computed if cfr creates a lambda expression fallback, e.g. in PointOfInterestSet
 		if (owner == null || !method.parametersComputed()) {
@@ -85,16 +88,15 @@ public class EnigmaDumper extends StringStreamDumper {
 		}
 
 		int variableIndex = method.getParameterLValues().get(parameterIndex).localVariable.getIdx();
-
-		return new LocalVariableEntry(owner, variableIndex, name, name, true, EntryMapping.DEFAULT);
+		return this.entryIndex.getLocalVariable(owner, variableIndex);
 	}
 
 	private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {
-		return new FieldEntry(this.getClassEntry(owner), name, name, new TypeDescriptor(desc));
+		return this.entryIndex.getField(this.getClassEntry(owner), name, new TypeDescriptor(desc));
 	}
 
 	private ClassEntry getClassEntry(JavaTypeInstance type) {
-		return new ClassEntry(type.getRawName().replace('.', '/'), type.getRawName().replace('.', '/'));
+		return this.entryIndex.getClass(type.getRawName().replace('.', '/'));
 	}
 
 	@Override
@@ -156,12 +158,8 @@ public class EnigmaDumper extends StringStreamDumper {
 				}
 			}
 
-			EntryMapping mapping = this.mapper.getDeobfMapping(this.getClassEntry(owner));
-
-			String javadoc = null;
-			if (mapping != null) {
-				javadoc = mapping.javadoc();
-			}
+			EntryMapping mapping = this.getClassEntry(owner).getMapping();
+			String javadoc = mapping.javadoc();
 
 			if (javadoc != null || !recordComponentDocs.isEmpty()) {
 				this.print("/**").newln();
@@ -191,7 +189,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		if (this.mapper != null) {
 			List<String> lines = new ArrayList<>();
 			MethodEntry methodEntry = this.getMethodEntry(method);
-			EntryMapping mapping = this.mapper.getDeobfMapping(methodEntry);
+			EntryMapping mapping = methodEntry.getMapping();
 			if (mapping != null) {
 				String javadoc = mapping.javadoc();
 				if (javadoc != null) {
@@ -204,7 +202,7 @@ public class EnigmaDumper extends StringStreamDumper {
 			if (children != null && !children.isEmpty()) {
 				for (Entry<?> each : children) {
 					if (each instanceof LocalVariableEntry) {
-						EntryMapping paramMapping = this.mapper.getDeobfMapping(each);
+						EntryMapping paramMapping = each.getMapping();
 						if (paramMapping != null) {
 							String javadoc = paramMapping.javadoc();
 							if (javadoc != null) {
@@ -232,7 +230,7 @@ public class EnigmaDumper extends StringStreamDumper {
 	public Dumper dumpFieldDoc(Field field, JavaTypeInstance owner) {
 		boolean recordComponent = this.isRecord(owner) && !field.testAccessFlag(AccessFlag.ACC_STATIC);
 		if (this.mapper != null && !recordComponent) {
-			EntryMapping mapping = this.mapper.getDeobfMapping(this.getFieldEntry(owner, field.getFieldName(), field.getDescriptor()));
+			EntryMapping mapping = this.getFieldEntry(owner, field.getFieldName(), field.getDescriptor()).getMapping();
 			if (mapping != null) {
 				String javadoc = mapping.javadoc();
 				if (javadoc != null) {
@@ -275,7 +273,7 @@ public class EnigmaDumper extends StringStreamDumper {
 		Token token = new Token(now - name.length(), now, name);
 		Entry<?> entry;
 		if (defines) {
-			this.refs.put(ref, entry = this.getParameterEntry(method, index, name));
+			this.refs.put(ref, entry = this.getParameterEntry(method, index));
 		} else {
 			entry = this.refs.get(ref);
 		}

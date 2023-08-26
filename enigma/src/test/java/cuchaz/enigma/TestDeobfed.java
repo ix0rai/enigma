@@ -63,27 +63,27 @@ public class TestDeobfed {
 	public void decompile() {
 		Decompiler decompiler = Decompilers.CFR.create(deobfProject.getClassProvider(), new SourceSettings(false, false));
 
-		decompiler.getSource("a");
-		decompiler.getSource("b");
-		decompiler.getSource("c");
-		decompiler.getSource("d");
-		decompiler.getSource("d$1");
-		decompiler.getSource("e");
-		decompiler.getSource("f");
-		decompiler.getSource("g");
-		decompiler.getSource("g$a");
-		decompiler.getSource("g$a$a");
-		decompiler.getSource("g$b");
-		decompiler.getSource("g$b$a");
-		decompiler.getSource("h");
-		decompiler.getSource("h$a");
-		decompiler.getSource("h$a$a");
-		decompiler.getSource("h$b");
-		decompiler.getSource("h$b$a");
-		decompiler.getSource("h$b$a$a");
-		decompiler.getSource("h$b$a$b");
-		decompiler.getSource("i");
-		decompiler.getSource("i$a");
-		decompiler.getSource("i$b");
+		decompiler.getSource("a", deobfProject.getMapper());
+		decompiler.getSource("b", deobfProject.getMapper());
+		decompiler.getSource("c", deobfProject.getMapper());
+		decompiler.getSource("d", deobfProject.getMapper());
+		decompiler.getSource("d$1", deobfProject.getMapper());
+		decompiler.getSource("e", deobfProject.getMapper());
+		decompiler.getSource("f", deobfProject.getMapper());
+		decompiler.getSource("g", deobfProject.getMapper());
+		decompiler.getSource("g$a", deobfProject.getMapper());
+		decompiler.getSource("g$a$a", deobfProject.getMapper());
+		decompiler.getSource("g$b", deobfProject.getMapper());
+		decompiler.getSource("g$b$a", deobfProject.getMapper());
+		decompiler.getSource("h", deobfProject.getMapper());
+		decompiler.getSource("h$a", deobfProject.getMapper());
+		decompiler.getSource("h$a$a", deobfProject.getMapper());
+		decompiler.getSource("h$b", deobfProject.getMapper());
+		decompiler.getSource("h$b$a", deobfProject.getMapper());
+		decompiler.getSource("h$b$a$a", deobfProject.getMapper());
+		decompiler.getSource("h$b$a$b", deobfProject.getMapper());
+		decompiler.getSource("i", deobfProject.getMapper());
+		decompiler.getSource("i$a", deobfProject.getMapper());
+		decompiler.getSource("i$b", deobfProject.getMapper());
 	}
 }

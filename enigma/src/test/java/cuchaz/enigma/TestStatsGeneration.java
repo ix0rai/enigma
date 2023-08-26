@@ -67,7 +67,7 @@ public class TestStatsGeneration {
 		for (Entry<?> entry : entries) {
 			EntryChange<? extends Entry<?>> change = EntryChange.modify(entry).withDeobfName("a" + i);
 
-			EntryMapping prev = project.getMapper().getDeobfMapping(entry);
+			EntryMapping prev = entry.getMapping();
 			EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
 			// TODO TODO TODO WHY IS THIS BROKEN

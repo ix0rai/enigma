@@ -32,7 +32,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitTypeDeclaration(TypeDeclaration node, SourceIndex index) {
 		// is this this class, or a subtype?
 		TypeDefinition def = node.getUserData(Keys.TYPE_DEFINITION);
-		ClassDefEntry classEntry = EntryParser.parse(def);
+		ClassDefEntry classEntry = EntryParser.parse(def, this.entryIndex);
 		if (!classEntry.equals(this.classEntry)) {
 			// it's a subtype, recurse
 			index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), classEntry);
@@ -56,7 +56,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitMethodDeclaration(MethodDeclaration node, SourceIndex index) {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
-		MethodDefEntry methodEntry = EntryParser.parse(def);
+		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		AstNode tokenNode = node.getNameToken();
 		if (methodEntry.isConstructor() && methodEntry.getName().equals("<clinit>")) {
 			// for static initializers, check elsewhere for the token node
@@ -70,7 +70,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitConstructorDeclaration(ConstructorDeclaration node, SourceIndex index) {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
-		MethodDefEntry methodEntry = EntryParser.parse(def);
+		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), methodEntry);
 		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry), index);
 	}
@@ -78,7 +78,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitFieldDeclaration(FieldDeclaration node, SourceIndex index) {
 		FieldDefinition def = node.getUserData(Keys.FIELD_DEFINITION);
-		FieldDefEntry fieldEntry = EntryParser.parse(def);
+		FieldDefEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
 		assert (node.getVariables().size() == 1);
 		VariableInitializer variable = node.getVariables().firstOrNullObject();
 		index.addDeclaration(TokenFactory.createToken(index, variable.getNameToken()), fieldEntry);
@@ -89,7 +89,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitEnumValueDeclaration(EnumValueDeclaration node, SourceIndex index) {
 		// treat enum declarations as field declarations
 		FieldDefinition def = node.getUserData(Keys.FIELD_DEFINITION);
-		FieldDefEntry fieldEntry = EntryParser.parse(def);
+		FieldDefEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), fieldEntry);
 		return this.visitChildren(node, index);
 	}

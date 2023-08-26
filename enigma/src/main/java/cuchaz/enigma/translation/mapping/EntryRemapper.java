@@ -65,7 +65,7 @@ public class EntryRemapper {
 		//	mapRecordComponentGetter(vc, fieldEntry.getParent(), fieldEntry, deobfMapping);
 		//}
 
-		boolean renaming = !Objects.equals(this.getDeobfMapping(obfuscatedEntry).targetName(), deobfMapping.targetName());
+		boolean renaming = !Objects.equals(obfuscatedEntry.getMapping().targetName(), deobfMapping.targetName());
 
 		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
 
@@ -83,11 +83,7 @@ public class EntryRemapper {
 	}
 
 	private void insertMapping(Entry<?> entry, Entry<?> obfEntry, @Nonnull EntryMapping mapping) {
-		if (mapping.equals(EntryMapping.DEFAULT)) {
-			mapping = null;
-		}
-
-		this.obfToDeobf.insert(entry, mapping);
+		this.obfToDeobf.insert(entry, mapping.equals(EntryMapping.DEFAULT) ? null : mapping);
 		entry.setMapping(mapping);
 		obfEntry.setMapping(mapping);
 	}
@@ -122,11 +118,6 @@ public class EntryRemapper {
 
 		// Also remap the associated method, without the javadoc.
 		this.doPutMapping(vc, methodEntry, new EntryMapping(fieldMapping.targetName()), false);
-	}
-
-	@Nonnull
-	public EntryMapping getDeobfMapping(Entry<?> entry) {
-		return entry.getMapping();
 	}
 
 	public <T extends Translatable> TranslateResult<T> extendedDeobfuscate(T translatable) {

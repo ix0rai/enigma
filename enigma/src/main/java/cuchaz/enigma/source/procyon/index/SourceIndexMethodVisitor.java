@@ -123,7 +123,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 		if (parameterIndex >= 0) {
 			MethodDefEntry ownerMethod = this.methodEntry;
 			if (def.getMethod() instanceof MethodDefinition definition) {
-				ownerMethod = EntryParser.parse(definition);
+				ownerMethod = EntryParser.parse(definition, this.entryIndex);
 			}
 
 			TypeDescriptor parameterType = EntryParser.parseTypeDescriptor(def.getParameterType());
@@ -201,7 +201,7 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 					if (originalVariable != null) {
 						int variableIndex = originalVariable.getSlot();
 						if (variableIndex >= 0) {
-							MethodDefEntry ownerMethod = EntryParser.parse(originalVariable.getDeclaringMethod());
+							MethodDefEntry ownerMethod = EntryParser.parse(originalVariable.getDeclaringMethod(), this.entryIndex);
 							TypeDescriptor variableType = EntryParser.parseTypeDescriptor(originalVariable.getVariableType());
 							LocalVariableDefEntry localVariableEntry = new LocalVariableDefEntry(ownerMethod, variableIndex, initializer.getName(), initializer.getName(), false, variableType, null);
 							this.identifierEntryCache.put(identifier.getName(), localVariableEntry);

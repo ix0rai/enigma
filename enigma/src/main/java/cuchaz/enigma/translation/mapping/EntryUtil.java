@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 public class EntryUtil {
 	public static EntryMapping applyChange(ValidationContext vc, EntryRemapper remapper, EntryChange<?> change) {
 		Entry<?> target = change.getTarget();
-		EntryMapping prev = remapper.getDeobfMapping(target);
+		EntryMapping prev = target.getMapping();
 		EntryMapping mapping = EntryUtil.applyChange(prev, change);
 
 		remapper.putMapping(vc, target, mapping);

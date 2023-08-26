@@ -4,6 +4,7 @@ import com.strobel.assembler.metadata.FieldDefinition;
 import com.strobel.assembler.metadata.MethodDefinition;
 import com.strobel.assembler.metadata.TypeDefinition;
 import com.strobel.assembler.metadata.TypeReference;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
@@ -15,33 +16,25 @@ import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 
 public class EntryParser {
-	public static FieldDefEntry parse(FieldDefinition definition) {
-		ClassEntry owner = parse(definition.getDeclaringType());
+	public static FieldDefEntry parse(FieldDefinition definition, EntryIndex index) {
+		ClassEntry owner = parse(definition.getDeclaringType(), index);
 		TypeDescriptor descriptor = new TypeDescriptor(definition.getErasedSignature());
-		Signature signature = Signature.createTypedSignature(definition.getSignature());
-		AccessFlags access = new AccessFlags(definition.getModifiers());
-		return new FieldDefEntry(owner, definition.getName(), definition.getName(), descriptor, signature, access, EntryMapping.DEFAULT);
+		return index.getField(owner, definition.getName(), descriptor);
 	}
 
-	public static ClassDefEntry parse(TypeDefinition def) {
+	public static ClassDefEntry parse(TypeDefinition def, EntryIndex index) {
 		String name = def.getInternalName();
-		Signature signature = Signature.createSignature(def.getSignature());
-		AccessFlags access = new AccessFlags(def.getModifiers());
-		ClassEntry superClass = def.getBaseType() != null ? parse(def.getBaseType()) : null;
-		ClassEntry[] interfaces = def.getExplicitInterfaces().stream().map(EntryParser::parse).toArray(ClassEntry[]::new);
-		return new ClassDefEntry(name, name, signature, access, superClass, interfaces);
+		return index.getClass(name);
 	}
 
-	public static ClassEntry parse(TypeReference typeReference) {
-		return new ClassEntry(typeReference.getInternalName(), typeReference.getInternalName());
+	public static ClassEntry parse(TypeReference typeReference, EntryIndex index) {
+		return index.getClass(typeReference.getInternalName());
 	}
 
-	public static MethodDefEntry parse(MethodDefinition definition) {
-		ClassEntry classEntry = parse(definition.getDeclaringType());
+	public static MethodDefEntry parse(MethodDefinition definition, EntryIndex index) {
+		ClassEntry classEntry = parse(definition.getDeclaringType(), index);
 		MethodDescriptor descriptor = new MethodDescriptor(definition.getErasedSignature());
-		Signature signature = Signature.createSignature(definition.getSignature());
-		AccessFlags access = new AccessFlags(definition.getModifiers());
-		return new MethodDefEntry(classEntry, definition.getName(), definition.getName(), descriptor, signature, access, EntryMapping.DEFAULT);
+		return index.getMethod(classEntry, definition.getName(), descriptor);
 	}
 
 	public static TypeDescriptor parseTypeDescriptor(TypeReference type) {

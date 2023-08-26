@@ -57,7 +57,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 		}
 
 		private <T extends AstNode> Comment[] getComments(T node, Function<T, Entry<?>> retriever) {
-			final EntryMapping mapping = this.remapper.getDeobfMapping(retriever.apply(node));
+			final EntryMapping mapping = retriever.apply(node).getMapping();
 			final String docs = Strings.emptyToNull(mapping.javadoc());
 			return docs == null ? null : Stream.of(docs.split("\\R")).map(st -> new Comment(st,
 					CommentType.Documentation)).toArray(Comment[]::new);
@@ -65,7 +65,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 		private Comment[] getParameterComments(ParameterDeclaration node, Function<ParameterDeclaration, Entry<?>> retriever) {
 			Entry<?> entry = retriever.apply(node);
-			final EntryMapping mapping = this.remapper.getDeobfMapping(entry);
+			final EntryMapping mapping = entry.getMapping();
 			final Comment[] ret = this.getComments(node, retriever);
 			if (ret != null) {
 				final String paramPrefix = "@param " + (mapping.targetName() != null ? mapping.targetName() : entry.getName()) + " ";
@@ -80,7 +80,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 		}
 
 		private void visitMethod(AstNode node) {
-			final MethodDefEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION));
+			final MethodDefEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION), this.remapper.getJarIndex().getEntryIndex());
 			final Comment[] baseComments = this.getComments(node, obj -> methodDefEntry);
 			List<Comment> comments = new ArrayList<>();
 			if (baseComments != null) {
@@ -133,19 +133,19 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 		@Override
 		public Void visitFieldDeclaration(FieldDeclaration node, Void data) {
-			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.FIELD_DEFINITION)));
+			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.FIELD_DEFINITION), this.remapper.getJarIndex().getEntryIndex()));
 			return super.visitFieldDeclaration(node, data);
 		}
 
 		@Override
 		public Void visitTypeDeclaration(TypeDeclaration node, Void data) {
-			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.TYPE_DEFINITION)));
+			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.TYPE_DEFINITION), this.remapper.getJarIndex().getEntryIndex()));
 			return super.visitTypeDeclaration(node, data);
 		}
 
 		@Override
 		public Void visitEnumValueDeclaration(EnumValueDeclaration node, Void data) {
-			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.FIELD_DEFINITION)));
+			this.addDoc(node, dec -> EntryParser.parse(dec.getUserData(Keys.FIELD_DEFINITION), this.remapper.getJarIndex().getEntryIndex()));
 			return super.visitEnumValueDeclaration(node, data);
 		}
 	}

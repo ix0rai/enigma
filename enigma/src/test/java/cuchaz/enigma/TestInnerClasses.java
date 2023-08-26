@@ -78,6 +78,7 @@ public class TestInnerClasses {
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		this.decompiler.getSource(classEntry.getName());
+		// TODO PROBLEMATIC
+		this.decompiler.getSource(classEntry.getName(), null);
 	}
 }

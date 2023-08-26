@@ -8,6 +8,7 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
@@ -20,10 +21,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+// todo: actually index some local variables
 public class EntryIndex implements JarIndexer {
 	private final Map<String, ClassDefEntry> obfToClass = new HashMap<>();
 	private final Map<Triplet<ClassEntry, String, TypeDescriptor>, FieldDefEntry> obfToField = new HashMap<>();
 	private final Map<Triplet<ClassEntry, String, MethodDescriptor>, MethodDefEntry> obfToMethod = new HashMap<>();
+	private final Map<Pair<MethodEntry, Integer>, LocalVariableDefEntry> obfToVariable = new HashMap<>();
 
 	private final Map<ClassEntry, AccessFlags> classes = new HashMap<>();
 	private final Map<FieldEntry, AccessFlags> fields = new HashMap<>();
@@ -49,6 +52,10 @@ public class EntryIndex implements JarIndexer {
 		this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
 	}
 
+	public void indexLocalVariable(LocalVariableDefEntry variableEntry) {
+		this.obfToVariable.put(new Pair<>(variableEntry.getParent(), variableEntry.getIndex()), variableEntry);
+	}
+
 	public ClassDefEntry getClass(String obfName) {
 		return this.obfToClass.get(obfName);
 	}
@@ -67,6 +74,10 @@ public class EntryIndex implements JarIndexer {
 
 	public FieldDefEntry getField(ClassEntry parent, String obfName, TypeDescriptor descriptor) {
 		return this.obfToField.get(new Triplet<>(parent, obfName, descriptor));
+	}
+
+	public LocalVariableDefEntry getLocalVariable(MethodEntry parent, int index) {
+		return this.obfToVariable.get(new Pair<>(parent, index));
 	}
 
 	public boolean hasClass(ClassEntry entry) {
@@ -139,6 +150,10 @@ public class EntryIndex implements JarIndexer {
 
 	public Collection<FieldEntry> getFields() {
 		return this.fields.keySet();
+	}
+
+	public Collection<LocalVariableDefEntry> getLocalVariables() {
+		return this.obfToVariable.values();
 	}
 
 	@Override
