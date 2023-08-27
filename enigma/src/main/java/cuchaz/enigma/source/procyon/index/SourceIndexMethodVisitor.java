@@ -26,6 +26,7 @@ import com.strobel.decompiler.languages.java.ast.SuperReferenceExpression;
 import com.strobel.decompiler.languages.java.ast.ThisReferenceExpression;
 import com.strobel.decompiler.languages.java.ast.VariableDeclarationStatement;
 import com.strobel.decompiler.languages.java.ast.VariableInitializer;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -47,7 +48,8 @@ public class SourceIndexMethodVisitor extends SourceIndexVisitor {
 	private final Multimap<String, Identifier> unmatchedIdentifier = HashMultimap.create();
 	private final Map<String, Entry<?>> identifierEntryCache = new HashMap<>();
 
-	public SourceIndexMethodVisitor(MethodDefEntry methodEntry) {
+	public SourceIndexMethodVisitor(MethodDefEntry methodEntry, EntryIndex entryIndex) {
+		super(entryIndex);
 		this.methodEntry = methodEntry;
 	}
 

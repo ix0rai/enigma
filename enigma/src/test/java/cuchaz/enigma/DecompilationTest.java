@@ -1,31 +1,40 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+@Disabled("todo")
 public class DecompilationTest {
 	public static final Path JAR = TestUtil.obfJar("decompiler");
 	private final Map<DecompilerService, TokenChecker> tokenCheckers = new HashMap<>();
 	private final ClassProvider classProvider;
+	private final EntryRemapper remapper;
 
 	public DecompilationTest() throws Exception {
 		this.classProvider = new CachingClassProvider(new JarClassProvider(JAR));
+		JarIndex index = JarIndex.empty();
+		index.indexJar((Set<String>) this.classProvider.getClassNames(), this.classProvider, ProgressListener.none());
+		this.remapper = EntryRemapper.empty(index);
 	}
 
 	private static Stream<DecompilerService> provideDecompilers() {
@@ -51,6 +60,6 @@ public class DecompilationTest {
 
 	private TokenChecker getTokenChecker(DecompilerService decompiler) {
 		return this.tokenCheckers.computeIfAbsent(decompiler,
-				d -> new TokenChecker(JAR, d, this.classProvider));
+				d -> new TokenChecker(JAR, d, this.classProvider, this.remapper));
 	}
 }

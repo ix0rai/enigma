@@ -10,6 +10,7 @@ import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.SourceSettings;
 import cuchaz.enigma.source.Token;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.utils.Pair;
@@ -31,20 +32,21 @@ public class TokenChecker {
 
 	private final Decompiler decompiler;
 	private final Set<String> shownFiles;
+	private final EntryRemapper remapper;
 
-	protected TokenChecker(Path path, DecompilerService decompilerService) throws IOException {
-		this(path, decompilerService, new CachingClassProvider(new JarClassProvider(path)));
+	protected TokenChecker(Path path, DecompilerService decompilerService, EntryRemapper remapper) throws IOException {
+		this(path, decompilerService, new CachingClassProvider(new JarClassProvider(path)), remapper);
 	}
 
-	protected TokenChecker(Path path, DecompilerService decompilerService, ClassProvider classProvider) {
+	protected TokenChecker(Path path, DecompilerService decompilerService, ClassProvider classProvider, EntryRemapper remapper) {
 		this.decompiler = decompilerService.create(classProvider, new SourceSettings(false, false));
 		this.shownFiles = ALL_SHOWN_FILES.computeIfAbsent(new Pair<>(decompilerService, path), p -> new HashSet<>());
+		this.remapper = remapper;
 	}
 
 	protected String getDeclarationToken(Entry<?> entry) {
 		// decompile the class
-		// TODO PROBLEMATIC
-		Source source = this.decompiler.getSource(entry.getContainingClass().getFullName(), null);
+		Source source = this.decompiler.getSource(entry.getContainingClass().getFullName(), this.remapper);
 		// DEBUG
 		// createDebugFile(source, entry.getContainingClass());
 		String string = source.asString();
@@ -62,9 +64,8 @@ public class TokenChecker {
 	@SuppressWarnings("unchecked")
 	protected Collection<String> getReferenceTokens(EntryReference<? extends Entry<?>, ? extends Entry<?>> reference) {
 		// decompile the class
-		// TODO PROBLEMATIC
 
-		Source source = this.decompiler.getSource(reference.context.getContainingClass().getFullName(), null);
+		Source source = this.decompiler.getSource(reference.context.getContainingClass().getFullName(), this.remapper);
 		String string = source.asString();
 		SourceIndex index = source.index();
 		// DEBUG

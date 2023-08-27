@@ -13,13 +13,17 @@ import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 public class SourceIndexVisitor extends DepthFirstAstVisitor<SourceIndex, Void> {
 	protected EntryIndex entryIndex;
 
+	public SourceIndexVisitor(EntryIndex entryIndex) {
+		this.entryIndex = entryIndex;
+	}
+
 	@Override
 	public Void visitTypeDeclaration(TypeDeclaration node, SourceIndex index) {
 		TypeDefinition def = node.getUserData(Keys.TYPE_DEFINITION);
 		ClassDefEntry classEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), classEntry);
 
-		return node.acceptVisitor(new SourceIndexClassVisitor(classEntry), index);
+		return node.acceptVisitor(new SourceIndexClassVisitor(classEntry, this.entryIndex), index);
 	}
 
 	@Override

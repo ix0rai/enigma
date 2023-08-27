@@ -14,6 +14,7 @@ import com.strobel.decompiler.languages.java.ast.MethodDeclaration;
 import com.strobel.decompiler.languages.java.ast.SimpleType;
 import com.strobel.decompiler.languages.java.ast.TypeDeclaration;
 import com.strobel.decompiler.languages.java.ast.VariableInitializer;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
@@ -24,7 +25,8 @@ import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	private final ClassDefEntry classEntry;
 
-	public SourceIndexClassVisitor(ClassDefEntry classEntry) {
+	public SourceIndexClassVisitor(ClassDefEntry classEntry, EntryIndex entryIndex) {
+		super(entryIndex);
 		this.classEntry = classEntry;
 	}
 
@@ -36,7 +38,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		if (!classEntry.equals(this.classEntry)) {
 			// it's a subtype, recurse
 			index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), classEntry);
-			return node.acceptVisitor(new SourceIndexClassVisitor(classEntry), index);
+			return node.acceptVisitor(new SourceIndexClassVisitor(classEntry, this.entryIndex), index);
 		}
 
 		return this.visitChildren(node, index);
@@ -64,7 +66,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		}
 
 		index.addDeclaration(TokenFactory.createToken(index, tokenNode), methodEntry);
-		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry), index);
+		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry, this.entryIndex), index);
 	}
 
 	@Override
@@ -72,7 +74,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
 		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), methodEntry);
-		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry), index);
+		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry, this.entryIndex), index);
 	}
 
 	@Override

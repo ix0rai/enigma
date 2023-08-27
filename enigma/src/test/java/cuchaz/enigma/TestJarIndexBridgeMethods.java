@@ -7,6 +7,7 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.classprovider.ObfuscationFixClassProvider;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Test;
 
@@ -163,6 +164,6 @@ public class TestJarIndexBridgeMethods {
 
 	private TokenChecker getTokenChecker(DecompilerService decompiler) {
 		return this.tokenCheckers.computeIfAbsent(decompiler, d ->
-				new TokenChecker(JAR, d, new ObfuscationFixClassProvider(this.classProvider, this.index)));
+				new TokenChecker(JAR, d, new ObfuscationFixClassProvider(this.classProvider, this.index), EntryRemapper.empty(this.index)));
 	}
 }

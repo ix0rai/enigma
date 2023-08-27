@@ -6,6 +6,7 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Test;
 
@@ -78,7 +79,6 @@ public class TestInnerClasses {
 	}
 
 	private void decompile(ClassEntry classEntry) {
-		// TODO PROBLEMATIC
-		this.decompiler.getSource(classEntry.getName(), null);
+		this.decompiler.getSource(classEntry.getName(), EntryRemapper.empty(this.index));
 	}
 }

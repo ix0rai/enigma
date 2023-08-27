@@ -12,7 +12,6 @@ import org.benf.cfr.reader.bytecode.analysis.parse.utils.Pair;
 import org.benf.cfr.reader.util.AnalysisType;
 import org.benf.cfr.reader.util.getopt.Options;
 import org.benf.cfr.reader.util.getopt.OptionsImpl;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.util.Collection;
@@ -31,7 +30,7 @@ public class CfrDecompiler implements Decompiler {
 	}
 
 	@Override
-	public Source getSource(String className, @Nullable EntryRemapper mapper) {
+	public Source getSource(String className, EntryRemapper mapper) {
 		return new CfrSource(className, this.settings, this.options, this.classFileSource, mapper);
 	}
 

@@ -123,6 +123,10 @@ public class MappingValidator {
 		}
 
 		for (Entry<?> sibling : siblings) {
+			if (name.equals("a12") && sibling.getName2().equals("a12")) {
+				System.out.println();
+			}
+
 			if (conflicts(entry, sibling, name)) {
 				return false;
 			}
@@ -133,8 +137,8 @@ public class MappingValidator {
 
 	private static boolean conflicts(Entry<?> entry, Entry<?> sibling, String name) {
 		return entry.canConflictWith(sibling)
-			&& (sibling.isObfuscated() && sibling.getObfName().equals(name))
-			|| (!sibling.isObfuscated() && name.equals(sibling.getDeobfName()));
+			&& ((sibling.isObfuscated() && sibling.getObfName().equals(name))
+			|| (!sibling.isObfuscated() && name.equals(sibling.getDeobfName())));
 	}
 
 	private boolean isMethodUnique(MethodEntry entry, List<? extends Entry<?>> siblings, String name) {

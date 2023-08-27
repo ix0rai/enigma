@@ -1,5 +1,6 @@
 package cuchaz.enigma.source.cfr;
 
+import com.google.common.base.Preconditions;
 import cuchaz.enigma.source.Source;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.SourceSettings;
@@ -15,7 +16,6 @@ import org.benf.cfr.reader.util.CannotLoadClassException;
 import org.benf.cfr.reader.util.collections.ListFactory;
 import org.benf.cfr.reader.util.getopt.Options;
 import org.benf.cfr.reader.util.getopt.OptionsImpl;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CfrSource implements Source {
 	private final String className;
@@ -26,12 +26,14 @@ public class CfrSource implements Source {
 
 	private SourceIndex index;
 
-	public CfrSource(String className, SourceSettings settings, Options options, ClassFileSource2 classFileSource, @Nullable EntryRemapper mapper) {
+	public CfrSource(String className, SourceSettings settings, Options options, ClassFileSource2 classFileSource, EntryRemapper mapper) {
 		this.className = className;
 		this.settings = settings;
 		this.options = options;
 		this.classFileSource = classFileSource;
 		this.mapper = mapper;
+
+		Preconditions.checkNotNull(mapper, "REAMMP NOT NULL");
 	}
 
 	@Override

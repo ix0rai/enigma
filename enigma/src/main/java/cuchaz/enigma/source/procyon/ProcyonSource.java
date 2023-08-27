@@ -1,5 +1,6 @@
 package cuchaz.enigma.source.procyon;
 
+import com.google.common.base.Preconditions;
 import com.strobel.decompiler.DecompilerSettings;
 import com.strobel.decompiler.PlainTextOutput;
 import com.strobel.decompiler.languages.java.JavaOutputVisitor;
@@ -15,17 +16,21 @@ import java.io.StringWriter;
 public class ProcyonSource implements Source {
 	private final DecompilerSettings settings;
 	private final CompilationUnit tree;
+	private final EntryRemapper remapper;
 	private String string;
 
-	public ProcyonSource(CompilationUnit tree, DecompilerSettings settings) {
+	public ProcyonSource(CompilationUnit tree, DecompilerSettings settings, EntryRemapper remapper) {
 		this.settings = settings;
 		this.tree = tree;
+		this.remapper = remapper;
+
+		Preconditions.checkNotNull(remapper, "reammper NO NULL");
 	}
 
 	@Override
 	public SourceIndex index() {
 		SourceIndex index = new SourceIndex(this.asString());
-		this.tree.acceptVisitor(new SourceIndexVisitor(), index);
+		this.tree.acceptVisitor(new SourceIndexVisitor(this.remapper.getJarIndex().getEntryIndex()), index);
 		return index;
 	}
 
@@ -44,6 +49,6 @@ public class ProcyonSource implements Source {
 	public Source withJavadocs(EntryRemapper remapper) {
 		CompilationUnit remappedTree = (CompilationUnit) this.tree.clone();
 		new AddJavadocsAstTransform(remapper).run(remappedTree);
-		return new ProcyonSource(remappedTree, this.settings);
+		return new ProcyonSource(remappedTree, this.settings, this.remapper);
 	}
 }

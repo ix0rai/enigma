@@ -123,7 +123,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	Entry<P> withParent(P parent);
 
 	/**
-	 * Determines whether this entry conflicts with the given entry.
+	 * Determines whether this entry can conflict with the given entry.
 	 * Conflicts are when two entries have the same name and will cause a compilation error when remapped.
 	 */
 	boolean canConflictWith(Entry<?> entry);

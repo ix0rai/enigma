@@ -92,7 +92,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(), def.getName(),
 						def.getName(),
 						true,
-						EntryParser.parseTypeDescriptor(def.getParameterType()), null));
+						EntryParser.parseTypeDescriptor(def.getParameterType()), EntryMapping.DEFAULT));
 				if (paramComments != null) {
 					Collections.addAll(comments, paramComments);
 				}

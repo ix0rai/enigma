@@ -25,7 +25,6 @@ import cuchaz.enigma.source.procyon.transformers.RemoveObjectCasts;
 import cuchaz.enigma.source.procyon.transformers.VarargsFixer;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.utils.AsmUtil;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.tree.ClassNode;
 
 public class ProcyonDecompiler implements Decompiler {
@@ -68,7 +67,7 @@ public class ProcyonDecompiler implements Decompiler {
 	}
 
 	@Override
-	public Source getSource(String className, @Nullable EntryRemapper remapper) {
+	public Source getSource(String className, EntryRemapper remapper) {
 		TypeReference type = this.metadataSystem.lookupType(className);
 		if (type == null) {
 			throw new Error(String.format("Unable to find desc: %s", className));
@@ -98,7 +97,7 @@ public class ProcyonDecompiler implements Decompiler {
 			new AddJavadocsAstTransform(remapper).run(source);
 		}
 
-		return new ProcyonSource(source, this.decompilerSettings);
+		return new ProcyonSource(source, this.decompilerSettings, remapper);
 	}
 
 	private static boolean getSystemPropertyAsBoolean(String property, boolean defValue) {

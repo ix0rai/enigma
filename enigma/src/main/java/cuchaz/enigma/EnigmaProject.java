@@ -19,9 +19,11 @@ import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.MappingsChecker;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
 import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
@@ -88,21 +90,25 @@ public class EnigmaProject {
 	public void setMappings(EntryTree<EntryMapping> mappings) {
 		if (mappings != null) {
 			this.mapper = EntryRemapper.mapped(this.jarIndex, mappings);
-			this.addMappings(this.jarIndex.getEntryIndex().getMethods());
-			this.addMappings(this.jarIndex.getEntryIndex().getClasses());
-			this.addMappings(this.jarIndex.getEntryIndex().getFields());
-			// todo local variables
+			mappings.getRootNodes().forEach(this::setNodeMappings);
 		} else {
 			this.mapper = EntryRemapper.empty(this.jarIndex);
 		}
 	}
 
-	private void addMappings(Collection<? extends Entry<?>> entries) {
-		for (Entry<?> entry : entries) {
-			if (this.mapper.getObfToDeobf().contains(entry)) {
-				entry.setMapping(this.mapper.getObfToDeobf().get(entry));
+	private void setNodeMappings(EntryTreeNode<EntryMapping> node) {
+		if (node.getEntry() != null) {
+			// index mapped local variables: it's a best-effort system
+			if (node.getEntry() instanceof LocalVariableDefEntry localVariable) {
+				this.jarIndex.getEntryIndex().indexLocalVariable(localVariable);
+			}
+
+			if (node.getValue() != null) {
+				node.getEntry().setMapping(node.getValue());
 			}
 		}
+
+		node.getChildNodes().forEach(this::setNodeMappings);
 	}
 
 	public Enigma getEnigma() {
