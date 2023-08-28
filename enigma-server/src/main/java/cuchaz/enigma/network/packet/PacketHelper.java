@@ -36,7 +36,6 @@ public class PacketHelper {
 			parent = readEntry(input, null, true);
 		}
 
-		String name = readString(input);
 		String obfName = readString(input);
 
 		EntryMapping mapping = null;
@@ -50,7 +49,7 @@ public class PacketHelper {
 					throw new IOException("Class requires class parent");
 				}
 
-				return new ClassEntry((ClassEntry) parent, name, obfName, mapping);
+				return new ClassEntry((ClassEntry) parent, obfName, mapping);
 			}
 			case ENTRY_FIELD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
@@ -58,7 +57,7 @@ public class PacketHelper {
 				}
 
 				TypeDescriptor desc = new TypeDescriptor(readString(input));
-				return new FieldEntry(parentClass, name, obfName, desc, mapping);
+				return new FieldEntry(parentClass, obfName, desc, mapping);
 			}
 			case ENTRY_METHOD -> {
 				if (!(parent instanceof ClassEntry parentClass)) {
@@ -66,7 +65,7 @@ public class PacketHelper {
 				}
 
 				MethodDescriptor desc = new MethodDescriptor(readString(input));
-				return new MethodEntry(parentClass, name, obfName, desc, mapping);
+				return new MethodEntry(parentClass, obfName, desc, mapping);
 			}
 			case ENTRY_LOCAL_VAR -> {
 				if (!(parent instanceof MethodEntry parentMethod)) {
@@ -75,7 +74,7 @@ public class PacketHelper {
 
 				int index = input.readUnsignedShort();
 				boolean parameter = input.readBoolean();
-				return new LocalVariableEntry(parentMethod, index, name, obfName, parameter, mapping);
+				return new LocalVariableEntry(parentMethod, index, obfName, parameter, mapping);
 			}
 			default -> throw new IOException("Received unknown entry type " + type);
 		}
@@ -107,8 +106,7 @@ public class PacketHelper {
 			}
 		}
 
-		// names
-		writeString(output, entry.getName());
+		// name
 		writeString(output, entry.getObfName());
 
 		// mapping

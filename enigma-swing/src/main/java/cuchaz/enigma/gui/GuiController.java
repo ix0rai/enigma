@@ -514,7 +514,7 @@ public class GuiController implements ClientPacketHandler {
 
 	private void applyChange0(ValidationContext vc, EntryChange<?> change, boolean updateSwingState) {
 		Entry<?> target = change.getTarget();
-		EntryMapping prev = this.project.getMapper().getDeobfMapping(target);
+		EntryMapping prev = target.getMapping();
 		EntryMapping mapping = EntryUtil.applyChange(vc, this.project.getMapper(), change);
 
 		if (vc.canProceed()) {

@@ -95,22 +95,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print(this.indent(1));
 		writer.print("m\t");
 		writer.print(((MethodEntry) node.getEntry()).getDesc().toString());
-		writer.print("\t");
-		writer.print(node.getEntry().getName());
-		writer.print("\t");
-		EntryMapping mapping = node.getValue();
-
-		if (mapping == null) {
-			mapping = EntryMapping.DEFAULT;
-		}
-
-		if (mapping.targetName() != null) {
-			writer.println(mapping.targetName());
-		} else {
-			writer.println(node.getEntry().getName()); // todo fix v2 name inference
-		}
-
-		this.writeComment(writer, mapping, 2);
+		writeMapping(writer, node);
 
 		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
 			Entry<?> entry = child.getEntry();
@@ -130,6 +115,10 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print(this.indent(1));
 		writer.print("f\t");
 		writer.print(((FieldEntry) node.getEntry()).getDesc().toString());
+		this.writeMapping(writer, node);
+	}
+
+	private void writeMapping(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
 		writer.print("\t");
 		writer.print(node.getEntry().getName());
 		writer.print("\t");

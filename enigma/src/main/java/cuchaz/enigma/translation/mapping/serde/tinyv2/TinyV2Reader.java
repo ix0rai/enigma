@@ -214,7 +214,7 @@ public final class TinyV2Reader implements MappingsReader {
 	}
 
 	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {
-		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames), unescapeOpt(tokens[1], escapeNames));
+		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames));
 		if (tokens.length <= 2) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
@@ -228,7 +228,7 @@ public final class TinyV2Reader implements MappingsReader {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		TypeDescriptor descriptor = new TypeDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), unescapeOpt(tokens[2], escapeNames), descriptor);
+		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
@@ -241,7 +241,7 @@ public final class TinyV2Reader implements MappingsReader {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		MethodDescriptor descriptor = new MethodDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), unescapeOpt(tokens[2], escapeNames), descriptor);
+		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
@@ -263,9 +263,7 @@ public final class TinyV2Reader implements MappingsReader {
 		MethodEntry ownerMethod = (MethodEntry) parent.getEntry();
 		int variableIndex = Integer.parseInt(tokens[1]);
 
-		// tokens[2] is the useless obf name
-
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, "", "", true, null);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerMethod, variableIndex, tokens[2], true, null);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}

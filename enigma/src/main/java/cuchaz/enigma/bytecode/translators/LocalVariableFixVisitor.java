@@ -99,11 +99,11 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 				name = LocalNameGenerator.generateArgumentName(index, arguments.get(index), arguments);
 			}
 
-			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
+			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getObfName().equals("<init>")) {
 				name = "name";
 			}
 
-			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
+			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getObfName().equals("<init>")) {
 				name = "ordinal";
 			}
 
@@ -112,11 +112,11 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 		}
 
 		private int fixParameterAccess(int index, int access) {
-			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
+			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getObfName().equals("<init>")) {
 				access |= Opcodes.ACC_SYNTHETIC;
 			}
 
-			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getName().equals("<init>")) {
+			if (index == 1 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getObfName().equals("<init>")) {
 				access |= Opcodes.ACC_SYNTHETIC;
 			}
 

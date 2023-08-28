@@ -150,7 +150,7 @@ public class JarIndex implements JarIndexer {
 		}
 
 		this.indexers.forEach(indexer -> indexer.indexMethod(methodEntry));
-		if (!methodEntry.getAccess().isSynthetic() && !methodEntry.getName().equals("<clinit>")) {
+		if (!methodEntry.getAccess().isSynthetic() && !methodEntry.getObfName().equals("<clinit>")) {
 			this.childrenByClass.put(methodEntry.getParent(), methodEntry);
 		}
 

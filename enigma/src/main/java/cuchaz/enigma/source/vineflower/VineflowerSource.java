@@ -81,7 +81,7 @@ public class VineflowerSource implements Source {
 
 		AtomicReference<EnigmaTextTokenCollector> tokenCollector = new AtomicReference<>();
 		TextTokenVisitor.addVisitor(next -> {
-			tokenCollector.set(new EnigmaTextTokenCollector(next));
+			tokenCollector.set(new EnigmaTextTokenCollector(next, this.remapper));
 			return tokenCollector.get();
 		});
 		decompiler.addSource(this.contextSource);

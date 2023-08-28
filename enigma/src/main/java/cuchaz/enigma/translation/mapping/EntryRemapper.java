@@ -18,7 +18,6 @@ import cuchaz.enigma.utils.validation.ValidationContext;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 
 public class EntryRemapper {

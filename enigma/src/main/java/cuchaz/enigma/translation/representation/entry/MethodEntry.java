@@ -15,17 +15,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
 	protected final MethodDescriptor descriptor;
 
-	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor) {
-		this(parent, name, obfName, descriptor, EntryMapping.DEFAULT);
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor) {
+		this(parent, obfName, descriptor, EntryMapping.DEFAULT);
 	}
 
-	public MethodEntry(ClassEntry parent, String name, String obfName, MethodDescriptor descriptor, EntryMapping mapping) {
-		super(parent, name, obfName, mapping);
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, EntryMapping mapping) {
+		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Parent cannot be null");
 		Preconditions.checkNotNull(descriptor, "Method descriptor cannot be null");
@@ -34,7 +33,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public static MethodEntry parse(String owner, String name, String desc) {
-		return new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc), EntryMapping.DEFAULT);
+		return new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc), EntryMapping.DEFAULT);
 	}
 
 	@Override
@@ -47,7 +46,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public boolean isConstructor() {
-		return this.name.equals("<init>") || this.name.equals("<clinit>");
+		return this.getObfName().equals("<init>") || this.getObfName().equals("<clinit>");
 	}
 
 	/**
@@ -66,7 +65,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 			int argIndex = flags.isStatic() ? 0 : 1;
 
 			for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", "", true, null);
+				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", true, null);
 				LocalVariableEntry translatedArgEntry = deobfuscator.translate(argEntry);
 
 				parameters.add(translatedArgEntry == null ? argEntry : translatedArgEntry);
@@ -79,28 +78,15 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	protected TranslateResult<? extends MethodEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodEntry(this.parent, translatedName, this.obfName, translator.translate(this.descriptor), mapping)
+				new MethodEntry(this.parent, this.obfName, translator.translate(this.descriptor), mapping)
 		);
 	}
 
 	@Override
-	public MethodEntry withName(String name, RenamableTokenType tokenType) {
-		return new MethodEntry(this.parent, name, this.obfName, this.descriptor, new EntryMapping(name, this.getJavadocs(), tokenType));
-	}
-
-	@Override
-	public MethodEntry withParent(ClassEntry parent) {
-		// todo note: full obf name?
-		return new MethodEntry(new ClassEntry(parent.getFullName(), parent.getObfName()), this.name, this.obfName, this.descriptor, this.mapping);
-	}
-
-	@Override
 	public int hashCode() {
-		return Objects.hash(this.parent, this.name, this.descriptor);
+		return Objects.hash(this.parent, this.getObfName(), this.descriptor);
 	}
 
 	@Override
@@ -109,7 +95,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	}
 
 	public boolean equals(MethodEntry other) {
-		return this.parent.equals(other.getParent()) && this.name.equals(other.getName()) && this.descriptor.equals(other.getDesc());
+		return this.parent.equals(other.getParent()) && this.getObfName().equals(other.getObfName()) && this.descriptor.equals(other.getDesc());
 	}
 
 	@Override
@@ -129,6 +115,6 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 
 	@Override
 	public int compareTo(MethodEntry entry) {
-		return (this.name + this.descriptor.toString()).compareTo(entry.name + entry.descriptor.toString());
+		return (this.getName() + this.descriptor.toString()).compareTo(entry.getName() + entry.descriptor.toString());
 	}
 }

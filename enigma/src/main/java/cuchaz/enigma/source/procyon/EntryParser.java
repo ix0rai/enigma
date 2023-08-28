@@ -19,22 +19,30 @@ public class EntryParser {
 	public static FieldDefEntry parse(FieldDefinition definition, EntryIndex index) {
 		ClassEntry owner = parse(definition.getDeclaringType(), index);
 		TypeDescriptor descriptor = new TypeDescriptor(definition.getErasedSignature());
-		return index.getField(owner, definition.getName(), descriptor);
+		Signature signature = Signature.createTypedSignature(definition.getSignature());
+		AccessFlags access = new AccessFlags(definition.getModifiers());
+		return index.getFieldDef(owner, definition.getName(), descriptor, signature, access);
 	}
 
 	public static ClassDefEntry parse(TypeDefinition def, EntryIndex index) {
 		String name = def.getInternalName();
-		return index.getClass(name);
+		Signature signature = Signature.createSignature(def.getSignature());
+		AccessFlags access = new AccessFlags(def.getModifiers());
+		ClassEntry superClass = def.getBaseType() != null ? parse(def.getBaseType(), index) : null;
+		ClassEntry[] interfaces = def.getExplicitInterfaces().stream().map(reference -> parse(reference, index)).toArray(ClassEntry[]::new);
+		return index.getClassDef(name, signature, access, superClass, interfaces);
 	}
 
 	public static ClassEntry parse(TypeReference typeReference, EntryIndex index) {
-		return index.getClass(typeReference.getInternalName());
+		return new ClassEntry(typeReference.getInternalName());
 	}
 
 	public static MethodDefEntry parse(MethodDefinition definition, EntryIndex index) {
 		ClassEntry classEntry = parse(definition.getDeclaringType(), index);
 		MethodDescriptor descriptor = new MethodDescriptor(definition.getErasedSignature());
-		return index.getMethod(classEntry, definition.getName(), descriptor);
+		Signature signature = Signature.createSignature(definition.getSignature());
+		AccessFlags access = new AccessFlags(definition.getModifiers());
+		return index.getMethodDef(classEntry, definition.getName(), descriptor, signature, access);
 	}
 
 	public static TypeDescriptor parseTypeDescriptor(TypeReference type) {

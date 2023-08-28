@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 	public ClassInheritanceTreeNode(Translator translator, String obfClassName) {
-		super(translator, new ClassEntry(obfClassName, obfClassName));
+		super(translator, new ClassEntry(obfClassName));
 	}
 
 	public static ClassInheritanceTreeNode findNode(ClassInheritanceTreeNode node, ClassEntry entry) {

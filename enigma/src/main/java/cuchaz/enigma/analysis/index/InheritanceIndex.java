@@ -28,7 +28,7 @@ public class InheritanceIndex implements JarIndexer {
 		}
 
 		ClassEntry superClass = classEntry.getSuperClass();
-		if (superClass != null && !superClass.getName().equals("java/lang/Object")) {
+		if (superClass != null && !superClass.getObfName().equals("java/lang/Object")) {
 			this.indexParent(classEntry, superClass);
 		}
 
@@ -85,7 +85,7 @@ public class InheritanceIndex implements JarIndexer {
 	}
 
 	public Relation computeClassRelation(ClassEntry classEntry, ClassEntry potentialAncestor) {
-		if (potentialAncestor.getName().equals("java/lang/Object")) return Relation.RELATED;
+		if (potentialAncestor.getObfName().equals("java/lang/Object")) return Relation.RELATED;
 		if (!this.entryIndex.hasClass(classEntry)) return Relation.UNKNOWN;
 
 		for (ClassEntry ancestor : this.getAncestors(classEntry)) {

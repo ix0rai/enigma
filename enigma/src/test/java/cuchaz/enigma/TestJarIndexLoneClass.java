@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
-import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -48,12 +47,12 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void translationIndex() {
 		InheritanceIndex inheritanceIndex = this.index.getInheritanceIndex();
-		assertThat(inheritanceIndex.getParents(new ClassEntry("a", "a")), is(empty()));
-		assertThat(inheritanceIndex.getParents(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a", "a")), is(empty()));
-		assertThat(inheritanceIndex.getAncestors(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("a", "a")), is(empty()));
-		assertThat(inheritanceIndex.getChildren(new ClassEntry("cuchaz/enigma/inputs/Keep", "cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("a")), is(empty()));
+		assertThat(inheritanceIndex.getParents(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("a")), is(empty()));
+		assertThat(inheritanceIndex.getAncestors(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("a")), is(empty()));
+		assertThat(inheritanceIndex.getChildren(new ClassEntry("cuchaz/enigma/inputs/Keep")), is(empty()));
 	}
 
 	@Test
@@ -126,17 +125,17 @@ public class TestJarIndexLoneClass {
 
 	@Test
 	public void interfaces() {
-		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a", "a")), is(empty()));
+		assertThat(this.index.getInheritanceIndex().getParents(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
 	public void implementingClasses() {
-		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a", "a")), is(empty()));
+		assertThat(this.index.getInheritanceIndex().getChildren(new ClassEntry("a")), is(empty()));
 	}
 
 	@Test
 	public void isInterface() {
-		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a", "a")), is(false));
+		assertThat(this.index.getInheritanceIndex().isParent(new ClassEntry("a")), is(false));
 	}
 
 	@Test
@@ -149,5 +148,21 @@ public class TestJarIndexLoneClass {
 		assertThat(entryIndex.hasField(newField("a", "a", "LFoo;")), is(false));
 		assertThat(entryIndex.hasMethod(newMethod("a", "a", "()Ljava/lang/String;")), is(true));
 		assertThat(entryIndex.hasMethod(newMethod("a", "b", "()Ljava/lang/String;")), is(false));
+	}
+
+	private ClassEntry newClass(String name) {
+		return this.index.getEntryIndex().getClass(name);
+	}
+
+	private FieldEntry newField(String parentName, String name, String desc) {
+		return this.index.getEntryIndex().getField(newClass(parentName), name, desc);
+	}
+
+	private MethodEntry newMethod(String parentName, String name, String desc) {
+		return this.index.getEntryIndex().getMethod(newClass(parentName), name, desc);
+	}
+
+	private EntryReference<FieldEntry, MethodEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {
+		return new EntryReference<>(fieldEntry, "", newMethod(callerClassName, callerName, callerSignature));
 	}
 }

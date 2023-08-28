@@ -8,6 +8,7 @@ import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -61,5 +61,13 @@ public class DecompilationTest {
 	private TokenChecker getTokenChecker(DecompilerService decompiler) {
 		return this.tokenCheckers.computeIfAbsent(decompiler,
 				d -> new TokenChecker(JAR, d, this.classProvider, this.remapper));
+	}
+
+	public ClassEntry newClass(String className) {
+		return this.remapper.getJarIndex().getEntryIndex().getClass(className);
+	}
+
+	public MethodEntry newMethod(String className, String methodName, String methodSignature) {
+		return this.remapper.getJarIndex().getEntryIndex().getMethod(this.remapper.getJarIndex().getEntryIndex().getClass(className), methodName, methodSignature);
 	}
 }

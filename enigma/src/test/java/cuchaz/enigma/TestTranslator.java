@@ -1,18 +1,21 @@
 package cuchaz.enigma;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.serde.MappingFormat;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
-import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -23,6 +26,7 @@ public class TestTranslator {
 	private static EnigmaProject project;
 	private static EntryTree<EntryMapping> mappings;
 	private static Translator deobfuscator;
+	private static EntryIndex index;
 
 	@BeforeAll
 	public static void beforeClass() throws Exception {
@@ -33,6 +37,7 @@ public class TestTranslator {
 				ProgressListener.none());
 		project.setMappings(mappings);
 		deobfuscator = project.getMapper().getDeobfuscator();
+		index = project.getMapper().getJarIndex().getEntryIndex();
 	}
 
 	@Test
@@ -148,5 +153,17 @@ public class TestTranslator {
 		if (deobfName != null) {
 			assertThat(deobfName, is(deobf.getName()));
 		}
+	}
+
+	public MethodEntry newMethod(String className, String methodName, String methodSignature) {
+		return index.getMethod(index.getClass(className), methodName, methodSignature);
+	}
+
+	public FieldEntry newField(String className, String methodName, String methodSignature) {
+		return index.getField(index.getClass(className), methodName, methodSignature);
+	}
+
+	public ClassEntry newClass(String name) {
+		return index.getClass(name);
 	}
 }

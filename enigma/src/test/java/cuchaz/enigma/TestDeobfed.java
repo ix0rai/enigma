@@ -4,13 +4,13 @@ import cuchaz.enigma.classprovider.ClasspathClassProvider;
 import cuchaz.enigma.source.Decompiler;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.source.SourceSettings;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
@@ -85,5 +85,9 @@ public class TestDeobfed {
 		decompiler.getSource("i", deobfProject.getMapper());
 		decompiler.getSource("i$a", deobfProject.getMapper());
 		decompiler.getSource("i$b", deobfProject.getMapper());
+	}
+
+	private ClassEntry newClass(String name) {
+		return deobfProject.getJarIndex().getEntryIndex().getClass(name);
 	}
 }

@@ -123,7 +123,7 @@ public class MappingValidator {
 		}
 
 		for (Entry<?> sibling : siblings) {
-			if (name.equals("a12") && sibling.getName2().equals("a12")) {
+			if (name.equals("a12") && sibling.getName().equals("a12")) {
 				System.out.println();
 			}
 
@@ -167,14 +167,7 @@ public class MappingValidator {
 	private Entry<?> getShadowedEntry(Entry<?> entry, List<? extends Entry<?>> siblings, String name) {
 		for (Entry<?> sibling : siblings) {
 			if (entry.canShadow(sibling)) {
-				// ancestry check only contains obf names, so we need to translate to deobf just in case
-				// todo remove translation
 				Set<ClassEntry> ancestors = this.index.getInheritanceIndex().getAncestors(entry.getContainingClass());
-				ancestors.addAll(
-						ancestors.stream()
-						.map(this.deobfuscator::translate)
-						.toList()
-				);
 
 				if (ancestors.contains(sibling.getContainingClass())) {
 					AccessFlags siblingFlags = this.index.getEntryIndex().getEntryAccess(sibling);

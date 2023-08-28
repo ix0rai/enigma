@@ -26,7 +26,7 @@ public class TestReadWriteCycle {
 	private final MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 
 	private final Pair<ClassEntry, EntryMapping> testClazz = new Pair<>(
-			new ClassEntry("a/b/c", "a/b/c"),
+			new ClassEntry("a/b/c"),
 			new EntryMapping("alpha/beta/charlie", "this is a test class", RenamableTokenType.DEOBFUSCATED)
 	);
 

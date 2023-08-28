@@ -50,7 +50,7 @@ public class MethodImplementationsTreeNode extends AbstractMethodTreeNode {
 
 		Collection<ClassEntry> descendants = inheritanceIndex.getDescendants(this.entry.getParent());
 		for (ClassEntry inheritor : descendants) {
-			MethodEntry methodEntry = this.entry.withParent(inheritor);
+			MethodEntry methodEntry = (MethodEntry) this.entry.withParent(inheritor);
 			if (entryIndex.hasMethod(methodEntry)) {
 				nodes.add(new MethodImplementationsTreeNode(this.translator, methodEntry));
 			}

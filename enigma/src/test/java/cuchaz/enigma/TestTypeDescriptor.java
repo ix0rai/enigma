@@ -1,9 +1,10 @@
 package cuchaz.enigma;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import org.junit.jupiter.api.Test;
 
-import static cuchaz.enigma.TestEntryFactory.newClass;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -232,5 +233,9 @@ public class TestTypeDescriptor {
 		assertThat(new TypeDescriptor("[I").toString(), is("[I"));
 		assertThat(new TypeDescriptor("[[[I").toString(), is("[[[I"));
 		assertThat(new TypeDescriptor("[LFoo;").toString(), is("[LFoo;"));
+	}
+
+	private ClassEntry newClass(String name) {
+		return new EntryIndex().getClass(name);
 	}
 }

@@ -19,19 +19,18 @@ import org.objectweb.asm.Opcodes;
 import java.nio.file.Path;
 import java.util.Collection;
 
-import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class TestJarIndexInheritanceTree {
 	public static final Path JAR = TestUtil.obfJar("inheritanceTree");
 
-	private static final ClassEntry BASE_CLASS = newClass("a");
-	private static final ClassEntry SUB_CLASS_A = newClass("b");
-	private static final ClassEntry SUB_CLASS_AA = newClass("d");
-	private static final ClassEntry SUB_CLASS_B = newClass("c");
-	private static final FieldEntry NAME_FIELD = newField(BASE_CLASS, "a", "Ljava/lang/String;");
-	private static final FieldEntry NUM_THINGS_FIELD = newField(SUB_CLASS_B, "a", "I");
+	private final ClassEntry BASE_CLASS;
+	private final ClassEntry SUB_CLASS_A;
+	private final ClassEntry SUB_CLASS_AA;
+	private final ClassEntry SUB_CLASS_B;
+	private final FieldEntry NAME_FIELD;
+	private final FieldEntry NUM_THINGS_FIELD;
 
 	private final JarIndex index;
 
@@ -39,6 +38,12 @@ public class TestJarIndexInheritanceTree {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.index = JarIndex.empty();
 		this.index.indexJar(jcp.getClassNames(), new CachingClassProvider(jcp), ProgressListener.none());
+		BASE_CLASS = newClass("a");
+		SUB_CLASS_A = newClass("b");
+		SUB_CLASS_AA = newClass("d");
+		SUB_CLASS_B = newClass("c");
+		NAME_FIELD = newField(BASE_CLASS, "a", "Ljava/lang/String;");
+		NUM_THINGS_FIELD = newField(SUB_CLASS_B, "a", "I");
 	}
 
 	@Test
@@ -208,5 +213,25 @@ public class TestJarIndexInheritanceTree {
 		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_A, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_AA, "b", "()V")), is(false));
 		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_B, "b", "()V")), is(true));
+	}
+
+	private MethodEntry newMethod(ClassEntry parent, String name, String desc) {
+		return this.index.getEntryIndex().getMethod(parent, name, desc);
+	}
+
+	private EntryReference<MethodEntry, MethodEntry> newBehaviorReferenceByMethod(MethodEntry methodEntry, String callerClassName, String callerName, String callerSignature) {
+		return new EntryReference<>(methodEntry, "", newMethod(newClass(callerClassName), callerName, callerSignature));
+	}
+
+	private EntryReference<FieldEntry, MethodEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {
+		return new EntryReference<>(fieldEntry, "", newMethod(newClass(callerClassName), callerName, callerSignature));
+	}
+
+	private FieldEntry newField(ClassEntry parent, String name, String desc) {
+		return this.index.getEntryIndex().getField(parent, name, desc);
+	}
+
+	private ClassEntry newClass(String name) {
+		return this.index.getEntryIndex().getClass(name);
 	}
 }

@@ -15,24 +15,24 @@ import java.util.Objects;
 public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
 	private final String fullName;
 
-	public ClassEntry(String className, String obfName) {
-		this(getOuterClass(className, obfName), getInnerName(className), obfName, EntryMapping.DEFAULT);
+	public ClassEntry(String obfName) {
+		this(getOuterClass(obfName), getInnerName(obfName), EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName) {
-		this(parent, className, obfName, EntryMapping.DEFAULT);
+	public ClassEntry(@Nullable ClassEntry parent, String obfName) {
+		this(parent, obfName, EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String className, String obfName, EntryMapping mapping) {
-		super(parent, className, obfName, mapping);
+	public ClassEntry(@Nullable ClassEntry parent, String obfName, EntryMapping mapping) {
+		super(parent, obfName, mapping);
 		if (parent != null) {
-			this.fullName = parent.getFullName() + "$" + this.name;
+			this.fullName = parent.getFullName() + "$" + this.getName();
 		} else {
-			this.fullName = this.name;
+			this.fullName = this.getName();
 		}
 
-		if (parent == null && className.indexOf('.') >= 0) {
-			throw new IllegalArgumentException("Class name must be in JVM format. ie, path/to/package/class$inner : " + className);
+		if (parent == null && obfName.indexOf('.') >= 0) {
+			throw new IllegalArgumentException("Class name must be in JVM format. ie, path/to/package/class$inner : " + obfName);
 		}
 	}
 
@@ -43,12 +43,13 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public String getSimpleName() {
-		int packagePos = this.name.lastIndexOf('/');
+		String name = this.getName();
+		int packagePos = name.lastIndexOf('/');
 		if (packagePos > 0) {
-			return this.name.substring(packagePos + 1);
+			return name.substring(packagePos + 1);
 		}
 
-		return this.name;
+		return name;
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public String getContextualName() {
 		if (this.isInnerClass()) {
-			return this.parent.getSimpleName() + "$" + this.name;
+			return this.parent.getSimpleName() + "$" + this.getName();
 		}
 
 		return this.getSimpleName();
@@ -72,15 +73,15 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		if (this.name.charAt(0) == '[') {
-			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(this.name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, desc.toString()));
+		String name = this.getName();
+		if (name.charAt(0) == '[') {
+			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(name));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, new EntryMapping(desc.toString())));
 		}
 
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, translatedName, this.obfName, mapping)
+				new ClassEntry(this.parent, this.obfName, mapping)
 		);
 	}
 
@@ -100,7 +101,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public boolean equals(ClassEntry other) {
-		return other != null && Objects.equals(this.parent, other.parent) && this.name.equals(other.name);
+		return other != null && Objects.equals(this.parent, other.parent) && this.getName().equals(other.getName());
 	}
 
 	@Override
@@ -116,16 +117,6 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	@Override
 	public void validateName(ValidationContext vc, String name) {
 		IdentifierValidation.validateClassName(vc, name, this.isInnerClass());
-	}
-
-	@Override
-	public ClassEntry withName(String name, RenamableTokenType tokenType) {
-		return new ClassEntry(this.parent, name, this.obfName, new EntryMapping(name, this.getJavadocs(), tokenType));
-	}
-
-	@Override
-	public ClassEntry withParent(ClassEntry parent) {
-		return new ClassEntry(parent, this.name, this.obfName, this.mapping);
 	}
 
 	@Override
@@ -187,12 +178,12 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Nullable
-	public static ClassEntry getOuterClass(String name, String obfName) {
-		String outerName = getOuterClassName(name);
+	public static ClassEntry getOuterClass(String obfName) {
+		// todo this is a bit of an issue. we need to get from an entry index here
 		String outerObfName = getOuterClassName(obfName);
 
-		if (outerName != null && outerObfName != null) {
-			return new ClassEntry(outerName, outerObfName);
+		if (outerObfName != null) {
+			return new ClassEntry(outerObfName);
 		}
 
 		return null;

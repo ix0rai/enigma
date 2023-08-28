@@ -46,13 +46,13 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.classEntry = new ClassEntry(name, name);
+		this.classEntry = new ClassEntry(name);
 		this.className = name;
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodDefEntry entry = new MethodDefEntry(this.classEntry, name, name, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access));
+		MethodDefEntry entry = new MethodDefEntry(this.classEntry, name, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access));
 		return new MethodNodeWithAction(this.api, access, name, desc, signature, exceptions, methodNode -> {
 			try {
 				new Analyzer<>(new MethodInterpreter(entry, this.indexer, this.entryIndex, this.inheritanceIndex)).analyze(this.className, methodNode);
@@ -158,11 +158,11 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			}
 
 			if (target.left().getType().getSort() == Type.OBJECT) {
-				return ReferenceTargetType.classType(new ClassEntry(target.left().getType().getInternalName(), target.left().getType().getInternalName()));
+				return ReferenceTargetType.classType(new ClassEntry(target.left().getType().getInternalName()));
 			}
 
 			if (target.left().getType().getSort() == Type.ARRAY) {
-				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object", "java/lang/Object"));
+				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object"));
 			}
 
 			throw new AnalyzerException(insn, "called method on or accessed field of non-object type");

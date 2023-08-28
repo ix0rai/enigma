@@ -16,6 +16,7 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.Collection;
 
+// todo get these from index baybee
 public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	private final EntryRemapper remapper;
 
@@ -24,7 +25,7 @@ public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	}
 
 	private static ClassEntry getClassEntry(StructClass structClass) {
-		return new ClassEntry(structClass.qualifiedName, structClass.qualifiedName);
+		return new ClassEntry(structClass.qualifiedName);
 	}
 
 	private static FieldEntry getFieldEntry(StructClass structClass, StructField field) {

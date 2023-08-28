@@ -79,7 +79,7 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 		}
 
 		if (userObject instanceof String) {
-			this.deobfEntry = new ClassEntry(packageName + userObject, packageName + userObject);
+			this.deobfEntry = new ClassEntry(packageName + userObject);
 		} else if (userObject instanceof ClassEntry entry) {
 			this.deobfEntry = entry;
 		}

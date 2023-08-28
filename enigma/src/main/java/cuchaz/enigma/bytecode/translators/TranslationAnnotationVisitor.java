@@ -30,7 +30,7 @@ public class TranslationAnnotationVisitor extends AnnotationVisitor {
 	public AnnotationVisitor visitAnnotation(String name, String desc) {
 		TypeDescriptor type = new TypeDescriptor(desc);
 		if (name != null) {
-			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, name, type));
+			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, type));
 			return super.visitAnnotation(annotationField.getName(), annotationField.getDesc().toString());
 		} else {
 			return super.visitAnnotation(null, this.translator.translate(type).toString());
@@ -40,9 +40,9 @@ public class TranslationAnnotationVisitor extends AnnotationVisitor {
 	@Override
 	public void visitEnum(String name, String desc, String value) {
 		TypeDescriptor type = new TypeDescriptor(desc);
-		FieldEntry enumField = this.translator.translate(new FieldEntry(type.getTypeEntry(), value, value, type));
+		FieldEntry enumField = this.translator.translate(new FieldEntry(type.getTypeEntry(), value, type));
 		if (name != null) {
-			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, name, type));
+			FieldEntry annotationField = this.translator.translate(new FieldEntry(this.annotationEntry, name, type));
 			super.visitEnum(annotationField.getName(), annotationField.getDesc().toString(), enumField.getName());
 		} else {
 			super.visitEnum(null, this.translator.translate(type).toString(), enumField.getName());

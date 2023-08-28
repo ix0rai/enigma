@@ -8,14 +8,13 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
 	protected final int index;
 	protected final boolean parameter;
 
-	public LocalVariableEntry(MethodEntry parent, int index, String name, String obfName, boolean parameter, EntryMapping mapping) {
-		super(parent, name, obfName, mapping);
+	public LocalVariableEntry(MethodEntry parent, int index, String obfName, boolean parameter, EntryMapping mapping) {
+		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Variable owner cannot be null");
 		Preconditions.checkArgument(index >= 0, "Index must be positive");
@@ -39,22 +38,11 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	protected TranslateResult<LocalVariableEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
 
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new LocalVariableEntry(this.parent, this.index, translatedName, this.obfName, this.parameter, mapping)
+				new LocalVariableEntry(this.parent, this.index, this.obfName, this.parameter, mapping)
 		);
-	}
-
-	@Override
-	public LocalVariableEntry withName(String name, RenamableTokenType tokenType) {
-		return new LocalVariableEntry(this.parent, this.index, name, this.obfName, this.parameter, new EntryMapping(name, this.getJavadocs(), tokenType));
-	}
-
-	@Override
-	public LocalVariableEntry withParent(MethodEntry parent) {
-		return new LocalVariableEntry(parent, this.index, this.name, this.obfName, this.parameter, this.mapping);
 	}
 
 	@Override
@@ -83,7 +71,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 	@Override
 	public String toString() {
-		return this.parent + "(" + this.index + ":" + this.name + ")";
+		return this.parent + "(" + this.index + ":" + this.getName() + ")";
 	}
 
 	@Override

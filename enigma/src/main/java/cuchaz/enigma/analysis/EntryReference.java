@@ -88,10 +88,6 @@ public class EntryReference<E extends Entry<?>, C extends Entry<?>> implements T
 		return this.entry;
 	}
 
-	public String getNameableName() {
-		return this.getNameableEntry().getName();
-	}
-
 	@Override
 	public int hashCode() {
 		if (this.context != null) {

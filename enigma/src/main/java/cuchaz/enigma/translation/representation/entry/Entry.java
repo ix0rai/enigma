@@ -15,7 +15,20 @@ import javax.annotation.Nullable;
 public interface Entry<P extends Entry<?>> extends Translatable {
 	String getObfName();
 
-	default String getName2() {
+	/**
+	 * Returns the default name of this entry: the deobfuscated name if it exists, or the obfuscated name as a fallback.
+	 *
+	 * <p>For methods, fields and inner classes, it's the same as {@link #getSimpleName()}.</p>
+	 * <p>For other classes, it's the same as {@link #getFullName()}.</p>
+	 *
+	 * <br><p>Examples:</p>
+	 * <ul>
+	 * 	<li>Outer class: "domain.name.ClassA"</li>
+	 * 	<li>Inner class: "ClassB"</li>
+	 * 	<li>Method: "methodC"</li>
+	 * </ul>
+	 */
+	default String getName() {
 		return this.getDeobfName() == null ? this.getObfName() : this.getDeobfName();
 	}
 
@@ -30,21 +43,6 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	RenamableTokenType getTokenType();
 
 	/**
-	 * Returns the default name of this entry.
-	 *
-	 * <p>For methods, fields and inner classes, it's the same as {@link #getSimpleName()}.</p>
-	 * <p>For other classes, it's the same as {@link #getFullName()}.</p>
-	 *
-	 * <br><p>Examples:</p>
-	 * <ul>
-	 * 	<li>Outer class: "domain.name.ClassA"</li>
-	 * 	<li>Inner class: "ClassB"</li>
-	 * 	<li>Method: "methodC"</li>
-	 * </ul>
-	 */
-	String getName();
-
-	/**
 	 * Returns the simple name of this entry.
 	 *
 	 * <p>For methods, fields and inner classes, it's the same as {@link #getName()}.</p>
@@ -57,7 +55,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 * 	<li>Method: "methodC"</li>
 	 * </ul>
 	 */
-	String getSimpleName();
+	default String getSimpleName() {
+		return this.getName();
+	}
 
 	/**
 	 * Returns the full name of this entry.
@@ -91,7 +91,10 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 */
 	String getContextualName();
 
-	String getJavadocs();
+	@Nullable
+	default String getJavadocs() {
+		return this.getMapping().javadoc();
+	};
 
 	default String getSourceRemapName() {
 		return this.getName();

@@ -13,27 +13,30 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
-	protected final P parent;
-	protected final String name;
+	protected P parent;
 	protected final String obfName;
 	protected EntryMapping mapping;
 
-	protected ParentedEntry(P parent, String name, String obfName, EntryMapping mapping) {
+	protected ParentedEntry(P parent, String obfName, EntryMapping mapping) {
 		this.parent = parent;
-		this.name = name;
 		this.mapping = mapping;
 		this.obfName = obfName;
 
-		Preconditions.checkNotNull(name, "Name cannot be null (ummm I think it probably can tbh)");
 		Preconditions.checkNotNull(obfName, "Obf name be null arr I'm a pirate");
 		Preconditions.checkNotNull(mapping, "Mapping cannot be null (use EntryMapping.DEFAULT when no mapping exists!)");
 	}
 
 	@Override
-	public abstract ParentedEntry<P> withParent(P parent);
+	public ParentedEntry<P> withParent(P parent) {
+		this.parent = parent;
+		return this;
+	}
 
 	@Override
-	public abstract ParentedEntry<P> withName(String name, RenamableTokenType tokenType);
+	public ParentedEntry<P> withName(String name, RenamableTokenType tokenType) {
+		this.setMapping(new EntryMapping(name, this.getJavadocs(), tokenType));
+		return this;
+	};
 
 	protected abstract TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
 
@@ -43,35 +46,19 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	}
 
 	@Override
-	public String getName() {
-		return this.name;
-	}
-
-	@Override
-	public String getSimpleName() {
-		return this.name;
-	}
-
-	@Override
 	public String getFullName() {
-		return this.parent.getFullName() + "." + this.name;
+		return this.parent.getFullName() + "." + this.getName();
 	}
 
 	@Override
 	public String getContextualName() {
-		return this.parent.getContextualName() + "." + this.name;
+		return this.parent.getContextualName() + "." + this.getName();
 	}
 
 	@Override
 	@Nullable
 	public P getParent() {
 		return this.parent;
-	}
-
-	@Nullable
-	@Override
-	public String getJavadocs() {
-		return this.mapping.javadoc();
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import org.benf.cfr.reader.util.output.IllegalIdentifierDump;
 import org.benf.cfr.reader.util.output.MovableDumperContext;
 import org.benf.cfr.reader.util.output.StringStreamDumper;
 import org.benf.cfr.reader.util.output.TypeContext;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,15 +87,20 @@ public class EnigmaDumper extends StringStreamDumper {
 		}
 
 		int variableIndex = method.getParameterLValues().get(parameterIndex).localVariable.getIdx();
-		return this.entryIndex.getLocalVariable(owner, variableIndex);
+		return this.entryIndex.getLocalVariableDefNullable(owner, variableIndex);
 	}
 
 	private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {
-		return this.entryIndex.getField(this.getClassEntry(owner), name, new TypeDescriptor(desc));
+		ClassEntry parentClass = this.getClassEntry(owner);
+		TypeDescriptor descriptor = new TypeDescriptor(desc);
+
+		return this.entryIndex.getField(parentClass, name, descriptor);
 	}
 
 	private ClassEntry getClassEntry(JavaTypeInstance type) {
-		return this.entryIndex.getClass(type.getRawName().replace('.', '/'));
+		String name = type.getRawName().replace('.', '/');
+
+		return this.entryIndex.getClass(name);
 	}
 
 	@Override

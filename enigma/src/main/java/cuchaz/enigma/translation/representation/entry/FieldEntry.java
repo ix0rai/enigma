@@ -9,17 +9,16 @@ import cuchaz.enigma.translation.representation.TypeDescriptor;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {
 	protected final TypeDescriptor desc;
 
-	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc) {
-		this(parent, name, obfName, desc, EntryMapping.DEFAULT);
+	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc) {
+		this(parent, obfName, desc, EntryMapping.DEFAULT);
 	}
 
-	public FieldEntry(ClassEntry parent, String name, String obfName, TypeDescriptor desc, EntryMapping mapping) {
-		super(parent, name, obfName, mapping);
+	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, EntryMapping mapping) {
+		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Owner cannot be null");
 		Preconditions.checkNotNull(desc, "Field descriptor cannot be null");
@@ -28,7 +27,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public static FieldEntry parse(String owner, String name, String desc) {
-		return new FieldEntry(new ClassEntry(owner, owner), name, name, new TypeDescriptor(desc), EntryMapping.DEFAULT);
+		return new FieldEntry(new ClassEntry(owner), name, new TypeDescriptor(desc), EntryMapping.DEFAULT);
 	}
 
 	@Override
@@ -41,28 +40,16 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Override
-	public FieldEntry withName(String name, RenamableTokenType tokenType) {
-		return new FieldEntry(this.parent, name, this.obfName, this.desc, new EntryMapping(name, this.getJavadocs(), tokenType));
-	}
-
-	@Override
-	public FieldEntry withParent(ClassEntry parent) {
-		return new FieldEntry(parent, this.name, this.obfName, this.desc, this.mapping);
-	}
-
-	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
-		String translatedName = mapping.targetName() != null ? mapping.targetName() : this.name;
-
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldEntry(this.parent, translatedName, this.obfName, translator.translate(this.desc), mapping)
+				new FieldEntry(this.parent, this.obfName, translator.translate(this.desc), mapping)
 		);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.parent, this.name, this.desc);
+		return Objects.hash(this.parent, this.getObfName(), this.desc);
 	}
 
 	@Override
@@ -71,7 +58,7 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public boolean equals(FieldEntry other) {
-		return this.parent.equals(other.parent) && this.name.equals(other.name) && this.desc.equals(other.desc);
+		return this.parent.equals(other.parent) && this.getObfName().equals(other.getObfName()) && this.desc.equals(other.desc);
 	}
 
 	@Override
@@ -91,6 +78,6 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int compareTo(FieldEntry entry) {
-		return (this.name + this.desc.toString()).compareTo(entry.name + entry.desc.toString());
+		return (this.getName() + this.desc.toString()).compareTo(entry.getName() + entry.desc.toString());
 	}
 }

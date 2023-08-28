@@ -259,7 +259,7 @@ public abstract class EnigmaServer {
 	}
 
 	public void sendCorrectMapping(Socket client, Entry<?> entry, boolean refreshClassTree) {
-		EntryMapping oldMapping = this.mappings.getDeobfMapping(entry);
+		EntryMapping oldMapping = entry.getMapping();
 		String oldName = oldMapping.targetName();
 		if (oldName == null) {
 			this.sendPacket(client, new EntryChangeS2CPacket(DUMMY_SYNC_ID, EntryChange.modify(entry).clearDeobfName()));

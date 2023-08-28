@@ -216,9 +216,9 @@ public enum EnigmaMappingsReader implements MappingsReader {
 		String obfuscatedName = ClassEntry.getInnerName(tokens[1]);
 		ClassEntry obfuscatedEntry;
 		if (parent instanceof ClassEntry classEntry) {
-			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName, obfuscatedName);
+			obfuscatedEntry = new ClassEntry(classEntry, obfuscatedName);
 		} else {
-			obfuscatedEntry = new ClassEntry(obfuscatedName, obfuscatedName);
+			obfuscatedEntry = new ClassEntry(obfuscatedName);
 		}
 
 		String mapping = null;
@@ -252,7 +252,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Invalid field declaration");
 		}
 
-		FieldEntry obfuscatedEntry = new FieldEntry(ownerEntry, obfuscatedName, obfuscatedName, descriptor);
+		FieldEntry obfuscatedEntry = new FieldEntry(ownerEntry, obfuscatedName, descriptor);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
@@ -274,7 +274,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Invalid method declaration");
 		}
 
-		MethodEntry obfuscatedEntry = new MethodEntry(ownerEntry, obfuscatedName, obfuscatedName, descriptor);
+		MethodEntry obfuscatedEntry = new MethodEntry(ownerEntry, obfuscatedName, descriptor);
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
@@ -283,7 +283,7 @@ public enum EnigmaMappingsReader implements MappingsReader {
 			throw new RuntimeException("Method arg must be a child of a method!");
 		}
 
-		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", "", true, EntryMapping.DEFAULT);
+		LocalVariableEntry obfuscatedEntry = new LocalVariableEntry(ownerEntry, Integer.parseInt(tokens[1]), "", true, EntryMapping.DEFAULT);
 		String mapping = tokens[2];
 
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));

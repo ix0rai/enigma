@@ -1,6 +1,7 @@
 package cuchaz.enigma;
 
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
@@ -9,13 +10,13 @@ import cuchaz.enigma.source.DecompilerService;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static cuchaz.enigma.TestEntryFactory.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -27,18 +28,24 @@ public class TestJarIndexBridgeMethods {
 
 	private final CachingClassProvider classProvider;
 	private final JarIndex index;
+	public final EntryIndex entryIndex;
 	private final Map<DecompilerService, TokenChecker> tokenCheckers = new HashMap<>();
 
-	private final ClassEntry baseClass = newClass("a");
-	private final ClassEntry otherClass = newClass("b");
-	private final ClassEntry subClass = newClass("c");
-	private final ClassEntry innerSubClass = newClass("c$a");
+	private final ClassEntry baseClass;
+	private final ClassEntry otherClass;
+	private final ClassEntry subClass;
+	private final ClassEntry innerSubClass;
 
 	public TestJarIndexBridgeMethods() throws Exception {
 		JarClassProvider jcp = new JarClassProvider(JAR);
 		this.classProvider = new CachingClassProvider(jcp);
 		this.index = JarIndex.empty();
 		this.index.indexJar(jcp.getClassNames(), this.classProvider, ProgressListener.none());
+		this.entryIndex = this.index.getEntryIndex();
+		baseClass = newClass("a");
+		otherClass = newClass("b");
+		subClass = newClass("c");
+		innerSubClass = newClass("c$a");
 	}
 
 	@Test
@@ -165,5 +172,13 @@ public class TestJarIndexBridgeMethods {
 	private TokenChecker getTokenChecker(DecompilerService decompiler) {
 		return this.tokenCheckers.computeIfAbsent(decompiler, d ->
 				new TokenChecker(JAR, d, new ObfuscationFixClassProvider(this.classProvider, this.index), EntryRemapper.empty(this.index)));
+	}
+
+	private ClassEntry newClass(String obfName) {
+		return this.entryIndex.getClass(obfName);
+	}
+
+	private MethodEntry newMethod(ClassEntry parent, String obfName, String desc) {
+		return this.entryIndex.getMethod(parent, obfName, desc);
 	}
 }

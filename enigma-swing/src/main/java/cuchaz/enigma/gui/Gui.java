@@ -470,7 +470,7 @@ public class Gui {
 	}
 
 	public void toggleMappingFromEntry(Entry<?> obfEntry) {
-		if (this.controller.getProject().getMapper().getDeobfMapping(obfEntry).targetName() != null) {
+		if (obfEntry.getMapping().targetName() != null) {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).clearDeobfName());
 		} else {
 			this.controller.applyChange(new ValidationContext(this.getNotificationManager()), EntryChange.modify(obfEntry).withDefaultDeobfName(this.getController().getProject()));

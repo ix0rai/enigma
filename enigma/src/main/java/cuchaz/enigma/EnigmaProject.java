@@ -175,16 +175,16 @@ public class EnigmaProject {
 		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
 	}
 
-	public boolean isRenamable(Entry<?> obfEntry) {
-		if (obfEntry instanceof MethodEntry obfMethodEntry) {
+	public boolean isRenamable(Entry<?> entry) {
+		if (entry instanceof MethodEntry methodEntry) {
 			// constructors are not renamable!
-			if (obfMethodEntry.isConstructor()) {
+			if (methodEntry.isConstructor()) {
 				return false;
 			}
 
 			// HACKHACK: Object methods are not obfuscated identifiers
-			String name = obfMethodEntry.getName();
-			String sig = obfMethodEntry.getDesc().toString();
+			String name = methodEntry.getName();
+			String sig = methodEntry.getDesc().toString();
 
 			// todo change this to a check if the method is declared in java.lang.Object or java.lang.Record
 
@@ -194,15 +194,15 @@ public class EnigmaProject {
 				}
 			}
 
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(obfMethodEntry.getParent());
+			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(methodEntry.getParent());
 			if (parent != null && parent.isEnum()
 					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
 					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
 				return false;
 			}
-		} else if (obfEntry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
+		} else if (entry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
 			return false;
-		} else if (obfEntry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
+		} else if (entry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
 			MethodEntry method = localEntry.getParent();
 			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
 
@@ -210,11 +210,11 @@ public class EnigmaProject {
 			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
 				return false;
 			}
-		} else if (obfEntry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
+		} else if (entry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getEntryIndex().hasEntry(entry);
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {

@@ -48,7 +48,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitSimpleType(SimpleType node, SourceIndex index) {
 		TypeReference ref = node.getUserData(Keys.TYPE_REFERENCE);
 		if (node.getIdentifierToken().getStartLocation() != TextLocation.EMPTY) {
-			ClassEntry entry = new ClassEntry(ref.getInternalName(), ref.getInternalName());
+			ClassEntry entry = new ClassEntry(ref.getInternalName());
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), entry, this.classEntry);
 		}
 
@@ -60,7 +60,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
 		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		AstNode tokenNode = node.getNameToken();
-		if (methodEntry.isConstructor() && methodEntry.getName().equals("<clinit>")) {
+		if (methodEntry.isConstructor() && methodEntry.getObfName().equals("<clinit>")) {
 			// for static initializers, check elsewhere for the token node
 			tokenNode = node.getModifiers().firstOrNullObject();
 		}

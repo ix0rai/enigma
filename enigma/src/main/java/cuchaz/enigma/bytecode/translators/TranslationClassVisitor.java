@@ -52,7 +52,7 @@ public class TranslationClassVisitor extends ClassVisitor {
 		MethodDefEntry translatedEntry = this.translator.translate(entry);
 		String[] translatedExceptions = new String[exceptions.length];
 		for (int i = 0; i < exceptions.length; i++) {
-			translatedExceptions[i] = this.translator.translate(new ClassEntry(exceptions[i], exceptions[i])).getFullName();
+			translatedExceptions[i] = this.translator.translate(new ClassEntry(exceptions[i])).getFullName();
 		}
 
 		MethodVisitor mv = super.visitMethod(translatedEntry.getAccess().getFlags(), translatedEntry.getName(), translatedEntry.getDesc().toString(), translatedEntry.getSignature().toString(), translatedExceptions);
@@ -78,7 +78,7 @@ public class TranslationClassVisitor extends ClassVisitor {
 	@Override
 	public void visitOuterClass(String owner, String name, String desc) {
 		if (desc != null) {
-			MethodEntry translatedEntry = this.translator.translate(new MethodEntry(new ClassEntry(owner, owner), name, name, new MethodDescriptor(desc)));
+			MethodEntry translatedEntry = this.translator.translate(new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc)));
 			super.visitOuterClass(translatedEntry.getParent().getFullName(), translatedEntry.getName(), translatedEntry.getDesc().toString());
 		} else {
 			super.visitOuterClass(owner, name, desc);

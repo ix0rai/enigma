@@ -1,18 +1,18 @@
 package cuchaz.enigma;
 
+import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.source.Decompilers;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static cuchaz.enigma.TestEntryFactory.newBehaviorReferenceByMethod;
-import static cuchaz.enigma.TestEntryFactory.newMethod;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -140,5 +140,17 @@ public class TestTokensConstructors extends TokenChecker {
 			this.getReferenceTokens(newBehaviorReferenceByMethod(source, "b", "g", "()V")),
 				containsInAnyOrder("c")
 		);
+	}
+
+	public EntryReference<MethodEntry, MethodEntry> newBehaviorReferenceByMethod(MethodEntry methodEntry, String callerClassName, String callerName, String callerSignature) {
+		return new EntryReference<>(methodEntry, "", newMethod(index.getEntryIndex().getClass(callerClassName), callerName, callerSignature));
+	}
+
+	public MethodEntry newMethod(String className, String methodName, String methodSignature) {
+		return index.getEntryIndex().getMethod(index.getEntryIndex().getClass(className), methodName, methodSignature);
+	}
+
+	public MethodEntry newMethod(ClassEntry classEntry, String methodName, String methodSignature) {
+		return index.getEntryIndex().getMethod(classEntry, methodName, methodSignature);
 	}
 }
