@@ -56,7 +56,7 @@ public class ClassSelector extends JTree {
 				// get the selected node
 				TreePath path = this.getSelectionPath();
 				if (path != null && path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-					this.selectionListener.onSelectClass(node.getObfEntry());
+					this.selectionListener.onSelectClass(node.getEntry());
 				}
 			}
 		}));
@@ -68,7 +68,7 @@ public class ClassSelector extends JTree {
 				if (KeyBinds.EDITOR_TOGGLE_MAPPING.matches(e)) {
 					for (TreePath path : paths) {
 						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-							gui.toggleMappingFromEntry(node.getObfEntry());
+							gui.toggleMappingFromEntry(node.getEntry());
 						}
 					}
 				}
@@ -76,7 +76,7 @@ public class ClassSelector extends JTree {
 				if (this.selectionListener != null && KeyBinds.SELECT.matches(e)) {
 					for (TreePath path : paths) {
 						if (path.getLastPathComponent() instanceof ClassSelectorClassNode node) {
-							this.selectionListener.onSelectClass(node.getObfEntry());
+							this.selectionListener.onSelectClass(node.getEntry());
 						}
 					}
 				}
@@ -120,7 +120,7 @@ public class ClassSelector extends JTree {
 					JPanel panel = new TooltipPanel();
 					panel.setOpaque(false);
 					panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getObfEntry()));
+					JLabel nodeLabel = new JLabel(GuiUtil.getClassIcon(gui, node.getEntry()));
 					panel.add(nodeLabel);
 
 					StatsResult stats = ClassSelector.this.statsManager.getStats(node);
@@ -216,7 +216,7 @@ public class ClassSelector extends JTree {
 			Object selectedNode = this.getSelectionPath().getLastPathComponent();
 
 			if (selectedNode instanceof ClassSelectorClassNode classNode) {
-				return obfuscated ? classNode.getObfEntry() : classNode.getDeobfEntry();
+				return obfuscated ? classNode.getEntry() : classNode.getDeobfEntry();
 			}
 		}
 

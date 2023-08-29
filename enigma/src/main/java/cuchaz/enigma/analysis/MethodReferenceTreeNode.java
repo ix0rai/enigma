@@ -6,7 +6,6 @@ import cuchaz.enigma.analysis.index.ReferenceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -15,10 +14,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<MethodEntry, MethodDefEntry> {
+public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<MethodEntry, MethodEntry> {
 	private final Translator translator;
 	private final MethodEntry entry;
-	private final EntryReference<MethodEntry, MethodDefEntry> reference;
+	private final EntryReference<MethodEntry, MethodEntry> reference;
 
 	public MethodReferenceTreeNode(Translator translator, MethodEntry entry) {
 		this.translator = translator;
@@ -26,7 +25,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 		this.reference = null;
 	}
 
-	public MethodReferenceTreeNode(Translator translator, EntryReference<MethodEntry, MethodDefEntry> reference) {
+	public MethodReferenceTreeNode(Translator translator, EntryReference<MethodEntry, MethodEntry> reference) {
 		this.translator = translator;
 		this.entry = reference.entry;
 		this.reference = reference;
@@ -38,7 +37,7 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 	}
 
 	@Override
-	public EntryReference<MethodEntry, MethodDefEntry> getReference() {
+	public EntryReference<MethodEntry, MethodEntry> getReference() {
 		return this.reference;
 	}
 
@@ -53,9 +52,9 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 
 	public void load(JarIndex index, boolean recurse, boolean recurseMethod) {
 		// get all the child nodes
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.getReferences(index, recurseMethod);
+		Collection<EntryReference<MethodEntry, MethodEntry>> references = this.getReferences(index, recurseMethod);
 
-		for (EntryReference<MethodEntry, MethodDefEntry> reference : references) {
+		for (EntryReference<MethodEntry, MethodEntry> reference : references) {
 			this.add(new MethodReferenceTreeNode(this.translator, reference));
 		}
 
@@ -82,11 +81,11 @@ public class MethodReferenceTreeNode extends DefaultMutableTreeNode implements R
 		}
 	}
 
-	private Collection<EntryReference<MethodEntry, MethodDefEntry>> getReferences(JarIndex index, boolean recurseMethod) {
+	private Collection<EntryReference<MethodEntry, MethodEntry>> getReferences(JarIndex index, boolean recurseMethod) {
 		ReferenceIndex referenceIndex = index.getReferenceIndex();
 
 		if (recurseMethod) {
-			Collection<EntryReference<MethodEntry, MethodDefEntry>> references = new ArrayList<>();
+			Collection<EntryReference<MethodEntry, MethodEntry>> references = new ArrayList<>();
 
 			EntryResolver entryResolver = index.getEntryResolver();
 			for (MethodEntry methodEntry : entryResolver.resolveEquivalentMethods(this.entry)) {

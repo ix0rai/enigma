@@ -7,7 +7,6 @@ import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import javax.annotation.Nullable;
@@ -34,14 +33,12 @@ public class BridgeMethodIndex implements JarIndexer {
 	public void findBridgeMethods() {
 		// look for access and bridged methods
 		for (MethodEntry methodEntry : this.entryIndex.getMethods()) {
-			MethodDefEntry methodDefEntry = (MethodDefEntry) methodEntry;
-
-			AccessFlags access = methodDefEntry.getAccess();
+			AccessFlags access = methodEntry.getAccess();
 			if (access == null || !access.isSynthetic()) {
 				continue;
 			}
 
-			this.indexSyntheticMethod(methodDefEntry, access);
+			this.indexSyntheticMethod(methodEntry, access);
 		}
 	}
 
@@ -61,7 +58,7 @@ public class BridgeMethodIndex implements JarIndexer {
 		}
 	}
 
-	private void indexSyntheticMethod(MethodDefEntry syntheticMethod, AccessFlags access) {
+	private void indexSyntheticMethod(MethodEntry syntheticMethod, AccessFlags access) {
 		MethodEntry specializedMethod = this.findSpecializedMethod(syntheticMethod);
 		if (specializedMethod == null) {
 			return;
@@ -94,7 +91,7 @@ public class BridgeMethodIndex implements JarIndexer {
 		return referencedMethods.stream().findFirst().orElse(null);
 	}
 
-	private boolean isPotentialBridge(MethodDefEntry bridgeMethod, MethodEntry specializedMethod) {
+	private boolean isPotentialBridge(MethodEntry bridgeMethod, MethodEntry specializedMethod) {
 		// Bridge methods only exist for inheritance purposes, if we're private, final, or static, we cannot be inherited
 		AccessFlags bridgeAccess = bridgeMethod.getAccess();
 		if (bridgeAccess.isPrivate() || bridgeAccess.isFinal() || bridgeAccess.isStatic()) {
@@ -129,8 +126,8 @@ public class BridgeMethodIndex implements JarIndexer {
 
 		// Either the descs will be equal, or they are both types and different through a generic
 		if (bridgeDesc.isType() && specializedDesc.isType()) {
-			ClassEntry bridgeType = bridgeDesc.getTypeEntry();
-			ClassEntry accessedType = specializedDesc.getTypeEntry();
+			ClassEntry bridgeType = bridgeDesc.getTypeEntry(this.entryIndex);
+			ClassEntry accessedType = specializedDesc.getTypeEntry(this.entryIndex);
 
 			// If the given types are completely unrelated to each other, this can't be bridge compatible
 			InheritanceIndex.Relation relation = this.inheritanceIndex.computeClassRelation(accessedType, bridgeType);

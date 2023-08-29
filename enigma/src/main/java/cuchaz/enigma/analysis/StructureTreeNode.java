@@ -6,13 +6,12 @@ import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.DefEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.DefinedEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
+import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
@@ -25,9 +24,9 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	private final List<NameProposalService> nameProposalServices;
 	private final EntryRemapper mapper;
 	private final ClassEntry parentEntry;
-	private final ParentedEntry<?> entry;
+	private final DefinedEntry<?, ?> entry;
 
-	public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, ParentedEntry<?> entry) {
+	public StructureTreeNode(EnigmaProject project, ClassEntry parentEntry, DefinedEntry<?, ?> entry) {
 		this.nameProposalServices = project.getEnigma().getServices().get(NameProposalService.TYPE);
 		this.mapper = project.getMapper();
 		this.parentEntry = parentEntry;
@@ -35,14 +34,14 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	}
 
 	/**
-	 * Returns the parented entry represented by this tree node.
+	 * Returns the defined entry represented by this tree node.
 	 */
-	public ParentedEntry<?> getEntry() {
+	public DefinedEntry<?, ?> getEntry() {
 		return this.entry;
 	}
 
 	public void load(EnigmaProject project, StructureTreeOptions options) {
-		Stream<ParentedEntry<?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
+		Stream<DefinedEntry<?, ?>> children = project.getJarIndex().getChildrenByClass().get(this.parentEntry).stream();
 
 		children = switch (options.obfuscationVisibility()) {
 			case ALL -> children;
@@ -71,12 +70,12 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 					? project.getMapper().deobfuscate(e.getParent()).getSimpleName().toLowerCase()
 					: project.getMapper().deobfuscate(e).getSimpleName().toLowerCase()));
 			case Z_A -> children.sorted(Comparator.comparing(e -> (e instanceof MethodEntry m && m.isConstructor())
-					? project.getMapper().deobfuscate(((ParentedEntry<?>) e).getParent()).getSimpleName().toLowerCase()
-					: project.getMapper().deobfuscate((ParentedEntry<?>) e).getSimpleName().toLowerCase())
+					? project.getMapper().deobfuscate(((DefinedEntry<?, ?>) e).getParent()).getSimpleName().toLowerCase()
+					: project.getMapper().deobfuscate((DefinedEntry<?, ?>) e).getSimpleName().toLowerCase())
 					.reversed());
 		};
 
-		for (ParentedEntry<?> child : children.toList()) {
+		for (DefinedEntry<?, ?> child : children.toList()) {
 			StructureTreeNode childNode = new StructureTreeNode(project, this.parentEntry, child);
 
 			if (child instanceof ClassEntry classEntry) {
@@ -90,7 +89,7 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 
 	@Override
 	public String toString() {
-		TranslateResult<ParentedEntry<?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
+		TranslateResult<DefinedEntry<?, ?>> translateResult = this.mapper.extendedDeobfuscate(this.entry);
 		String result = translateResult.getValue().getName();
 
 		if (translateResult.isObfuscated() && !this.nameProposalServices.isEmpty()) {
@@ -103,13 +102,13 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 			}
 		}
 
-		if (this.entry instanceof FieldDefEntry) {
-			FieldDefEntry field = (FieldDefEntry) translateResult.getValue();
+		if (this.entry instanceof FieldEntry) {
+			FieldEntry field = (FieldEntry) translateResult.getValue();
 			String returnType = this.parseDesc(field.getDesc());
 
 			result = result + ": " + returnType;
-		} else if (this.entry instanceof MethodDefEntry) {
-			MethodDefEntry method = (MethodDefEntry) translateResult.getValue();
+		} else if (this.entry instanceof MethodEntry) {
+			MethodEntry method = (MethodEntry) translateResult.getValue();
 			String args = this.parseArgs(method.getDesc().getTypeDescs());
 			String returnType = this.parseDesc(method.getDesc().getReturnDesc());
 
@@ -126,11 +125,11 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	public String toHtml() {
 		List<String> modifiers = new ArrayList<>();
 
-		if (this.entry instanceof DefEntry<?> defEntry) {
-			AccessFlags access = defEntry.getAccess();
+		if (this.entry.getDefinition() != null) {
+			AccessFlags access = this.entry.getAccess();
 			boolean isInterfaceMethod = false;
 
-			if (this.entry instanceof MethodEntry && this.entry.getParent() instanceof ClassDefEntry parent) {
+			if (this.entry instanceof MethodEntry && this.entry.getParent() instanceof ClassEntry parent) {
 				isInterfaceMethod = parent.getAccess().isInterface();
 			}
 
@@ -175,11 +174,11 @@ public class StructureTreeNode extends DefaultMutableTreeNode {
 	private String parseDesc(TypeDescriptor desc) {
 		if (desc.isVoid()) return "void";
 		if (desc.isPrimitive()) return desc.getPrimitive().getKeyword();
-		if (desc.isType()) return desc.getTypeEntry().getSimpleName();
+		if (desc.isType()) return desc.getTypeEntry(this.mapper.getJarIndex().getEntryIndex()).getSimpleName();
 
 		if (desc.isArray()) {
 			if (desc.getArrayType().isPrimitive()) return desc.getArrayType().getPrimitive().getKeyword() + "[]";
-			if (desc.getArrayType().isType()) return desc.getArrayType().getTypeEntry().getSimpleName() + "[]";
+			if (desc.getArrayType().isType()) return desc.getArrayType().getTypeEntry(this.mapper.getJarIndex().getEntryIndex()).getSimpleName() + "[]";
 		}
 
 		return null;

@@ -5,6 +5,8 @@ import cuchaz.enigma.translation.MappingTranslator;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.HashEntryTree;
@@ -15,6 +17,8 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.validation.Message;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.List;
@@ -38,6 +42,11 @@ public class EntryRemapper {
 		this.jarIndex = jarIndex;
 
 		this.validator = new MappingValidator(this.deobfuscator, jarIndex);
+	}
+
+	public static EntryRemapper mapped(JarIndex index, Path mappings) throws MappingParseException, IOException {
+		EntryTree<EntryMapping> obfToDeobf = MappingFormat.parseFromFile(mappings).read(mappings, index.getEntryIndex());
+		return new EntryRemapper(index, obfToDeobf);
 	}
 
 	public static EntryRemapper mapped(JarIndex index, EntryTree<EntryMapping> obfToDeobf) {
@@ -66,24 +75,19 @@ public class EntryRemapper {
 
 		boolean renaming = !Objects.equals(obfuscatedEntry.getMapping().targetName(), deobfMapping.targetName());
 
-		Collection<Entry<?>> resolvedEntries = this.obfResolver.resolveEntry(obfuscatedEntry, renaming ? ResolutionStrategy.RESOLVE_ROOT : ResolutionStrategy.RESOLVE_CLOSEST);
-
 		if (renaming && deobfMapping.targetName() != null) {
-			for (Entry<?> resolvedEntry : resolvedEntries) {
-				this.validator.validateRename(vc, resolvedEntry, deobfMapping.targetName());
-			}
+			this.validator.validateRename(vc, obfuscatedEntry, deobfMapping.targetName());
 		}
 
-		if (validateOnly || !vc.canProceed()) return;
-
-		for (Entry<?> resolvedEntry : resolvedEntries) {
-			this.insertMapping(resolvedEntry, obfuscatedEntry, deobfMapping);
+		if (validateOnly || !vc.canProceed()) {
+			return;
 		}
+
+		this.insertMapping(obfuscatedEntry, deobfMapping);
 	}
 
-	private void insertMapping(Entry<?> entry, Entry<?> obfEntry, @Nonnull EntryMapping mapping) {
-		this.obfToDeobf.insert(entry, mapping.equals(EntryMapping.DEFAULT) ? null : mapping);
-		entry.setMapping(mapping);
+	private void insertMapping(Entry<?> obfEntry, @Nonnull EntryMapping mapping) {
+		this.obfToDeobf.insert(obfEntry, mapping.equals(EntryMapping.DEFAULT) ? null : mapping);
 		obfEntry.setMapping(mapping);
 	}
 
@@ -91,7 +95,7 @@ public class EntryRemapper {
 	// note: just supressing warnings until it's fixed
 	@SuppressWarnings("all")
 	private void mapRecordComponentGetter(ValidationContext vc, ClassEntry classEntry, FieldEntry fieldEntry, EntryMapping fieldMapping) {
-		if (!this.jarIndex.getEntryIndex().getDefinition(classEntry).isRecord() || this.jarIndex.getEntryIndex().getFieldAccess(fieldEntry).isStatic()) {
+		if (!classEntry.getDefinition().isRecord() || fieldEntry.getAccess().isStatic()) {
 			return;
 		}
 

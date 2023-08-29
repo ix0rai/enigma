@@ -1,5 +1,6 @@
 package cuchaz.enigma.analysis.index;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
@@ -11,11 +12,9 @@ import cuchaz.enigma.classprovider.ClassProvider;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.IndexEntryResolver;
 import cuchaz.enigma.translation.representation.Lambda;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 import cuchaz.enigma.utils.I18n;
@@ -37,8 +36,8 @@ public class JarIndex implements JarIndexer {
 
 	private final Collection<JarIndexer> indexers;
 
-	private final Multimap<String, MethodDefEntry> methodImplementations = HashMultimap.create();
-	private final ListMultimap<ClassEntry, ParentedEntry<?>> childrenByClass;
+	private final Multimap<String, MethodEntry> methodImplementations = HashMultimap.create();
+	private final ListMultimap<ClassEntry, DefinedEntry<?, ?>> childrenByClass;
 
 	private ProgressListener progress;
 
@@ -57,7 +56,7 @@ public class JarIndex implements JarIndexer {
 	public static JarIndex empty() {
 		EntryIndex entryIndex = new EntryIndex();
 		InheritanceIndex inheritanceIndex = new InheritanceIndex(entryIndex);
-		ReferenceIndex referenceIndex = new ReferenceIndex();
+		ReferenceIndex referenceIndex = new ReferenceIndex(entryIndex);
 		BridgeMethodIndex bridgeMethodIndex = new BridgeMethodIndex(entryIndex, inheritanceIndex, referenceIndex);
 		PackageVisibilityIndex packageVisibilityIndex = new PackageVisibilityIndex();
 		EnclosingMethodIndex enclosingMethodIndex = new EnclosingMethodIndex();
@@ -74,7 +73,7 @@ public class JarIndex implements JarIndexer {
 		this.progress.step(1, I18n.translate("progress.jar.indexing.entries"));
 
 		for (String className : classNames) {
-			classProvider.get(className).accept(new IndexClassVisitor(this, Enigma.ASM_VERSION));
+			classProvider.get(className).accept(new IndexClassVisitor(this, this.entryIndex, Enigma.ASM_VERSION));
 		}
 
 		this.progress.step(2, I18n.translate("progress.jar.indexing.references"));
@@ -114,12 +113,14 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexClass(ClassDefEntry classEntry) {
+	public void indexClass(ClassEntry classEntry) {
+		Preconditions.checkNotNull(classEntry.getDefinition(), "Cannot index class with null definition!");
+
 		if (classEntry.isJre()) {
 			return;
 		}
 
-		for (ClassEntry interfaceEntry : classEntry.getInterfaces()) {
+		for (ClassEntry interfaceEntry : classEntry.getDefinition().getInterfaces()) {
 			if (classEntry.equals(interfaceEntry)) {
 				throw new IllegalArgumentException("Class cannot be its own interface! " + classEntry);
 			}
@@ -132,7 +133,10 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexField(FieldDefEntry fieldEntry) {
+	public void indexField(FieldEntry fieldEntry) {
+		Preconditions.checkNotNull(fieldEntry.getDefinition(), "Cannot index field with null definition!");
+		Preconditions.checkNotNull(fieldEntry.getParent(), "Cannot index field with null parent!");
+
 		if (fieldEntry.getParent().isJre()) {
 			return;
 		}
@@ -144,7 +148,10 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexMethod(MethodDefEntry methodEntry) {
+	public void indexMethod(MethodEntry methodEntry) {
+		Preconditions.checkNotNull(methodEntry.getDefinition(), "Cannot index method with null definition!");
+		Preconditions.checkNotNull(methodEntry.getParent(), "Cannot index method with null parent!");
+
 		if (methodEntry.getParent().isJre()) {
 			return;
 		}
@@ -160,7 +167,9 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexMethodReference(MethodDefEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
+	public void indexMethodReference(MethodEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
+		Preconditions.checkNotNull(callerEntry.getParent(), "Cannot index method with null parent!");
+
 		if (callerEntry.getParent().isJre()) {
 			return;
 		}
@@ -169,7 +178,9 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexFieldReference(MethodDefEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
+	public void indexFieldReference(MethodEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
+		Preconditions.checkNotNull(callerEntry.getParent(), "Cannot index method with null parent!");
+
 		if (callerEntry.getParent().isJre()) {
 			return;
 		}
@@ -178,7 +189,9 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
+	public void indexLambda(MethodEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
+		Preconditions.checkNotNull(callerEntry.getParent(), "Cannot index method with null parent!");
+
 		if (callerEntry.getParent().isJre()) {
 			return;
 		}
@@ -187,7 +200,7 @@ public class JarIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexEnclosingMethod(ClassDefEntry classEntry, EnclosingMethodData enclosingMethodData) {
+	public void indexEnclosingMethod(ClassEntry classEntry, EnclosingMethodData enclosingMethodData) {
 		if (classEntry.isJre()) {
 			return;
 		}
@@ -228,7 +241,7 @@ public class JarIndex implements JarIndexer {
 		return this.entryResolver;
 	}
 
-	public ListMultimap<ClassEntry, ParentedEntry<?>> getChildrenByClass() {
+	public ListMultimap<ClassEntry, DefinedEntry<?, ?>> getChildrenByClass() {
 		return this.childrenByClass;
 	}
 

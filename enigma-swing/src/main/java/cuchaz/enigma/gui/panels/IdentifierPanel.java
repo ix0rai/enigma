@@ -137,7 +137,7 @@ public class IdentifierPanel {
 			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
 				EditableType type;
 
-				if (lve.isArgument()) {
+				if (lve.isParameter()) {
 					type = EditableType.PARAMETER;
 				} else {
 					type = EditableType.LOCAL_VARIABLE;

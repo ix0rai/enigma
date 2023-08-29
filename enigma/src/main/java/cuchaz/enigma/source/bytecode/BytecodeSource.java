@@ -47,7 +47,7 @@ public class BytecodeSource implements Source {
 
 		if (this.remapper != null) {
 			ClassNode translatedNode = new ClassNode();
-			node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+			node.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), this.remapper.getJarIndex().getEntryIndex(), Enigma.ASM_VERSION, translatedNode));
 			node = translatedNode;
 		}
 
@@ -56,7 +56,7 @@ public class BytecodeSource implements Source {
 		for (ClassNode otherNode : this.innerClassNodes) {
 			if (this.remapper != null) {
 				ClassNode translatedNode = new ClassNode();
-				otherNode.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), Enigma.ASM_VERSION, translatedNode));
+				otherNode.accept(new TranslationClassVisitor(this.remapper.getDeobfuscator(), this.remapper.getJarIndex().getEntryIndex(), Enigma.ASM_VERSION, translatedNode));
 				otherNode = translatedNode;
 			}
 

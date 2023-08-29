@@ -1,10 +1,12 @@
 package cuchaz.enigma.bytecode.translators;
 
 import com.google.common.base.CharMatcher;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.LocalNameGenerator;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -15,32 +17,35 @@ import java.util.List;
 import java.util.Map;
 
 public class LocalVariableFixVisitor extends ClassVisitor {
-	private ClassDefEntry ownerEntry;
+	private ClassEntry ownerEntry;
+	private EntryIndex index;
 
-	public LocalVariableFixVisitor(int api, ClassVisitor visitor) {
+	public LocalVariableFixVisitor(EntryIndex index, int api, ClassVisitor visitor) {
 		super(api, visitor);
+		this.index = index;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		ClassDefinition definition = ClassDefinition.parse(index, access, signature, superName, interfaces);
+		this.ownerEntry = index.getClass(name, definition);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
+		MethodEntry methodEntry = MethodEntry.parse(this.ownerEntry, access, name, descriptor, signature);
 		return new Method(this.api, methodEntry, super.visitMethod(access, name, descriptor, signature, exceptions));
 	}
 
 	private class Method extends MethodVisitor {
-		private final MethodDefEntry methodEntry;
+		private final MethodEntry methodEntry;
 		private final Map<Integer, String> parameterNames = new HashMap<>();
 		private final Map<Integer, Integer> parameterIndices = new HashMap<>();
 		private boolean hasParameterTable;
 		private int parameterIndex = 0;
 
-		Method(int api, MethodDefEntry methodEntry, MethodVisitor visitor) {
+		Method(int api, MethodEntry methodEntry, MethodVisitor visitor) {
 			super(api, visitor);
 			this.methodEntry = methodEntry;
 
@@ -67,7 +72,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 			} else if (this.parameterIndices.containsKey(index)) {
 				name = this.fixParameterName(this.parameterIndices.get(index), name);
 			} else if (this.isInvalidName(name)) {
-				name = LocalNameGenerator.generateLocalVariableName(index, new TypeDescriptor(desc));
+				name = LocalNameGenerator.generateLocalVariableName(LocalVariableFixVisitor.this.index, index, new TypeDescriptor(desc));
 			}
 
 			super.visitLocalVariable(name, desc, signature, start, end, index);
@@ -96,7 +101,7 @@ public class LocalVariableFixVisitor extends ClassVisitor {
 
 			if (this.isInvalidName(name)) {
 				List<TypeDescriptor> arguments = this.methodEntry.getDesc().getTypeDescs();
-				name = LocalNameGenerator.generateArgumentName(index, arguments.get(index), arguments);
+				name = LocalNameGenerator.generateArgumentName(LocalVariableFixVisitor.this.index, index, arguments.get(index), arguments);
 			}
 
 			if (index == 0 && LocalVariableFixVisitor.this.ownerEntry.getAccess().isEnum() && this.methodEntry.getObfName().equals("<init>")) {

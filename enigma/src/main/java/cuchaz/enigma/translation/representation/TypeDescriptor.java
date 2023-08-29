@@ -2,6 +2,7 @@ package cuchaz.enigma.translation.representation;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -127,7 +128,7 @@ public class TypeDescriptor implements Translatable {
 		return this.desc.charAt(0) == 'L' && this.desc.charAt(this.desc.length() - 1) == ';';
 	}
 
-	public ClassEntry getTypeEntry() {
+	public ClassEntry getTypeEntry(EntryIndex index) {
 		if (this.isType()) {
 			String name = this.desc.substring(1, this.desc.length() - 1);
 
@@ -137,9 +138,9 @@ public class TypeDescriptor implements Translatable {
 				name = name.substring(0, pos);
 			}
 
-			return new ClassEntry(name);
+			return index.getClass(name);
 		} else if (this.isArray() && this.getArrayType().isType()) {
-			return this.getArrayType().getTypeEntry();
+			return this.getArrayType().getTypeEntry(index);
 		} else {
 			throw new IllegalStateException("desc doesn't have a class");
 		}
@@ -183,10 +184,11 @@ public class TypeDescriptor implements Translatable {
 		return this.desc.hashCode();
 	}
 
-	public TypeDescriptor remap(UnaryOperator<String> remapper) {
+	public TypeDescriptor remap(UnaryOperator<String> remapper, EntryIndex index) {
+		// todo remapper: obf full name to new full name
 		String desc = this.desc;
 		if (this.isType() || (this.isArray() && this.containsType())) {
-			String replacedName = remapper.apply(this.getTypeEntry().getFullName());
+			String replacedName = remapper.apply(this.getTypeEntry(index).getFullName());
 			if (replacedName != null) {
 				if (this.isType()) {
 					desc = "L" + replacedName + ";";
@@ -219,8 +221,9 @@ public class TypeDescriptor implements Translatable {
 	}
 
 	@Override
-	public TranslateResult<TypeDescriptor> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return TranslateResult.ungrouped(this.remap(name -> translator.translate(new ClassEntry(name)).getFullName()));
+	public TranslateResult<? extends Translatable> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
+		// no-op for now
+		return null;
 	}
 
 	public enum Primitive {

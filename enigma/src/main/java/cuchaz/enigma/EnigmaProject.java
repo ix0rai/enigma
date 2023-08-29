@@ -20,10 +20,9 @@ import cuchaz.enigma.translation.mapping.MappingsChecker;
 import cuchaz.enigma.translation.mapping.tree.DeltaTrackingTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import cuchaz.enigma.translation.mapping.tree.EntryTreeNode;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
@@ -99,7 +98,7 @@ public class EnigmaProject {
 	private void setNodeMappings(EntryTreeNode<EntryMapping> node) {
 		if (node.getEntry() != null) {
 			// index mapped local variables: it's a best-effort system
-			if (node.getEntry() instanceof LocalVariableDefEntry localVariable) {
+			if (node.getEntry() instanceof LocalVariableEntry localVariable) {
 				this.jarIndex.getEntryIndex().indexLocalVariable(localVariable);
 			}
 
@@ -194,20 +193,20 @@ public class EnigmaProject {
 				}
 			}
 
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(methodEntry.getParent());
-			if (parent != null && parent.isEnum()
+			ClassEntry parent = methodEntry.getParent();
+			if (parent != null && parent.getDefinition() != null && parent.getDefinition().isEnum()
 					&& ((name.equals("values") && sig.equals("()[L" + parent.getFullName() + ";"))
 					|| (name.equals("valueOf") && sig.equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")))) {
 				return false;
 			}
-		} else if (entry instanceof LocalVariableEntry localEntry && !localEntry.isArgument()) {
+		} else if (entry instanceof LocalVariableEntry localEntry && !localEntry.isParameter()) {
 			return false;
-		} else if (entry instanceof LocalVariableEntry localEntry && localEntry.isArgument()) {
+		} else if (entry instanceof LocalVariableEntry localEntry && localEntry.isParameter()) {
 			MethodEntry method = localEntry.getParent();
-			ClassDefEntry parent = this.jarIndex.getEntryIndex().getDefinition(method.getParent());
+			ClassEntry parent = method.getParent();
 
 			// if this is the valueOf method of an enum class, the argument shouldn't be able to be renamed.
-			if (parent.isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
+			if (parent.getDefinition().isEnum() && method.getName().equals("valueOf") && method.getDesc().toString().equals("(Ljava/lang/String;)L" + parent.getFullName() + ";")) {
 				return false;
 			}
 		} else if (entry instanceof ClassEntry classEntry && this.isAnonymousOrLocal(classEntry)) {
@@ -245,7 +244,11 @@ public class EnigmaProject {
 	}
 
 	public boolean isSynthetic(Entry<?> entry) {
-		return this.jarIndex.getEntryIndex().hasEntry(entry) && this.jarIndex.getEntryIndex().getEntryAccess(entry).isSynthetic();
+		if (entry instanceof DefinedEntry<?,?> defined) {
+			return this.jarIndex.getEntryIndex().hasEntry(entry) && defined.getAccess() != null && defined.getAccess().isSynthetic();
+		}
+
+		return false;
 	}
 
 	public boolean isAnonymousOrLocal(ClassEntry classEntry) {
@@ -272,7 +275,7 @@ public class EnigmaProject {
 					ClassNode node = fixingClassProvider.get(entry.getFullName());
 					if (node != null) {
 						ClassNode translatedNode = new ClassNode();
-						node.accept(new TranslationClassVisitor(deobfuscator, Enigma.ASM_VERSION, translatedNode));
+						node.accept(new TranslationClassVisitor(deobfuscator, this.jarIndex.getEntryIndex(), Enigma.ASM_VERSION, translatedNode));
 						return translatedNode;
 					}
 

@@ -5,15 +5,24 @@ import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.representation.TypeDescriptor;
+import cuchaz.enigma.translation.representation.entry.definition.Definition;
+import cuchaz.enigma.translation.representation.entry.definition.MethodDefinition;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
 	protected final int index;
 	protected final boolean parameter;
+	protected @Nullable TypeDescriptor desc;
 
 	public LocalVariableEntry(MethodEntry parent, int index, String obfName, boolean parameter, EntryMapping mapping) {
+		this(parent, index, obfName, parameter, null, mapping);
+	}
+
+	public LocalVariableEntry(MethodEntry parent, int index, String obfName, boolean parameter, @Nullable TypeDescriptor desc, EntryMapping mapping) {
 		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Variable owner cannot be null");
@@ -21,6 +30,7 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 
 		this.index = index;
 		this.parameter = parameter;
+		this.desc = desc;
 	}
 
 	@Override
@@ -28,12 +38,21 @@ public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Co
 		return MethodEntry.class;
 	}
 
-	public boolean isArgument() {
+	public boolean isParameter() {
 		return this.parameter;
 	}
 
 	public int getIndex() {
 		return this.index;
+	}
+
+	@Nullable
+	public TypeDescriptor getDesc() {
+		return this.desc;
+	}
+
+	public void setDesc(TypeDescriptor desc) {
+		this.desc = desc;
 	}
 
 	@Override

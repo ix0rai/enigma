@@ -7,9 +7,7 @@ import cuchaz.enigma.analysis.EntryReference;
 import cuchaz.enigma.analysis.ReferenceTargetType;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import java.util.ArrayList;
@@ -69,9 +67,9 @@ public class PackageVisibilityIndex implements JarIndexer {
 
 	private void addConnections(EntryIndex entryIndex, ReferenceIndex referenceIndex, InheritanceIndex inheritanceIndex) {
 		for (FieldEntry entry : entryIndex.getFields()) {
-			AccessFlags entryAcc = entryIndex.getFieldAccess(entry);
+			AccessFlags entryAcc = entry.getAccess();
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
-				for (EntryReference<FieldEntry, MethodDefEntry> ref : referenceIndex.getReferencesToField(entry)) {
+				for (EntryReference<FieldEntry, MethodEntry> ref : referenceIndex.getReferencesToField(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
 						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
@@ -80,9 +78,9 @@ public class PackageVisibilityIndex implements JarIndexer {
 		}
 
 		for (MethodEntry entry : entryIndex.getMethods()) {
-			AccessFlags entryAcc = entryIndex.getMethodAccess(entry);
+			AccessFlags entryAcc = entry.getAccess();
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
-				for (EntryReference<MethodEntry, MethodDefEntry> ref : referenceIndex.getReferencesToMethod(entry)) {
+				for (EntryReference<MethodEntry, MethodEntry> ref : referenceIndex.getReferencesToMethod(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
 						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
@@ -91,15 +89,15 @@ public class PackageVisibilityIndex implements JarIndexer {
 		}
 
 		for (ClassEntry entry : entryIndex.getClasses()) {
-			AccessFlags entryAcc = entryIndex.getClassAccess(entry);
+			AccessFlags entryAcc = entry.getAccess();
 			if (!entryAcc.isPublic() && !entryAcc.isPrivate()) {
-				for (EntryReference<ClassEntry, FieldDefEntry> ref : referenceIndex.getFieldTypeReferencesToClass(entry)) {
+				for (EntryReference<ClassEntry, FieldEntry> ref : referenceIndex.getFieldTypeReferencesToClass(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
 						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
 				}
 
-				for (EntryReference<ClassEntry, MethodDefEntry> ref : referenceIndex.getMethodTypeReferencesToClass(entry)) {
+				for (EntryReference<ClassEntry, MethodEntry> ref : referenceIndex.getMethodTypeReferencesToClass(entry)) {
 					if (requiresSamePackage(entryAcc, ref, inheritanceIndex)) {
 						this.addConnection(ref.entry.getContainingClass(), ref.context.getContainingClass());
 					}
@@ -107,8 +105,8 @@ public class PackageVisibilityIndex implements JarIndexer {
 			}
 
 			for (ClassEntry parent : inheritanceIndex.getParents(entry)) {
-				AccessFlags parentAcc = entryIndex.getClassAccess(parent);
-				if (parentAcc != null && !parentAcc.isPublic() && !parentAcc.isPrivate()) {
+				AccessFlags parentFlags = parent.getAccess();
+				if (parentFlags != null && !parentFlags.isPublic() && !parentFlags.isPrivate()) {
 					this.addConnection(entry, parent);
 				}
 			}

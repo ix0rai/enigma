@@ -11,10 +11,8 @@ import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.utils.I18n;
 
@@ -107,20 +105,20 @@ public class StatsGenerator {
 				ClassEntry clazz = root.getParent();
 
 				if (root == method && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
-					if (includedTypes.contains(StatType.METHODS) && !((MethodDefEntry) method).getAccess().isSynthetic()) {
+					if (includedTypes.contains(StatType.METHODS) && !method.getAccess().isSynthetic()) {
 						this.update(StatType.METHODS, mappableCounts, unmappedCounts, method);
 					}
 
 					ClassEntry containingClass = method.getContainingClass();
-					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(((MethodDefEntry) method).getAccess().isSynthetic() && !includeSynthetic)) {
+					if (includedTypes.contains(StatType.PARAMETERS) && !this.project.isAnonymousOrLocal(containingClass) && !(method.getAccess().isSynthetic() && !includeSynthetic)) {
 						MethodDescriptor descriptor = method.getDesc();
 						List<ArgumentDescriptor> argumentDescs = descriptor.getArgumentDescs();
 
-						int index = ((MethodDefEntry) method).getAccess().isStatic() ? 0 : 1;
+						int index = method.getAccess().isStatic() ? 0 : 1;
 						for (ArgumentDescriptor argument : argumentDescs) {
 							if (!(argument.getAccess().isSynthetic() && !includeSynthetic)
 									// skip the implicit superclass parameter for non-static inner class constructors
-									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry().equals(containingClass.getOuterClass()))) {
+									&& !(method.isConstructor() && containingClass.isInnerClass() && index == 1 && argument.containsType() && argument.getTypeEntry(this.entryIndex).equals(containingClass.getOuterClass()))) {
 								this.update(StatType.PARAMETERS, mappableCounts, unmappedCounts, new LocalVariableEntry(method, index, "", true, EntryMapping.DEFAULT));
 							}
 
@@ -136,7 +134,7 @@ public class StatsGenerator {
 				progress.step(numDone++, I18n.translate("type.fields"));
 				ClassEntry clazz = field.getParent();
 
-				if (!((FieldDefEntry) field).getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
+				if (!field.getAccess().isSynthetic() && this.checkPackage(clazz, topLevelPackageSlash, classEntry)) {
 					this.update(StatType.FIELDS, mappableCounts, unmappedCounts, field);
 				}
 			}

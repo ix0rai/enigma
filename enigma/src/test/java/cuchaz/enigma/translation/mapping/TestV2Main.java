@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
@@ -16,7 +17,7 @@ public final class TestV2Main {
 
 		MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
 
-		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
+		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path, new EntryIndex());
 
 		new TinyV2Writer("obf", "deobf").write(tree, Paths.get("currentYarn.tiny"), ProgressListener.none(), parameters);
 	}

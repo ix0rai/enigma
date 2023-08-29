@@ -2,32 +2,30 @@ package cuchaz.enigma.analysis.index;
 
 import cuchaz.enigma.analysis.ReferenceTargetType;
 import cuchaz.enigma.translation.representation.Lambda;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public interface JarIndexer {
-	default void indexClass(ClassDefEntry classEntry) {
+	default void indexClass(ClassEntry classEntry) {
 	}
 
-	default void indexField(FieldDefEntry fieldEntry) {
+	default void indexField(FieldEntry fieldEntry) {
 	}
 
-	default void indexMethod(MethodDefEntry methodEntry) {
+	default void indexMethod(MethodEntry methodEntry) {
 	}
 
-	default void indexMethodReference(MethodDefEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
+	default void indexMethodReference(MethodEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
 	}
 
-	default void indexFieldReference(MethodDefEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
+	default void indexFieldReference(MethodEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
 	}
 
-	default void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
+	default void indexLambda(MethodEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
 	}
 
-	default void indexEnclosingMethod(ClassDefEntry classEntry, EnclosingMethodData enclosingMethodData) {
+	default void indexEnclosingMethod(ClassEntry classEntry, EnclosingMethodData enclosingMethodData) {
 	}
 
 	default void processIndex(JarIndex index) {
@@ -39,8 +37,8 @@ public interface JarIndexer {
 	}
 
 	record EnclosingMethodData(String owner, String name, String descriptor) {
-		public MethodEntry getMethod() {
-			return MethodEntry.parse(this.owner, this.name, this.descriptor);
+		public MethodEntry getMethod(EntryIndex index) {
+			return index.getMethod(index.getClass(this.owner), this.name, this.descriptor);
 		}
 	}
 }

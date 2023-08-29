@@ -5,7 +5,6 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +45,7 @@ public class TestJarIndexConstructorReferences {
 	@Test
 	public void baseDefault() {
 		MethodEntry source = newMethod(baseClass, "<init>", "()V");
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references = this.index.getReferenceIndex().getReferencesToMethod(source);
+		Collection<EntryReference<MethodEntry, MethodEntry>> references = this.index.getReferenceIndex().getReferencesToMethod(source);
 		assertThat(references, containsInAnyOrder(
 				newBehaviorReferenceByMethod(source, callerClass.getName(), "a", "()V"),
 				newBehaviorReferenceByMethod(source, subClass.getName(), "<init>", "()V"),

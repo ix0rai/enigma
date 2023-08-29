@@ -175,7 +175,7 @@ public class StructureDocker extends Docker {
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-			ParentedEntry<?> entry = ((StructureTreeNode) value).getEntry();
+			ParentedEntry<?, ?> entry = ((StructureTreeNode) value).getEntry();
 
 			if (entry instanceof ClassEntry classEntry) {
 				this.setIcon(GuiUtil.getClassIcon(this.gui, classEntry));

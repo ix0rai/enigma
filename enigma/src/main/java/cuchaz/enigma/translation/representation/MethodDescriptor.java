@@ -1,5 +1,6 @@
 package cuchaz.enigma.translation.representation;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
@@ -93,9 +94,9 @@ public class MethodDescriptor implements Translatable {
 		return Objects.hash(this.argumentDescs.hashCode(), this.returnDesc.hashCode());
 	}
 
-	public boolean hasClass(ClassEntry classEntry) {
+	public boolean hasClass(ClassEntry classEntry, EntryIndex index) {
 		for (TypeDescriptor desc : this.types()) {
-			if (desc.containsType() && desc.getTypeEntry().equals(classEntry)) {
+			if (desc.containsType() && desc.getTypeEntry(index).equals(classEntry)) {
 				return true;
 			}
 		}
@@ -103,13 +104,13 @@ public class MethodDescriptor implements Translatable {
 		return false;
 	}
 
-	public MethodDescriptor remap(UnaryOperator<String> remapper) {
+	public MethodDescriptor remap(UnaryOperator<String> remapper, EntryIndex index) {
 		List<ArgumentDescriptor> argumentDescriptors = new ArrayList<>(this.argumentDescs.size());
 		for (ArgumentDescriptor desc : this.argumentDescs) {
-			argumentDescriptors.add(new ArgumentDescriptor(desc.remap(remapper).desc, desc.getAccess()));
+			argumentDescriptors.add(new ArgumentDescriptor(desc.remap(remapper, index).desc, desc.getAccess()));
 		}
 
-		return new MethodDescriptor(argumentDescriptors, this.returnDesc.remap(remapper));
+		return new MethodDescriptor(argumentDescriptors, this.returnDesc.remap(remapper, index));
 	}
 
 	@Override

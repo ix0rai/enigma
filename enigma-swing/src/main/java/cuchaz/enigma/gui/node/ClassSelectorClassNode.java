@@ -13,22 +13,16 @@ import javax.swing.tree.TreeNode;
 import java.util.Comparator;
 
 public class ClassSelectorClassNode extends SortedMutableTreeNode {
-	private final ClassEntry obfEntry;
-	private ClassEntry deobfEntry;
+	private ClassEntry entry;
 
 	public ClassSelectorClassNode(ClassEntry obfEntry, ClassEntry deobfEntry) {
 		super(Comparator.comparing(TreeNode::toString));
-		this.obfEntry = obfEntry;
-		this.deobfEntry = deobfEntry;
+		this.entry = obfEntry;
 		this.setUserObject(deobfEntry);
 	}
 
-	public ClassEntry getObfEntry() {
-		return this.obfEntry;
-	}
-
-	public ClassEntry getDeobfEntry() {
-		return this.deobfEntry;
+	public ClassEntry getEntry() {
+		return this.entry;
 	}
 
 	/**
@@ -63,27 +57,27 @@ public class ClassSelectorClassNode extends SortedMutableTreeNode {
 
 	@Override
 	public String toString() {
-		return this.deobfEntry.getSimpleName();
+		return this.getEntry().getSimpleName();
 	}
 
 	@Override
 	public Object getUserObject() {
-		return this.deobfEntry;
+		return this.getEntry();
 	}
 
 	@Override
 	public void setUserObject(Object userObject) {
 		String packageName = "";
-		if (this.deobfEntry.getPackageName() != null) {
-			packageName = this.deobfEntry.getPackageName() + "/";
+		if (this.entry.getPackageName() != null) {
+			packageName = this.entry.getPackageName() + "/";
 		}
 
 		if (userObject instanceof String) {
-			this.deobfEntry = new ClassEntry(packageName + userObject);
-		} else if (userObject instanceof ClassEntry entry) {
-			this.deobfEntry = entry;
+			this.entry = new ClassEntry(packageName + userObject);
+		} else if (userObject instanceof ClassEntry classEntry) {
+			this.entry = classEntry;
 		}
 
-		super.setUserObject(this.deobfEntry);
+		super.setUserObject(this.entry);
 	}
 }

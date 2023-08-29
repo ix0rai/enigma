@@ -4,15 +4,14 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.analysis.index.ReferenceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<FieldEntry, MethodDefEntry> {
+public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<FieldEntry, MethodEntry> {
 	private final Translator translator;
 	private final FieldEntry entry;
-	private final EntryReference<FieldEntry, MethodDefEntry> reference;
+	private final EntryReference<FieldEntry, MethodEntry> reference;
 
 	public FieldReferenceTreeNode(Translator translator, FieldEntry entry) {
 		this.translator = translator;
@@ -20,7 +19,7 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		this.reference = null;
 	}
 
-	private FieldReferenceTreeNode(Translator translator, EntryReference<FieldEntry, MethodDefEntry> reference) {
+	private FieldReferenceTreeNode(Translator translator, EntryReference<FieldEntry, MethodEntry> reference) {
 		this.translator = translator;
 		this.entry = reference.entry;
 		this.reference = reference;
@@ -32,7 +31,7 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	}
 
 	@Override
-	public EntryReference<FieldEntry, MethodDefEntry> getReference() {
+	public EntryReference<FieldEntry, MethodEntry> getReference() {
 		return this.reference;
 	}
 
@@ -50,11 +49,11 @@ public class FieldReferenceTreeNode extends DefaultMutableTreeNode implements Re
 
 		// get all the child nodes
 		if (this.reference == null) {
-			for (EntryReference<FieldEntry, MethodDefEntry> reference : referenceIndex.getReferencesToField(this.entry)) {
+			for (EntryReference<FieldEntry, MethodEntry> reference : referenceIndex.getReferencesToField(this.entry)) {
 				this.add(new FieldReferenceTreeNode(this.translator, reference));
 			}
 		} else {
-			for (EntryReference<MethodEntry, MethodDefEntry> reference : referenceIndex.getReferencesToMethod(this.reference.context)) {
+			for (EntryReference<MethodEntry, MethodEntry> reference : referenceIndex.getReferencesToMethod(this.reference.context)) {
 				this.add(new MethodReferenceTreeNode(this.translator, reference));
 			}
 		}

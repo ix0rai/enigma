@@ -5,29 +5,41 @@ import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.representation.AccessFlags;
+import cuchaz.enigma.translation.representation.Signature;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
+import cuchaz.enigma.translation.representation.entry.definition.FieldDefinition;
+import cuchaz.enigma.translation.representation.entry.definition.MethodDefinition;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<FieldEntry> {
-	protected final TypeDescriptor desc;
+public class FieldEntry extends DefinedEntry<ClassEntry, FieldDefinition> implements Comparable<FieldEntry> {
+	private final TypeDescriptor desc;
+	private @Nullable FieldDefinition def;
 
 	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc) {
-		this(parent, obfName, desc, EntryMapping.DEFAULT);
+		this(parent, obfName, desc, null, EntryMapping.DEFAULT);
 	}
 
-	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, EntryMapping mapping) {
+	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, @Nullable FieldDefinition def) {
+		this(parent, obfName, desc, def, EntryMapping.DEFAULT);
+	}
+
+	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, @Nullable FieldDefinition def, EntryMapping mapping) {
 		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Owner cannot be null");
 		Preconditions.checkNotNull(desc, "Field descriptor cannot be null");
 
 		this.desc = desc;
+		this.def = def;
 	}
 
-	public static FieldEntry parse(String owner, String name, String desc) {
-		return new FieldEntry(new ClassEntry(owner), name, new TypeDescriptor(desc), EntryMapping.DEFAULT);
+	public static FieldEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
+		return new FieldEntry(owner, obfName, new TypeDescriptor(desc), new FieldDefinition(new AccessFlags(access), Signature.createTypedSignature(signature)), EntryMapping.DEFAULT);
 	}
 
 	@Override
@@ -39,11 +51,20 @@ public class FieldEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return this.desc;
 	}
 
+	@Nullable
+	public FieldDefinition getDefinition() {
+		return this.def;
+	}
+
+	public void setDefinition(FieldDefinition definition) {
+		this.def = definition;
+	}
+
 	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldEntry(this.parent, this.obfName, translator.translate(this.desc), mapping)
+				new FieldEntry(this.parent, this.obfName, translator.translate(this.desc), this.def, mapping)
 		);
 	}
 

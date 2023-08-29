@@ -2,6 +2,7 @@ package cuchaz.enigma.analysis;
 
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.api.EnigmaPlugin;
 import cuchaz.enigma.api.EnigmaPluginContext;
 import cuchaz.enigma.api.service.JarIndexerService;
@@ -48,7 +49,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 
 	private void registerEnumNamingService(EnigmaPluginContext ctx) {
 		final Map<Entry<?>, String> names = new HashMap<>();
-		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names);
+		final EnumFieldNameFindingVisitor visitor = new EnumFieldNameFindingVisitor(names, new EntryIndex());
 
 		ctx.registerService("enigma:enum_initializer_indexer", JarIndexerService.TYPE, ctx1 -> JarIndexerService.fromVisitor(visitor));
 		ctx.registerService("enigma:enum_name_proposer", NameProposalService.TYPE, ctx1 -> (obfEntry, remapper) -> Optional.ofNullable(names.get(obfEntry)));
@@ -80,20 +81,22 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 	private static final class EnumFieldNameFindingVisitor extends ClassVisitor {
 		private ClassEntry clazz;
 		private String className;
+		private EntryIndex index;
 		private final Map<Entry<?>, String> mappings;
 		private final Set<org.jetbrains.java.decompiler.util.Pair<String, String>> enumFields = new HashSet<>();
 		private final List<MethodNode> classInits = new ArrayList<>();
 
-		EnumFieldNameFindingVisitor(Map<Entry<?>, String> mappings) {
+		EnumFieldNameFindingVisitor(Map<Entry<?>, String> mappings, EntryIndex index) {
 			super(Enigma.ASM_VERSION);
 			this.mappings = mappings;
+			this.index = index;
 		}
 
 		@Override
 		public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 			super.visit(version, access, name, signature, superName, interfaces);
 			this.className = name;
-			this.clazz = new ClassEntry(name);
+			this.clazz = index.getClass(name);
 			this.enumFields.clear();
 			this.classInits.clear();
 		}

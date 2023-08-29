@@ -1,5 +1,6 @@
 package cuchaz.enigma;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.classprovider.CachingClassProvider;
 import cuchaz.enigma.classprovider.JarClassProvider;
@@ -26,6 +27,7 @@ public class TestInnerClasses {
 
 	public static final Path JAR = TestUtil.obfJar("innerClasses");
 	private final JarIndex index;
+	private final EntryIndex entryIndex;
 	private final Decompiler decompiler;
 
 	public TestInnerClasses() throws Exception {
@@ -33,6 +35,7 @@ public class TestInnerClasses {
 		CachingClassProvider classProvider = new CachingClassProvider(jcp);
 		this.index = JarIndex.empty();
 		this.index.indexJar(jcp.getClassNames(), classProvider, ProgressListener.none());
+		this.entryIndex = this.index.getEntryIndex();
 		this.decompiler = Decompilers.CFR.create(classProvider, new SourceSettings(false, false));
 		simpleOuter = newClass("d");
 		simpleInner = newClass("d$a");
@@ -60,18 +63,18 @@ public class TestInnerClasses {
 		assertTrue(this.index.getEntryIndex().hasClass(classTreeRoot));
 
 		// level 1
-		ClassEntry fullClassEntry = new ClassEntry(classTreeRoot.getName()
+		ClassEntry fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 			+ "$" + classTreeLevel1.getSimpleName());
 		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 2
-		fullClassEntry = new ClassEntry(classTreeRoot.getName()
+		fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 				+ "$" + classTreeLevel1.getSimpleName()
 				+ "$" + classTreeLevel2.getSimpleName());
 		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
 
 		// level 3
-		fullClassEntry = new ClassEntry(classTreeRoot.getName()
+		fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 			+ "$" + classTreeLevel1.getSimpleName()
 			+ "$" + classTreeLevel2.getSimpleName()
 			+ "$" + classTreeLevel3.getSimpleName());

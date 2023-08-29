@@ -22,6 +22,6 @@ public final class RawEntryMapping {
 	}
 
 	public EntryMapping bake() {
-		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), tokenType);
+		return new EntryMapping(this.targetName, this.javadocs.isEmpty() ? null : String.join("\n", this.javadocs), this.tokenType);
 	}
 }

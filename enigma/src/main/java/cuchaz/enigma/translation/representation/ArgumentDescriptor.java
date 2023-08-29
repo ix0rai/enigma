@@ -1,5 +1,7 @@
 package cuchaz.enigma.translation.representation;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
+
 import java.util.function.UnaryOperator;
 
 public class ArgumentDescriptor extends TypeDescriptor {
@@ -18,7 +20,7 @@ public class ArgumentDescriptor extends TypeDescriptor {
 		this.access = access;
 	}
 
-	public ArgumentDescriptor remap(UnaryOperator<String> remapper) {
-		return new ArgumentDescriptor(super.remap(remapper).desc, this.getAccess());
+	public ArgumentDescriptor remap(UnaryOperator<String> remapper, EntryIndex index) {
+		return new ArgumentDescriptor(super.remap(remapper, index).desc, this.getAccess());
 	}
 }

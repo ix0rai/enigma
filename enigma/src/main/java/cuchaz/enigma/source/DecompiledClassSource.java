@@ -3,6 +3,7 @@ package cuchaz.enigma.source;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.EnigmaServices;
 import cuchaz.enigma.analysis.EntryReference;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.api.service.NameProposalService;
 import cuchaz.enigma.translation.LocalNameGenerator;
 import cuchaz.enigma.translation.TranslateResult;
@@ -12,7 +13,7 @@ import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -78,7 +79,7 @@ public class DecompiledClassSource {
 			target.add(RenamableTokenType.DEBUG, movedToken);
 		}
 
-		String defaultName = this.generateDefaultName(translatedEntry.getValue());
+		String defaultName = this.generateDefaultName(project.getJarIndex().getEntryIndex(), translatedEntry.getValue());
 		return defaultName;
 	}
 
@@ -97,14 +98,14 @@ public class DecompiledClassSource {
 	}
 
 	@Nullable
-	private String generateDefaultName(Entry<?> entry) {
-		if (entry instanceof LocalVariableDefEntry localVariable) {
+	private String generateDefaultName(EntryIndex entryIndex, Entry<?> entry) {
+		if (entry instanceof LocalVariableEntry localVariable) {
 			int index = localVariable.getIndex();
-			if (localVariable.isArgument()) {
+			if (localVariable.isParameter()) {
 				List<TypeDescriptor> arguments = localVariable.getParent().getDesc().getTypeDescs();
-				return LocalNameGenerator.generateArgumentName(index, localVariable.getDesc(), arguments);
+				return LocalNameGenerator.generateArgumentName(entryIndex, index, localVariable.getDesc(), arguments);
 			} else {
-				return LocalNameGenerator.generateLocalVariableName(index, localVariable.getDesc());
+				return LocalNameGenerator.generateLocalVariableName(entryIndex, index, localVariable.getDesc());
 			}
 		}
 

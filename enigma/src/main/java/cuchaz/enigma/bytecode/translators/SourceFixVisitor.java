@@ -2,8 +2,9 @@ package cuchaz.enigma.bytecode.translators;
 
 import cuchaz.enigma.analysis.index.BridgeMethodIndex;
 import cuchaz.enigma.analysis.index.JarIndex;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -11,7 +12,7 @@ import org.objectweb.asm.Opcodes;
 
 public class SourceFixVisitor extends ClassVisitor {
 	private final JarIndex index;
-	private ClassDefEntry ownerEntry;
+	private ClassEntry ownerEntry;
 
 	public SourceFixVisitor(int api, ClassVisitor visitor, JarIndex index) {
 		super(api, visitor);
@@ -20,13 +21,14 @@ public class SourceFixVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.ownerEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		ClassDefinition definition = ClassDefinition.parse(index.getEntryIndex(), access, signature, superName, interfaces);
+		this.ownerEntry = this.index.getEntryIndex().getClass(name, definition);
 		super.visit(version, access, name, signature, superName, interfaces);
 	}
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-		if (this.ownerEntry.isRecord() && (access & Opcodes.ACC_STATIC) == 0) {
+		if (this.ownerEntry.getDefinition().isRecord() && (access & Opcodes.ACC_STATIC) == 0) {
 			access |= Opcodes.ACC_PRIVATE;
 		}
 
@@ -35,7 +37,7 @@ public class SourceFixVisitor extends ClassVisitor {
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-		MethodDefEntry methodEntry = MethodDefEntry.parse(this.ownerEntry, access, name, descriptor, signature);
+		MethodEntry methodEntry = MethodEntry.parse(this.ownerEntry, access, name, descriptor, signature);
 
 		BridgeMethodIndex bridgeIndex = this.index.getBridgeMethodIndex();
 		if (bridgeIndex.isBridgeMethod(methodEntry)) {

@@ -49,7 +49,7 @@ public class StatsManager {
 	 * @param node the node to generate stats for
 	 */
 	public void generateFor(ClassSelectorClassNode node) {
-		ClassEntry entry = node.getObfEntry();
+		ClassEntry entry = node.getEntry();
 
 		if (!this.latches.containsKey(entry)) {
 			this.latches.put(entry, new CountDownLatch(1));
@@ -72,7 +72,7 @@ public class StatsManager {
 	 * @param stats the stats to associate
 	 */
 	public void setStats(ClassSelectorClassNode node, StatsResult stats) {
-		ClassEntry entry = node.getObfEntry();
+		ClassEntry entry = node.getEntry();
 
 		this.results.put(entry, stats);
 		if (this.latches.containsKey(entry)) {
@@ -95,7 +95,7 @@ public class StatsManager {
 	 * @return the stats for the given class node, or {@code null} if not yet generated
 	 */
 	public StatsResult getStats(ClassSelectorClassNode node) {
-		ClassEntry entry = node.getObfEntry();
+		ClassEntry entry = node.getEntry();
 		return this.results.get(entry);
 	}
 }

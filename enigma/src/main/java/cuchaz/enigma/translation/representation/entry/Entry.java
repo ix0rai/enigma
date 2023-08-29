@@ -4,6 +4,7 @@ import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
+import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import java.util.ArrayList;

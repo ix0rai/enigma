@@ -6,16 +6,16 @@ import cuchaz.enigma.analysis.index.ReferenceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.Set;
 
-public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<ClassEntry, MethodDefEntry> {
+public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements ReferenceTreeNode<ClassEntry, MethodEntry> {
 	private final Translator deobfuscatingTranslator;
 	private final ClassEntry entry;
-	private final EntryReference<ClassEntry, MethodDefEntry> reference;
+	private final EntryReference<ClassEntry, MethodEntry> reference;
 
 	public ClassReferenceTreeNode(Translator deobfuscatingTranslator, ClassEntry entry) {
 		this.deobfuscatingTranslator = deobfuscatingTranslator;
@@ -23,7 +23,7 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		this.reference = null;
 	}
 
-	public ClassReferenceTreeNode(Translator deobfuscatingTranslator, EntryReference<ClassEntry, MethodDefEntry> reference) {
+	public ClassReferenceTreeNode(Translator deobfuscatingTranslator, EntryReference<ClassEntry, MethodEntry> reference) {
 		this.deobfuscatingTranslator = deobfuscatingTranslator;
 		this.entry = reference.entry;
 		this.reference = reference;
@@ -35,7 +35,7 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements Re
 	}
 
 	@Override
-	public EntryReference<ClassEntry, MethodDefEntry> getReference() {
+	public EntryReference<ClassEntry, MethodEntry> getReference() {
 		return this.reference;
 	}
 
@@ -52,7 +52,7 @@ public class ClassReferenceTreeNode extends DefaultMutableTreeNode implements Re
 		ReferenceIndex referenceIndex = index.getReferenceIndex();
 
 		// get all the child nodes
-		for (EntryReference<ClassEntry, MethodDefEntry> reference : referenceIndex.getReferencesToClass(this.entry)) {
+		for (EntryReference<ClassEntry, MethodEntry> reference : referenceIndex.getReferencesToClass(this.entry)) {
 			this.add(new ClassReferenceTreeNode(this.deobfuscatingTranslator, reference));
 		}
 

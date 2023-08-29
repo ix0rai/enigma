@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping.serde.tinyv2;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.mapping.serde.MappingHelper;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
@@ -40,11 +41,11 @@ public final class TinyV2Reader implements MappingsReader {
 	private static final int[] INDENT_CLEAR_START = {IN_HEADER, IN_METHOD, IN_PARAMETER, STATE_SIZE};
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws IOException, MappingParseException {
-		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
+	public EntryTree<EntryMapping> read(Path path, EntryIndex index, ProgressListener progress) throws IOException, MappingParseException {
+		return this.read(path, index, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
 	}
 
-	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
+	private EntryTree<EntryMapping> read(Path path, EntryIndex index, List<String> lines, ProgressListener progress) throws MappingParseException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 		progress.init(lines.size(), "progress.mappings.tiny_v2.loading");
@@ -98,7 +99,7 @@ public final class TinyV2Reader implements MappingsReader {
 							}
 							case "c" -> { // class
 								state.set(IN_CLASS);
-								holds[IN_CLASS] = this.parseClass(parts, escapeNames);
+								holds[IN_CLASS] = this.parseClass(index, parts, escapeNames);
 							}
 							default -> this.unsupportKey(parts);
 						}
@@ -117,11 +118,11 @@ public final class TinyV2Reader implements MappingsReader {
 							switch (parts[0]) {
 								case "m" -> { // method
 									state.set(IN_METHOD);
-									holds[IN_METHOD] = this.parseMethod(holds[IN_CLASS], parts, escapeNames);
+									holds[IN_METHOD] = this.parseMethod(index, holds[IN_CLASS], parts, escapeNames);
 								}
 								case "f" -> { // field
 									state.set(IN_FIELD);
-									holds[IN_FIELD] = this.parseField(holds[IN_CLASS], parts, escapeNames);
+									holds[IN_FIELD] = this.parseField(index, holds[IN_CLASS], parts, escapeNames);
 								}
 								case "c" -> // class javadoc
 										this.addJavadoc(holds[IN_CLASS], parts);
@@ -198,6 +199,7 @@ public final class TinyV2Reader implements MappingsReader {
 		if (mapping != null) {
 			EntryMapping baked = mapping.bake();
 			mappings.insert(hold2.getEntry(), baked);
+			hold2.getEntry().setMapping(baked);
 		}
 	}
 
@@ -213,8 +215,8 @@ public final class TinyV2Reader implements MappingsReader {
 		this.addJavadoc(pair, parts[1]);
 	}
 
-	private MappingPair<ClassEntry, RawEntryMapping> parseClass(String[] tokens, boolean escapeNames) {
-		ClassEntry obfuscatedEntry = new ClassEntry(unescapeOpt(tokens[1], escapeNames));
+	private MappingPair<ClassEntry, RawEntryMapping> parseClass(EntryIndex index, String[] tokens, boolean escapeNames) {
+		ClassEntry obfuscatedEntry = index.getClass(unescapeOpt(tokens[1], escapeNames));
 		if (tokens.length <= 2) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
@@ -224,11 +226,11 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
-	private MappingPair<FieldEntry, RawEntryMapping> parseField(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
+	private MappingPair<FieldEntry, RawEntryMapping> parseField(EntryIndex index, MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		TypeDescriptor descriptor = new TypeDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		FieldEntry obfuscatedEntry = new FieldEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
+		FieldEntry obfuscatedEntry = index.getField(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}
@@ -237,11 +239,11 @@ public final class TinyV2Reader implements MappingsReader {
 		return new MappingPair<>(obfuscatedEntry, new RawEntryMapping(mapping, RenamableTokenType.DEOBFUSCATED));
 	}
 
-	private MappingPair<MethodEntry, RawEntryMapping> parseMethod(MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
+	private MappingPair<MethodEntry, RawEntryMapping> parseMethod(EntryIndex index, MappingPair<? extends Entry<?>, RawEntryMapping> parent, String[] tokens, boolean escapeNames) {
 		ClassEntry ownerClass = (ClassEntry) parent.getEntry();
 		MethodDescriptor descriptor = new MethodDescriptor(unescapeOpt(tokens[1], escapeNames));
 
-		MethodEntry obfuscatedEntry = new MethodEntry(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
+		MethodEntry obfuscatedEntry = index.getMethod(ownerClass, unescapeOpt(tokens[2], escapeNames), descriptor);
 		if (tokens.length <= 3) {
 			return new MappingPair<>(obfuscatedEntry);
 		}

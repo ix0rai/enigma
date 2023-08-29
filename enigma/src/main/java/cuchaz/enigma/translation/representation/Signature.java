@@ -98,6 +98,8 @@ public class Signature implements Translatable {
 
 	@Override
 	public TranslateResult<Signature> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		return TranslateResult.ungrouped(this.remap(obfName -> translator.translate(new ClassEntry(obfName)).getFullName()));
+
+		return null;
+		//return TranslateResult.ungrouped(this.remap(obfName -> translator.translate(new ClassEntry(obfName)).getFullName()));
 	}
 }

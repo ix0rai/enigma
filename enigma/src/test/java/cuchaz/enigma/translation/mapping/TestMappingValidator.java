@@ -58,26 +58,26 @@ public class TestMappingValidator {
 		ClassEntry a = index.getClass("a");
 
 		// static fields
-		remapper.putMapping(newVC(), index.getFieldDefNullable(b, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+		remapper.putMapping(newVC(), index.getField(b, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
+		remapper.validatePutMapping(vc, index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_00"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// final fields
-		remapper.putMapping(newVC(), index.getFieldDefNullable(b, "a", "I"), new EntryMapping("field01"));
+		remapper.putMapping(newVC(), index.getField(b, "a", "I"), new EntryMapping("field01"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "a", "I"), new EntryMapping("field01"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc);
 
 		// instance fields
-		remapper.putMapping(newVC(), index.getFieldDefNullable(b, "b", "I"), new EntryMapping("field02"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "I"), new EntryMapping("field02"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "b", "I"), new EntryMapping("field02"));
+		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field02"));
 
 		assertMessages(vc);
 	}
@@ -88,18 +88,18 @@ public class TestMappingValidator {
 		ClassEntry a = index.getClass("a");
 
 		// static fields
-		remapper.putMapping(newVC(), index.getFieldDefNullable(b, "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_04"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// default fields
-		remapper.putMapping(newVC(), index.getFieldDefNullable(b, "b", "Z"), new EntryMapping("field05"));
+		remapper.putMapping(newVC(), index.getField(b, "b", "Z"), new EntryMapping("field05"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "a", "Z"), new EntryMapping("field05"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Z"), new EntryMapping("field05"));
 
 		assertMessages(vc);
 	}
@@ -110,18 +110,18 @@ public class TestMappingValidator {
 		ClassEntry a = index.getClass("a");
 
 		// static methods
-		remapper.putMapping(newVC(), index.getMethodDefNullable(b, "c", "()V"), new EntryMapping("method01"));
+		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method01"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "a", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.SHADOWED_NAME_CLASS);
 
 		// private methods
-		remapper.putMapping(newVC(), index.getMethodDefNullable(b, "a", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(newVC(), index.getMethod(b, "a", "()V"), new EntryMapping("method02"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "d", "()V"), new EntryMapping("method02"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc);
 	}
@@ -130,17 +130,17 @@ public class TestMappingValidator {
 	public void nonUniqueFields() {
 		ClassEntry a = index.getClass("a");
 
-		remapper.putMapping(newVC(), index.getFieldDefNullable(a, "a", "I"), new EntryMapping("field01"));
+		remapper.putMapping(newVC(), index.getField(a, "a", "I"), new EntryMapping("field01"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "b", "I"), new EntryMapping("field01"));
+		remapper.validatePutMapping(vc, index.getField(a, "b", "I"), new EntryMapping("field01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
-		remapper.putMapping(newVC(), index.getFieldDefNullable(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+		remapper.putMapping(newVC(), index.getField(a, "c", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getFieldDefNullable(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
+		remapper.validatePutMapping(vc, index.getField(a, "a", "Ljava/lang/String;"), new EntryMapping("FIELD_02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
@@ -149,15 +149,15 @@ public class TestMappingValidator {
 	public void nonUniqueMethods() {
 		ClassEntry a = index.getClass("a");
 
-		remapper.putMapping(newVC(), index.getMethodDefNullable(a, "a", "()V"), new EntryMapping("method01"));
+		remapper.putMapping(newVC(), index.getMethod(a, "a", "()V"), new EntryMapping("method01"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "b", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "d", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "d", "()V"), new EntryMapping("method01"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}
@@ -168,27 +168,27 @@ public class TestMappingValidator {
 		ClassEntry a = index.getClass("a");
 
 		// "overriding" w/different return descriptor
-		remapper.putMapping(newVC(), index.getMethodDefNullable(b, "a", "()Z"), new EntryMapping("method01"));
+		remapper.putMapping(newVC(), index.getMethod(b, "a", "()Z"), new EntryMapping("method01"));
 
 		ValidationContext vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "b", "()V"), new EntryMapping("method01"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method01"));
 
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" a static method
-		remapper.putMapping(newVC(), index.getMethodDefNullable(b, "c", "()V"), new EntryMapping("method02"));
+		remapper.putMapping(newVC(), index.getMethod(b, "c", "()V"), new EntryMapping("method02"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "b", "()V"), new EntryMapping("method02"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "b", "()V"), new EntryMapping("method02"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 
 		// "overriding" when the original methods were not related
-		remapper.putMapping(newVC(), index.getMethodDefNullable(b, "b", "()I"), new EntryMapping("method03"));
+		remapper.putMapping(newVC(), index.getMethod(b, "b", "()I"), new EntryMapping("method03"));
 
 		vc = newVC();
-		remapper.validatePutMapping(vc, index.getMethodDefNullable(a, "a", "()I"), new EntryMapping("method03"));
+		remapper.validatePutMapping(vc, index.getMethod(a, "a", "()I"), new EntryMapping("method03"));
 
 		assertMessages(vc, Message.NON_UNIQUE_NAME_CLASS);
 	}

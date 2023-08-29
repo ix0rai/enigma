@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping.serde.proguard;
 
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.MappingOperations;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.EntryMapping;
@@ -30,7 +31,7 @@ public class ProguardMappingsReader implements MappingsReader {
 	private static final Pattern METHOD = Pattern.compile(" {4}(?:[0-9]+:[0-9]+:)?(" + TYPE + ") (" + NAME + ")\\((" + TYPE_LIST + ")\\) -> (" + NAME + ")");
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException {
+	public EntryTree<EntryMapping> read(Path path, EntryIndex index, ProgressListener progress) throws MappingParseException, IOException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 		int lineNumber = 0;
@@ -50,8 +51,10 @@ public class ProguardMappingsReader implements MappingsReader {
 				String name = classMatcher.group(1);
 				String targetName = classMatcher.group(2);
 
-				currentClass = new ClassEntry(name.replace('.', '/'));
-				mappings.insert(currentClass, new EntryMapping(ClassEntry.getInnerName(targetName.replace('.', '/'))));
+				currentClass = index.getClass(name.replace('.', '/'));
+				EntryMapping mapping = new EntryMapping(ClassEntry.getInnerName(targetName.replace('.', '/')));
+				mappings.insert(currentClass, mapping);
+				currentClass.setMapping(mapping);
 			} else if (fieldMatcher.matches()) {
 				String type = fieldMatcher.group(1);
 				String name = fieldMatcher.group(2);
@@ -61,7 +64,10 @@ public class ProguardMappingsReader implements MappingsReader {
 					throw new MappingParseException(path, lineNumber, "field mapping not inside class: " + line);
 				}
 
-				mappings.insert(new FieldEntry(currentClass, name, new TypeDescriptor(this.getDescriptor(type))), new EntryMapping(targetName));
+				FieldEntry field = index.getField(currentClass, name, new TypeDescriptor(this.getDescriptor(type)));
+				EntryMapping mapping = new EntryMapping(targetName);
+				mappings.insert(field, mapping);
+				field.setMapping(mapping);
 			} else if (methodMatcher.matches()) {
 				String returnType = methodMatcher.group(1);
 				String name = methodMatcher.group(2);
@@ -72,7 +78,10 @@ public class ProguardMappingsReader implements MappingsReader {
 					throw new MappingParseException(path, lineNumber, "method mapping not inside class: " + line);
 				}
 
-				mappings.insert(new MethodEntry(currentClass, name, new MethodDescriptor(this.getDescriptor(returnType, parameterTypes))), new EntryMapping(targetName));
+				MethodEntry entry = index.getMethod(currentClass, name, new MethodDescriptor(this.getDescriptor(returnType, parameterTypes)));
+				EntryMapping mapping = new EntryMapping(targetName);
+				mappings.insert(entry, mapping);
+				entry.setMapping(mapping);
 			} else {
 				throw new MappingParseException(path, lineNumber, "invalid mapping line: " + line);
 			}

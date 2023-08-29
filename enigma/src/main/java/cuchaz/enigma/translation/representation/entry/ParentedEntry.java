@@ -8,6 +8,9 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
+import cuchaz.enigma.translation.representation.entry.definition.Definition;
+import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

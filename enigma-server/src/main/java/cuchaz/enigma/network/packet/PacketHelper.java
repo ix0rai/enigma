@@ -122,7 +122,7 @@ public class PacketHelper {
 			writeString(output, methodEntry.getDesc().toString());
 		} else if (entry instanceof LocalVariableEntry localVar) {
 			output.writeShort(localVar.getIndex());
-			output.writeBoolean(localVar.isArgument());
+			output.writeBoolean(localVar.isParameter());
 		}
 	}
 

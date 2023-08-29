@@ -2,6 +2,7 @@ package cuchaz.enigma.translation.mapping.serde.recaf;
 
 import com.google.common.jimfs.Jimfs;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.tree.EntryTree;
 import org.junit.jupiter.api.Test;
@@ -32,10 +33,10 @@ public class TestRecaf {
 			RecafMappingsWriter writer = RecafMappingsWriter.INSTANCE;
 			RecafMappingsReader reader = RecafMappingsReader.INSTANCE;
 
-			EntryTree<EntryMapping> mappings = reader.read(path);
+			EntryTree<EntryMapping> mappings = reader.read(path, new EntryIndex());
 			writer.write(mappings, path, ProgressListener.none(), null);
 
-			reader.read(path);
+			reader.read(path, new EntryIndex());
 			Set<String> newContents = new HashSet<>(Files.readAllLines(path));
 
 			assertEquals(contents, newContents);

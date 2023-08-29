@@ -1,5 +1,6 @@
 package cuchaz.enigma;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import org.junit.jupiter.api.Test;
@@ -129,14 +130,14 @@ public class TestMethodDescriptor {
 	public void replaceClasses() {
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("()V");
-			final MethodDescriptor sig = oldSig.remap(s -> null);
+			final MethodDescriptor sig = oldSig.remap(s -> null, new EntryIndex());
 			assertThat(sig.getArgumentDescs(), is(empty()));
 			assertThat(sig.getReturnDesc(), is(new TypeDescriptor("V")));
 		}
 
 		{
 			final MethodDescriptor oldSig = new MethodDescriptor("(IJLFoo;)V");
-			final MethodDescriptor sig = oldSig.remap(s -> null);
+			final MethodDescriptor sig = oldSig.remap(s -> null, new EntryIndex());
 			assertThat(sig.getArgumentDescs(), contains(
 					new TypeDescriptor("I"),
 					new TypeDescriptor("J"),
@@ -153,7 +154,7 @@ public class TestMethodDescriptor {
 				}
 
 				return null;
-			});
+			}, new EntryIndex());
 			assertThat(sig.getArgumentDescs(), contains(
 					new TypeDescriptor("LBar;"),
 					new TypeDescriptor("LBar;")
@@ -169,7 +170,7 @@ public class TestMethodDescriptor {
 				}
 
 				return null;
-			});
+			}, new EntryIndex());
 			assertThat(sig.getArgumentDescs(), contains(
 					new TypeDescriptor("LFoo;"),
 					new TypeDescriptor("LBar;")
@@ -190,7 +191,7 @@ public class TestMethodDescriptor {
 				}
 
 				return null;
-			});
+			}, new EntryIndex());
 			assertThat(sig.getArgumentDescs(), contains(
 					new TypeDescriptor("[LFood;")
 			));

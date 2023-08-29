@@ -20,8 +20,8 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.LocalVariableDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,7 +80,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 		}
 
 		private void visitMethod(AstNode node) {
-			final MethodDefEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION), this.remapper.getJarIndex().getEntryIndex());
+			final MethodEntry methodDefEntry = EntryParser.parse(node.getUserData(Keys.METHOD_DEFINITION), this.remapper.getJarIndex().getEntryIndex());
 			final Comment[] baseComments = this.getComments(node, obj -> methodDefEntry);
 			List<Comment> comments = new ArrayList<>();
 			if (baseComments != null) {
@@ -89,7 +89,7 @@ public final class AddJavadocsAstTransform implements IAstTransform {
 
 			for (ParameterDeclaration dec : node.getChildrenByRole(Roles.PARAMETER)) {
 				ParameterDefinition def = dec.getUserData(Keys.PARAMETER_DEFINITION);
-				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableDefEntry(methodDefEntry, def.getSlot(),
+				final Comment[] paramComments = this.getParameterComments(dec, obj -> new LocalVariableEntry(methodDefEntry, def.getSlot(),
 						def.getName(),
 						true,
 						EntryParser.parseTypeDescriptor(def.getParameterType()), EntryMapping.DEFAULT));

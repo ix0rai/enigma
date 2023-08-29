@@ -10,8 +10,10 @@ import cuchaz.enigma.analysis.index.JarIndex;
 import cuchaz.enigma.translation.VoidTranslator;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -42,9 +44,9 @@ public class IndexEntryResolver implements EntryResolver {
 			return Collections.emptySet();
 		}
 
-		Entry<ClassEntry> classChild = this.getClassChild(entry);
-		if (classChild != null && !(classChild instanceof ClassEntry)) {
-			AccessFlags access = this.entryIndex.getEntryAccess(classChild);
+		DefinedEntry<ClassEntry, ?> classChild = this.getClassChild(entry);
+		if (!(classChild instanceof ClassEntry) && classChild != null) {
+			AccessFlags access = classChild.getAccess();
 
 			// If we're looking for the closest and this entry exists, we're done looking
 			if (strategy == ResolutionStrategy.RESOLVE_CLOSEST && access != null) {
@@ -52,7 +54,7 @@ public class IndexEntryResolver implements EntryResolver {
 			}
 
 			if (access == null || (!access.isPrivate() && !access.isStatic())) {
-				Collection<Entry<ClassEntry>> resolvedChildren = this.resolveChildEntry(classChild, strategy);
+				Collection<DefinedEntry<ClassEntry, ?>> resolvedChildren = this.resolveChildEntry(classChild, strategy);
 				if (!resolvedChildren.isEmpty()) {
 					return resolvedChildren.stream()
 							.map(resolvedChild -> (E) entry.replaceAncestor(classChild, resolvedChild))
@@ -65,7 +67,7 @@ public class IndexEntryResolver implements EntryResolver {
 	}
 
 	@Nullable
-	private Entry<ClassEntry> getClassChild(Entry<?> entry) {
+	private DefinedEntry<ClassEntry, ?> getClassChild(Entry<?> entry) {
 		if (entry instanceof ClassEntry) {
 			return null;
 		}
@@ -75,22 +77,22 @@ public class IndexEntryResolver implements EntryResolver {
 		for (int i = ancestry.size() - 1; i > 0; i--) {
 			Entry<?> child = ancestry.get(i);
 			Entry<ClassEntry> cast = child.castParent(ClassEntry.class);
-			if (cast != null && !(cast instanceof ClassEntry)) {
+			if (!(cast instanceof ClassEntry) && cast instanceof DefinedEntry<ClassEntry, ?> defined) {
 				// we found the entry which is a child of a class, we are now able to resolve the owner of this entry
-				return cast;
+				return defined;
 			}
 		}
 
 		return null;
 	}
 
-	private Set<Entry<ClassEntry>> resolveChildEntry(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Set<DefinedEntry<ClassEntry, ?>> resolveChildEntry(DefinedEntry<ClassEntry, ?> entry, ResolutionStrategy strategy) {
 		ClassEntry ownerClass = entry.getParent();
 
 		if (entry instanceof MethodEntry methodEntry) {
 			MethodEntry bridgeMethod = this.bridgeMethodIndex.getBridgeFromSpecialized(methodEntry);
 			if (bridgeMethod != null && ownerClass.equals(bridgeMethod.getParent())) {
-				Set<Entry<ClassEntry>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy);
+				Set<DefinedEntry<ClassEntry, ?>> resolvedBridge = this.resolveChildEntry(bridgeMethod, strategy);
 				if (!resolvedBridge.isEmpty()) {
 					return resolvedBridge;
 				} else {
@@ -99,10 +101,10 @@ public class IndexEntryResolver implements EntryResolver {
 			}
 		}
 
-		Set<Entry<ClassEntry>> resolvedEntries = new HashSet<>();
+		Set<DefinedEntry<ClassEntry, ?>> resolvedEntries = new HashSet<>();
 
 		for (ClassEntry parentClass : this.inheritanceIndex.getParents(ownerClass)) {
-			Entry<ClassEntry> parentEntry = entry.withParent(parentClass);
+			DefinedEntry<ClassEntry, ?> parentEntry = entry.withParent(parentClass);
 
 			if (strategy == ResolutionStrategy.RESOLVE_ROOT) {
 				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy));
@@ -114,12 +116,12 @@ public class IndexEntryResolver implements EntryResolver {
 		return resolvedEntries;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveRoot(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Collection<DefinedEntry<ClassEntry, ?>> resolveRoot(DefinedEntry<ClassEntry, ?> entry, ResolutionStrategy strategy) {
 		// When resolving root, we want to first look for the lowest entry before returning ourselves
-		Set<Entry<ClassEntry>> parentResolution = this.resolveChildEntry(entry, strategy);
+		Set<DefinedEntry<ClassEntry, ?>> parentResolution = this.resolveChildEntry(entry, strategy);
 
 		if (parentResolution.isEmpty()) {
-			AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
+			AccessFlags parentAccess = entry.getAccess();
 			if (parentAccess != null && !parentAccess.isPrivate()) {
 				return Collections.singleton(entry);
 			}
@@ -128,9 +130,9 @@ public class IndexEntryResolver implements EntryResolver {
 		return parentResolution;
 	}
 
-	private Collection<Entry<ClassEntry>> resolveClosest(Entry<ClassEntry> entry, ResolutionStrategy strategy) {
+	private Collection<DefinedEntry<ClassEntry, ?>> resolveClosest(DefinedEntry<ClassEntry, ?> entry, ResolutionStrategy strategy) {
 		// When resolving closest, we want to first check if we exist before looking further down
-		AccessFlags parentAccess = this.entryIndex.getEntryAccess(entry);
+		AccessFlags parentAccess = entry.getAccess();
 		if (parentAccess != null && !parentAccess.isPrivate()) {
 			return Collections.singleton(entry);
 		} else {
@@ -164,7 +166,7 @@ public class IndexEntryResolver implements EntryResolver {
 	}
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodEntry methodEntry) {
-		AccessFlags access = this.entryIndex.getMethodAccess(methodEntry);
+		AccessFlags access = methodEntry.getAccess();
 		if (access == null) {
 			throw new IllegalArgumentException("Could not find method " + methodEntry);
 		}
@@ -183,7 +185,7 @@ public class IndexEntryResolver implements EntryResolver {
 			return;
 		}
 
-		AccessFlags flags = this.entryIndex.getMethodAccess(methodEntry);
+		AccessFlags flags = methodEntry.getAccess();
 		if (flags != null && this.canInherit(methodEntry, flags)) {
 			// collect the entry
 			methodEntries.add(methodEntry);
@@ -209,7 +211,7 @@ public class IndexEntryResolver implements EntryResolver {
 
 	private void resolveEquivalentMethods(Set<MethodEntry> methodEntries, MethodImplementationsTreeNode node) {
 		MethodEntry methodEntry = node.getMethodEntry();
-		AccessFlags flags = this.entryIndex.getMethodAccess(methodEntry);
+		AccessFlags flags = methodEntry.getAccess();
 		if (flags != null && !flags.isPrivate() && !flags.isStatic()) {
 			// collect the entry
 			methodEntries.add(methodEntry);

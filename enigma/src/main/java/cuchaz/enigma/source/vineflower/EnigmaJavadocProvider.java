@@ -1,5 +1,6 @@
 package cuchaz.enigma.source.vineflower;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryRemapper;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -19,21 +20,23 @@ import java.util.Collection;
 // todo get these from index baybee
 public class EnigmaJavadocProvider implements IFabricJavadocProvider {
 	private final EntryRemapper remapper;
+	private final EntryIndex index;
 
 	public EnigmaJavadocProvider(EntryRemapper remapper) {
 		this.remapper = remapper;
+		this.index = remapper.getJarIndex().getEntryIndex();
 	}
 
-	private static ClassEntry getClassEntry(StructClass structClass) {
-		return new ClassEntry(structClass.qualifiedName);
+	private ClassEntry getClassEntry(StructClass structClass) {
+		return index.getClass(structClass.qualifiedName);
 	}
 
-	private static FieldEntry getFieldEntry(StructClass structClass, StructField field) {
-		return FieldEntry.parse(structClass.qualifiedName, field.getName(), field.getDescriptor());
+	private FieldEntry getFieldEntry(StructClass structClass, StructField field) {
+		return index.getField(getClassEntry(structClass), field.getName(), field.getDescriptor());
 	}
 
-	private static MethodEntry getMethodEntry(StructClass structClass, StructMethod method) {
-		return MethodEntry.parse(structClass.qualifiedName, method.getName(), method.getDescriptor());
+	private MethodEntry getMethodEntry(StructClass structClass, StructMethod method) {
+		return index.getMethod(getClassEntry(structClass), method.getName(), method.getDescriptor());
 	}
 
 	private static boolean isRecord(StructClass structClass) {

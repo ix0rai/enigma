@@ -3,7 +3,6 @@ package cuchaz.enigma.analysis.index;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 
 import java.util.Collection;
@@ -22,17 +21,17 @@ public class InheritanceIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexClass(ClassDefEntry classEntry) {
+	public void indexClass(ClassEntry classEntry) {
 		if (classEntry.isJre()) {
 			return;
 		}
 
-		ClassEntry superClass = classEntry.getSuperClass();
+		ClassEntry superClass = classEntry.getDefinition().getSuperClass();
 		if (superClass != null && !superClass.getObfName().equals("java/lang/Object")) {
 			this.indexParent(classEntry, superClass);
 		}
 
-		for (ClassEntry interfaceEntry : classEntry.getInterfaces()) {
+		for (ClassEntry interfaceEntry : classEntry.getDefinition().getInterfaces()) {
 			this.indexParent(classEntry, interfaceEntry);
 		}
 	}

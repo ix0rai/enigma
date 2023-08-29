@@ -26,7 +26,7 @@ public class IndexTreeBuilder {
 			ancestry.add(classEntry.getFullName());
 		}
 
-		ClassInheritanceTreeNode rootNode = new ClassInheritanceTreeNode(translator, ancestry.get(ancestry.size() - 1));
+		ClassInheritanceTreeNode rootNode = new ClassInheritanceTreeNode(translator, this.index.getEntryIndex(), ancestry.get(ancestry.size() - 1));
 
 		// expand all children recursively
 		rootNode.load(this.index.getInheritanceIndex(), true);

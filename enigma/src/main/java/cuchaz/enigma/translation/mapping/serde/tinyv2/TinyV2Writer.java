@@ -95,7 +95,7 @@ public final class TinyV2Writer implements MappingsWriter {
 		writer.print(this.indent(1));
 		writer.print("m\t");
 		writer.print(((MethodEntry) node.getEntry()).getDesc().toString());
-		writeMapping(writer, node);
+		this.writeMapping(writer, node);
 
 		for (EntryTreeNode<EntryMapping> child : node.getChildNodes()) {
 			Entry<?> entry = child.getEntry();
@@ -120,7 +120,7 @@ public final class TinyV2Writer implements MappingsWriter {
 
 	private void writeMapping(PrintWriter writer, EntryTreeNode<EntryMapping> node) {
 		writer.print("\t");
-		writer.print(node.getEntry().getName());
+		writer.print(node.getEntry().getObfName());
 		writer.print("\t");
 		EntryMapping mapping = node.getValue();
 

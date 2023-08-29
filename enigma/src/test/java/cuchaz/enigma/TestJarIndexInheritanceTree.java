@@ -11,7 +11,6 @@ import cuchaz.enigma.translation.mapping.IndexEntryResolver;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
@@ -81,8 +80,8 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void access() {
-		assertThat(this.index.getEntryIndex().getFieldAccess(NAME_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
-		assertThat(this.index.getEntryIndex().getFieldAccess(NUM_THINGS_FIELD), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(NAME_FIELD.getAccess(), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
+		assertThat(NUM_THINGS_FIELD.getAccess(), is(new AccessFlags(Opcodes.ACC_PRIVATE)));
 	}
 
 	@Test
@@ -129,7 +128,7 @@ public class TestJarIndexInheritanceTree {
 
 	@Test
 	public void fieldReferences() {
-		Collection<EntryReference<FieldEntry, MethodDefEntry>> references;
+		Collection<EntryReference<FieldEntry, MethodEntry>> references;
 
 		// name
 		references = this.index.getReferenceIndex().getReferencesToField(NAME_FIELD);
@@ -149,7 +148,7 @@ public class TestJarIndexInheritanceTree {
 	@Test
 	public void behaviorReferences() {
 		MethodEntry source;
-		Collection<EntryReference<MethodEntry, MethodDefEntry>> references;
+		Collection<EntryReference<MethodEntry, MethodEntry>> references;
 
 		// baseClass constructor
 		source = newMethod(BASE_CLASS, "<init>", "(Ljava/lang/String;)V");

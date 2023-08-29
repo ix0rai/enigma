@@ -9,31 +9,48 @@ import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.representation.AccessFlags;
 import cuchaz.enigma.translation.representation.ArgumentDescriptor;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
+import cuchaz.enigma.translation.representation.Signature;
+import cuchaz.enigma.translation.representation.entry.definition.MethodDefinition;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable<MethodEntry> {
+public class MethodEntry extends DefinedEntry<ClassEntry, MethodDefinition> implements Comparable<MethodEntry> {
 	protected final MethodDescriptor descriptor;
+	protected @Nullable MethodDefinition def;
 
 	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor) {
-		this(parent, obfName, descriptor, EntryMapping.DEFAULT);
+		this(parent, obfName, descriptor, null, EntryMapping.DEFAULT);
 	}
 
-	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, EntryMapping mapping) {
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition def) {
+		this(parent, obfName, descriptor, def, EntryMapping.DEFAULT);
+	}
+
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition def, EntryMapping mapping) {
 		super(parent, obfName, mapping);
 
 		Preconditions.checkNotNull(parent, "Parent cannot be null");
 		Preconditions.checkNotNull(descriptor, "Method descriptor cannot be null");
 
 		this.descriptor = descriptor;
+		this.def = def;
 	}
 
-	public static MethodEntry parse(String owner, String name, String desc) {
-		return new MethodEntry(new ClassEntry(owner), name, new MethodDescriptor(desc), EntryMapping.DEFAULT);
+	public static MethodEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
+		return new MethodEntry(owner, obfName, new MethodDescriptor(desc), new MethodDefinition(new AccessFlags(access), Signature.createSignature(signature)), EntryMapping.DEFAULT);
+	}
+
+	public MethodDefinition getDefinition() {
+		return this.def;
+	}
+
+	public void setDefinition(MethodDefinition definition) {
+		this.def = definition;
 	}
 
 	@Override
@@ -59,13 +76,14 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 		List<LocalVariableEntry> parameters = new ArrayList<>();
 
 		MethodDescriptor desc = this.getDesc();
-		AccessFlags flags = index.getMethodAccess(this);
+		AccessFlags flags = this.getAccess();
 
 		if (desc != null && flags != null) {
 			int argIndex = flags.isStatic() ? 0 : 1;
 
 			for (ArgumentDescriptor arg : desc.getArgumentDescs()) {
-				LocalVariableEntry argEntry = new LocalVariableEntry(this, argIndex, "", true, null);
+				// todo empty obf name
+				LocalVariableEntry argEntry = index.getLocalVariable(this, argIndex, "", true);
 				LocalVariableEntry translatedArgEntry = deobfuscator.translate(argEntry);
 
 				parameters.add(translatedArgEntry == null ? argEntry : translatedArgEntry);
@@ -80,7 +98,7 @@ public class MethodEntry extends ParentedEntry<ClassEntry> implements Comparable
 	protected TranslateResult<? extends MethodEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodEntry(this.parent, this.obfName, translator.translate(this.descriptor), mapping)
+				new MethodEntry(this.parent, this.obfName, translator.translate(this.descriptor), this.def, mapping)
 		);
 	}
 

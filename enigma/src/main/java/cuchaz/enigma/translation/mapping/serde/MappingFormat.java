@@ -2,6 +2,7 @@ package cuchaz.enigma.translation.mapping.serde;
 
 import com.google.common.io.MoreFiles;
 import cuchaz.enigma.ProgressListener;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.MappingDelta;
 import cuchaz.enigma.translation.mapping.serde.enigma.EnigmaMappingsReader;
@@ -59,12 +60,12 @@ public enum MappingFormat {
 	 * @throws IOException when there's an I/O error reading the files
 	 * @throws MappingParseException when there's an issue with the content of a mapping file
 	 */
-	public EntryTree<EntryMapping> read(Path path) throws IOException, MappingParseException {
+	public EntryTree<EntryMapping> read(Path path, EntryIndex index) throws IOException, MappingParseException {
 		if (this.reader == null) {
 			throw new IllegalStateException(this.name() + " does not support reading");
 		}
 
-		return this.reader.read(path, ProgressListener.none());
+		return this.reader.read(path, index, ProgressListener.none());
 	}
 
 	/**
@@ -75,12 +76,12 @@ public enum MappingFormat {
 	 * @throws IOException when there's an I/O error reading the files
 	 * @throws MappingParseException when there's an issue with the content of a mapping file
 	 */
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progressListener) throws IOException, MappingParseException {
+	public EntryTree<EntryMapping> read(Path path, EntryIndex index, ProgressListener progressListener) throws IOException, MappingParseException {
 		if (this.reader == null) {
 			throw new IllegalStateException(this.name() + " does not support reading");
 		}
 
-		return this.reader.read(path, progressListener);
+		return this.reader.read(path, index, progressListener);
 	}
 
 	@Nullable

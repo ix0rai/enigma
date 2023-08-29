@@ -34,7 +34,7 @@ public enum EditableType {
 		} else if (entry instanceof FieldEntry) {
 			type = EditableType.FIELD;
 		} else if (entry instanceof LocalVariableEntry lve) {
-			if (lve.isArgument()) {
+			if (lve.isParameter()) {
 				type = EditableType.PARAMETER;
 			} else {
 				type = EditableType.LOCAL_VARIABLE;

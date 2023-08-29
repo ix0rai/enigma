@@ -321,7 +321,7 @@ public class SearchDialog {
 		}
 	}
 
-	private record SearchEntryImpl(ParentedEntry<?> obf, ParentedEntry<?> deobf) implements SearchEntry {
+	private record SearchEntryImpl(ParentedEntry<?, ?> obf, ParentedEntry<?, ?> deobf) implements SearchEntry {
 		@Override
 		public List<String> getSearchableNames() {
 			if (this.deobf != null) {
@@ -346,8 +346,8 @@ public class SearchDialog {
 			return String.format("SearchEntryImpl { obf: %s, deobf: %s }", this.obf, this.deobf);
 		}
 
-		public static SearchEntryImpl from(ParentedEntry<?> e, GuiController controller) {
-			ParentedEntry<?> deobf = controller.getProject().getMapper().deobfuscate(e);
+		public static SearchEntryImpl from(ParentedEntry<?, ?> e, GuiController controller) {
+			ParentedEntry<?, ?> deobf = controller.getProject().getMapper().deobfuscate(e);
 			if (deobf.equals(e)) deobf = null;
 			return new SearchEntryImpl(e, deobf);
 		}

@@ -2,25 +2,29 @@ package cuchaz.enigma.analysis.index;
 
 import cuchaz.enigma.analysis.MethodNodeWithAction;
 import cuchaz.enigma.translation.representation.ParameterAccessFlags;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 
 public class IndexClassVisitor extends ClassVisitor {
 	private final JarIndexer indexer;
-	private ClassDefEntry classEntry;
+	private ClassEntry classEntry;
+	private EntryIndex index;
 
-	public IndexClassVisitor(JarIndex indexer, int api) {
+	public IndexClassVisitor(JarIndex indexer, EntryIndex index, int api) {
 		super(api);
 		this.indexer = indexer;
+		this.index = index;
 	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.classEntry = ClassDefEntry.parse(access, name, signature, superName, interfaces);
+		ClassDefinition definition = ClassDefinition.parse(this.index, access, signature, superName, interfaces);
+		this.classEntry = this.index.getClass(name, definition);
 		this.indexer.indexClass(this.classEntry);
 
 		super.visit(version, access, name, signature, superName, interfaces);
@@ -36,14 +40,14 @@ public class IndexClassVisitor extends ClassVisitor {
 
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-		this.indexer.indexField(FieldDefEntry.parse(this.classEntry, access, name, desc, signature));
+		this.indexer.indexField(FieldEntry.parse(this.classEntry, access, name, desc, signature));
 
 		return super.visitField(access, name, desc, signature, value);
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodDefEntry entry = MethodDefEntry.parse(this.classEntry, access, name, desc, signature);
+		MethodEntry entry = MethodEntry.parse(this.classEntry, access, name, desc, signature);
 
 		return new MethodNodeWithAction(this.api, access, name, desc, signature, exceptions, methodNode -> {
 			// add parameter access values to the entry

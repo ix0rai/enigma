@@ -10,9 +10,7 @@ import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 import java.util.Collection;
@@ -21,18 +19,24 @@ import java.util.Map;
 public class ReferenceIndex implements JarIndexer {
 	private Multimap<MethodEntry, MethodEntry> methodReferences = HashMultimap.create();
 
-	private Multimap<MethodEntry, EntryReference<MethodEntry, MethodDefEntry>> referencesToMethods = HashMultimap.create();
-	private Multimap<ClassEntry, EntryReference<ClassEntry, MethodDefEntry>> referencesToClasses = HashMultimap.create();
-	private Multimap<FieldEntry, EntryReference<FieldEntry, MethodDefEntry>> referencesToFields = HashMultimap.create();
-	private Multimap<ClassEntry, EntryReference<ClassEntry, FieldDefEntry>> fieldTypeReferences = HashMultimap.create();
-	private Multimap<ClassEntry, EntryReference<ClassEntry, MethodDefEntry>> methodTypeReferences = HashMultimap.create();
+	private Multimap<MethodEntry, EntryReference<MethodEntry, MethodEntry>> referencesToMethods = HashMultimap.create();
+	private Multimap<ClassEntry, EntryReference<ClassEntry, MethodEntry>> referencesToClasses = HashMultimap.create();
+	private Multimap<FieldEntry, EntryReference<FieldEntry, MethodEntry>> referencesToFields = HashMultimap.create();
+	private Multimap<ClassEntry, EntryReference<ClassEntry, FieldEntry>> fieldTypeReferences = HashMultimap.create();
+	private Multimap<ClassEntry, EntryReference<ClassEntry, MethodEntry>> methodTypeReferences = HashMultimap.create();
+
+	private final EntryIndex index;
+
+	public ReferenceIndex(EntryIndex index) {
+		this.index = index;
+	}
 
 	@Override
-	public void indexMethod(MethodDefEntry methodEntry) {
+	public void indexMethod(MethodEntry methodEntry) {
 		this.indexMethodDescriptor(methodEntry, methodEntry.getDesc());
 	}
 
-	private void indexMethodDescriptor(MethodDefEntry entry, MethodDescriptor descriptor) {
+	private void indexMethodDescriptor(MethodEntry entry, MethodDescriptor descriptor) {
 		for (TypeDescriptor typeDescriptor : descriptor.getArgumentDescs()) {
 			this.indexMethodTypeDescriptor(entry, typeDescriptor);
 		}
@@ -40,9 +44,9 @@ public class ReferenceIndex implements JarIndexer {
 		this.indexMethodTypeDescriptor(entry, descriptor.getReturnDesc());
 	}
 
-	private void indexMethodTypeDescriptor(MethodDefEntry method, TypeDescriptor typeDescriptor) {
+	private void indexMethodTypeDescriptor(MethodEntry method, TypeDescriptor typeDescriptor) {
 		if (typeDescriptor.isType()) {
-			ClassEntry referencedClass = typeDescriptor.getTypeEntry();
+			ClassEntry referencedClass = typeDescriptor.getTypeEntry(index);
 			this.methodTypeReferences.put(referencedClass, new EntryReference<>(referencedClass, referencedClass.getName(), method));
 		} else if (typeDescriptor.isArray()) {
 			this.indexMethodTypeDescriptor(method, typeDescriptor.getArrayType());
@@ -50,13 +54,13 @@ public class ReferenceIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexField(FieldDefEntry fieldEntry) {
+	public void indexField(FieldEntry fieldEntry) {
 		this.indexFieldTypeDescriptor(fieldEntry, fieldEntry.getDesc());
 	}
 
-	private void indexFieldTypeDescriptor(FieldDefEntry field, TypeDescriptor typeDescriptor) {
+	private void indexFieldTypeDescriptor(FieldEntry field, TypeDescriptor typeDescriptor) {
 		if (typeDescriptor.isType()) {
-			ClassEntry referencedClass = typeDescriptor.getTypeEntry();
+			ClassEntry referencedClass = typeDescriptor.getTypeEntry(index);
 			this.fieldTypeReferences.put(referencedClass, new EntryReference<>(referencedClass, referencedClass.getName(), field));
 		} else if (typeDescriptor.isArray()) {
 			this.indexFieldTypeDescriptor(field, typeDescriptor.getArrayType());
@@ -64,7 +68,7 @@ public class ReferenceIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexMethodReference(MethodDefEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
+	public void indexMethodReference(MethodEntry callerEntry, MethodEntry referencedEntry, ReferenceTargetType targetType) {
 		this.referencesToMethods.put(referencedEntry, new EntryReference<>(referencedEntry, referencedEntry.getName(), callerEntry, targetType));
 		this.methodReferences.put(callerEntry, referencedEntry);
 
@@ -75,12 +79,12 @@ public class ReferenceIndex implements JarIndexer {
 	}
 
 	@Override
-	public void indexFieldReference(MethodDefEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
+	public void indexFieldReference(MethodEntry callerEntry, FieldEntry referencedEntry, ReferenceTargetType targetType) {
 		this.referencesToFields.put(referencedEntry, new EntryReference<>(referencedEntry, referencedEntry.getName(), callerEntry, targetType));
 	}
 
 	@Override
-	public void indexLambda(MethodDefEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
+	public void indexLambda(MethodEntry callerEntry, Lambda lambda, ReferenceTargetType targetType) {
 		if (lambda.implMethod() instanceof MethodEntry method) {
 			this.indexMethodReference(callerEntry, method, targetType);
 		} else {
@@ -134,23 +138,23 @@ public class ReferenceIndex implements JarIndexer {
 		return this.methodReferences.get(entry);
 	}
 
-	public Collection<EntryReference<FieldEntry, MethodDefEntry>> getReferencesToField(FieldEntry entry) {
+	public Collection<EntryReference<FieldEntry, MethodEntry>> getReferencesToField(FieldEntry entry) {
 		return this.referencesToFields.get(entry);
 	}
 
-	public Collection<EntryReference<ClassEntry, MethodDefEntry>> getReferencesToClass(ClassEntry entry) {
+	public Collection<EntryReference<ClassEntry, MethodEntry>> getReferencesToClass(ClassEntry entry) {
 		return this.referencesToClasses.get(entry);
 	}
 
-	public Collection<EntryReference<MethodEntry, MethodDefEntry>> getReferencesToMethod(MethodEntry entry) {
+	public Collection<EntryReference<MethodEntry, MethodEntry>> getReferencesToMethod(MethodEntry entry) {
 		return this.referencesToMethods.get(entry);
 	}
 
-	public Collection<EntryReference<ClassEntry, FieldDefEntry>> getFieldTypeReferencesToClass(ClassEntry entry) {
+	public Collection<EntryReference<ClassEntry, FieldEntry>> getFieldTypeReferencesToClass(ClassEntry entry) {
 		return this.fieldTypeReferences.get(entry);
 	}
 
-	public Collection<EntryReference<ClassEntry, MethodDefEntry>> getMethodTypeReferencesToClass(ClassEntry entry) {
+	public Collection<EntryReference<ClassEntry, MethodEntry>> getMethodTypeReferencesToClass(ClassEntry entry) {
 		return this.methodTypeReferences.get(entry);
 	}
 

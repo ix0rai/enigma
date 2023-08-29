@@ -171,15 +171,9 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 	protected void writeRoot(PrintWriter writer, EntryTree<EntryMapping> mappings, ClassEntry classEntry) {
 		Collection<Entry<?>> children = this.groupChildren(mappings.getChildren(classEntry));
 
-		EntryMapping classEntryMapping = mappings.get(classEntry);
-
-		if (classEntryMapping == null) {
-			classEntryMapping = EntryMapping.DEFAULT;
-		}
-
-		writer.println(this.writeClass(classEntry, classEntryMapping).trim());
-		if (classEntryMapping.javadoc() != null) {
-			this.writeDocs(writer, classEntryMapping, 0);
+		writer.println(this.writeClass(classEntry).trim());
+		if (classEntry.getJavadocs() != null) {
+			this.writeDocs(writer, classEntry, 0);
 		}
 
 		for (Entry<?> child : children) {
@@ -187,8 +181,8 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 		}
 	}
 
-	private void writeDocs(PrintWriter writer, EntryMapping mapping, int depth) {
-		String jd = mapping.javadoc();
+	private void writeDocs(PrintWriter writer, Entry<?> entry, int depth) {
+		String jd = entry.getJavadocs();
 		if (jd != null) {
 			for (String line : jd.split("\\R")) {
 				writer.println(this.indent(EnigmaFormat.COMMENT + " " + MappingHelper.escape(line), depth + 1));
@@ -202,29 +196,23 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 			return;
 		}
 
-		EntryMapping mapping = node.getValue();
-
-		if (mapping == null) {
-			mapping = EntryMapping.DEFAULT;
-		}
-
 		String line = null;
 		if (entry instanceof ClassEntry classEntry) {
-			line = this.writeClass(classEntry, mapping);
+			line = this.writeClass(classEntry);
 		} else if (entry instanceof MethodEntry methodEntry) {
-			line = this.writeMethod(methodEntry, mapping);
+			line = this.writeMethod(methodEntry);
 		} else if (entry instanceof FieldEntry fieldEntry) {
-			line = this.writeField(fieldEntry, mapping);
-		} else if (entry instanceof LocalVariableEntry varEntry && mapping.targetName() != null) {
-			line = this.writeArgument(varEntry, mapping);
+			line = this.writeField(fieldEntry);
+		} else if (entry instanceof LocalVariableEntry varEntry && entry.getMapping().targetName() != null) {
+			line = this.writeArgument(varEntry);
 		}
 
 		if (line != null) {
 			writer.println(this.indent(line, depth));
 		}
 
-		if (mapping.javadoc() != null) {
-			this.writeDocs(writer, mapping, depth);
+		if (entry.getJavadocs() != null) {
+			this.writeDocs(writer, entry, depth);
 		}
 
 		Collection<Entry<?>> children = this.groupChildren(node.getChildren());
@@ -259,36 +247,35 @@ public enum EnigmaMappingsWriter implements MappingsWriter {
 		return result;
 	}
 
-	protected String writeClass(ClassEntry entry, @Nonnull EntryMapping mapping) {
-		StringBuilder builder = new StringBuilder(EnigmaFormat.CLASS + " ");
-		builder.append(entry.getName()).append(' ');
-		this.writeMapping(builder, mapping);
+	protected String writeClass(ClassEntry entry) {
+		StringBuilder builder = this.writeEntry(EnigmaFormat.CLASS, entry);
 
 		return builder.toString();
 	}
 
-	protected String writeMethod(MethodEntry entry, @Nonnull EntryMapping mapping) {
-		StringBuilder builder = new StringBuilder(EnigmaFormat.METHOD + " ");
-		builder.append(entry.getName()).append(' ');
-		this.writeMapping(builder, mapping);
-
+	protected String writeMethod(MethodEntry entry) {
+		StringBuilder builder = this.writeEntry(EnigmaFormat.METHOD, entry);
 		builder.append(entry.getDesc().toString());
 
 		return builder.toString();
 	}
 
-	protected String writeField(FieldEntry entry, @Nonnull EntryMapping mapping) {
-		StringBuilder builder = new StringBuilder(EnigmaFormat.FIELD + " ");
-		builder.append(entry.getName()).append(' ');
-		this.writeMapping(builder, mapping);
-
+	protected String writeField(FieldEntry entry) {
+		StringBuilder builder = this.writeEntry(EnigmaFormat.FIELD, entry);
 		builder.append(entry.getDesc().toString());
 
 		return builder.toString();
 	}
 
-	protected String writeArgument(LocalVariableEntry entry, @Nonnull EntryMapping mapping) {
-		return EnigmaFormat.PARAMETER + " " + entry.getIndex() + ' ' + mapping.targetName();
+	protected StringBuilder writeEntry(String format, Entry<?> entry) {
+		StringBuilder builder = new StringBuilder(format + " ");
+		builder.append(entry.getObfName()).append(' ');
+		this.writeMapping(builder, entry.getMapping());
+		return builder;
+	}
+
+	protected String writeArgument(LocalVariableEntry entry) {
+		return EnigmaFormat.PARAMETER + " " + entry.getIndex() + ' ' + entry.getDeobfName();
 	}
 
 	private void writeMapping(StringBuilder builder, EntryMapping mapping) {

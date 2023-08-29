@@ -9,10 +9,11 @@ import cuchaz.enigma.translation.representation.Lambda;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.Signature;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
+import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
+import cuchaz.enigma.translation.representation.entry.definition.MethodDefinition;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -46,13 +47,13 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		this.classEntry = new ClassEntry(name);
+		this.classEntry = this.entryIndex.getClass(name);
 		this.className = name;
 	}
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-		MethodDefEntry entry = new MethodDefEntry(this.classEntry, name, new MethodDescriptor(desc), Signature.createSignature(signature), new AccessFlags(access));
+		MethodEntry entry = new MethodEntry(this.classEntry, name, new MethodDescriptor(desc), new MethodDefinition(new AccessFlags(access), Signature.createSignature(signature)));
 		return new MethodNodeWithAction(this.api, access, name, desc, signature, exceptions, methodNode -> {
 			try {
 				new Analyzer<>(new MethodInterpreter(entry, this.indexer, this.entryIndex, this.inheritanceIndex)).analyze(this.className, methodNode);
@@ -63,20 +64,22 @@ public class IndexReferenceVisitor extends ClassVisitor {
 	}
 
 	private static class MethodInterpreter extends InterpreterPair<BasicValue, SourceValue> {
-		private final MethodDefEntry callerEntry;
+		private final MethodEntry callerEntry;
 		private final JarIndexer indexer;
+		private final EntryIndex index;
 
-		MethodInterpreter(MethodDefEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
+		MethodInterpreter(MethodEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
 			super(new IndexSimpleVerifier(entryIndex, inheritanceIndex), new SourceInterpreter());
 			this.callerEntry = callerEntry;
 			this.indexer = indexer;
+			this.index = entryIndex;
 		}
 
 		@Override
 		public PairValue<BasicValue, SourceValue> newOperation(AbstractInsnNode insn) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.GETSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
-				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
+				this.indexer.indexFieldReference(this.callerEntry, this.index.getField(this.index.getClass(field.owner), field.name, field.desc), ReferenceTargetType.none());
 			}
 
 			return super.newOperation(insn);
@@ -86,12 +89,12 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		public PairValue<BasicValue, SourceValue> unaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
-				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
+				this.indexer.indexFieldReference(this.callerEntry, this.index.getField(this.index.getClass(field.owner), field.name, field.desc), ReferenceTargetType.none());
 			}
 
 			if (insn.getOpcode() == Opcodes.GETFIELD) {
 				FieldInsnNode field = (FieldInsnNode) insn;
-				this.indexer.indexFieldReference(this.callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), this.getReferenceTargetType(value, insn));
+				this.indexer.indexFieldReference(this.callerEntry, this.index.getField(this.index.getClass(field.owner), field.name, field.desc), this.getReferenceTargetType(value, insn));
 			}
 
 			return super.unaryOperation(insn, value);
@@ -101,7 +104,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		public PairValue<BasicValue, SourceValue> binaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value1, PairValue<BasicValue, SourceValue> value2) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTFIELD) {
 				FieldInsnNode field = (FieldInsnNode) insn;
-				FieldEntry fieldEntry = FieldEntry.parse(field.owner, field.name, field.desc);
+				FieldEntry fieldEntry = this.index.getField(this.index.getClass(field.owner), field.name, field.desc);
 				this.indexer.indexFieldReference(this.callerEntry, fieldEntry, ReferenceTargetType.none());
 			}
 
@@ -112,12 +115,12 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		public PairValue<BasicValue, SourceValue> naryOperation(AbstractInsnNode insn, List<? extends PairValue<BasicValue, SourceValue>> values) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.INVOKEINTERFACE || insn.getOpcode() == Opcodes.INVOKESPECIAL || insn.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 				MethodInsnNode methodInsn = (MethodInsnNode) insn;
-				this.indexer.indexMethodReference(this.callerEntry, MethodEntry.parse(methodInsn.owner, methodInsn.name, methodInsn.desc), this.getReferenceTargetType(values.get(0), insn));
+				this.indexer.indexMethodReference(this.callerEntry, this.index.getMethod(this.index.getClass(methodInsn.owner), methodInsn.name, methodInsn.desc), this.getReferenceTargetType(values.get(0), insn));
 			}
 
 			if (insn.getOpcode() == Opcodes.INVOKESTATIC) {
 				MethodInsnNode methodInsn = (MethodInsnNode) insn;
-				this.indexer.indexMethodReference(this.callerEntry, MethodEntry.parse(methodInsn.owner, methodInsn.name, methodInsn.desc), ReferenceTargetType.none());
+				this.indexer.indexMethodReference(this.callerEntry, this.index.getMethod(this.index.getClass(methodInsn.owner), methodInsn.name, methodInsn.desc), ReferenceTargetType.none());
 			}
 
 			if (insn.getOpcode() == Opcodes.INVOKEDYNAMIC) {
@@ -143,7 +146,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 							invokeDynamicInsn.name,
 							new MethodDescriptor(invokeDynamicInsn.desc),
 							new MethodDescriptor(samMethodType.getDescriptor()),
-							getHandleEntry(implMethod),
+							(MethodEntry) this.getHandleEntry(implMethod),
 							new MethodDescriptor(instantiatedMethodType.getDescriptor())
 					), targetType);
 				}
@@ -158,23 +161,23 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			}
 
 			if (target.left().getType().getSort() == Type.OBJECT) {
-				return ReferenceTargetType.classType(new ClassEntry(target.left().getType().getInternalName()));
+				return ReferenceTargetType.classType(this.index.getClass(target.left().getType().getInternalName()));
 			}
 
 			if (target.left().getType().getSort() == Type.ARRAY) {
-				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object"));
+				return ReferenceTargetType.classType(this.index.getClass("java/lang/Object"));
 			}
 
 			throw new AnalyzerException(insn, "called method on or accessed field of non-object type");
 		}
 
-		private static ParentedEntry<?> getHandleEntry(Handle handle) {
+		private DefinedEntry<?, ?> getHandleEntry(Handle handle) {
 			switch (handle.getTag()) {
 				case Opcodes.H_GETFIELD, Opcodes.H_GETSTATIC, Opcodes.H_PUTFIELD, Opcodes.H_PUTSTATIC -> {
-					return FieldEntry.parse(handle.getOwner(), handle.getName(), handle.getDesc());
+					return this.index.getField(this.index.getClass(handle.getOwner()), handle.getName(), handle.getDesc());
 				}
 				case Opcodes.H_INVOKEINTERFACE, Opcodes.H_INVOKESPECIAL, Opcodes.H_INVOKESTATIC, Opcodes.H_INVOKEVIRTUAL, Opcodes.H_NEWINVOKESPECIAL -> {
-					return MethodEntry.parse(handle.getOwner(), handle.getName(), handle.getDesc());
+					return this.index.getMethod(this.index.getClass(handle.getOwner()), handle.getName(), handle.getDesc());
 				}
 			}
 

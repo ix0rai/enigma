@@ -139,7 +139,7 @@ public class GuiUtil {
 
 	public static Icon getClassIcon(Gui gui, ClassEntry entry) {
 		EntryIndex entryIndex = gui.getController().getProject().getJarIndex().getEntryIndex();
-		AccessFlags access = entryIndex.getClassAccess(entry);
+		AccessFlags access = entry.getAccess();
 
 		if (access != null) {
 			if (access.isAnnotation()) {
@@ -148,7 +148,7 @@ public class GuiUtil {
 				return INTERFACE_ICON;
 			} else if (access.isEnum()) {
 				return ENUM_ICON;
-			} else if (entryIndex.getDefinition(entry).isRecord()) {
+			} else if (entry.getDefinition().isRecord()) {
 				return RECORD_ICON;
 			}
 		}

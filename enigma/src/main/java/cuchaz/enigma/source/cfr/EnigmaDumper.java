@@ -15,6 +15,7 @@ import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.LocalVariableEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import org.benf.cfr.reader.bytecode.analysis.loc.HasByteCodeLoc;
+import org.benf.cfr.reader.bytecode.analysis.parse.lvalue.LocalVariable;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaRefTypeInstance;
 import org.benf.cfr.reader.bytecode.analysis.types.JavaTypeInstance;
 import org.benf.cfr.reader.bytecode.analysis.types.MethodPrototype;
@@ -86,8 +87,9 @@ public class EnigmaDumper extends StringStreamDumper {
 			return null;
 		}
 
-		int variableIndex = method.getParameterLValues().get(parameterIndex).localVariable.getIdx();
-		return this.entryIndex.getLocalVariableDefNullable(owner, variableIndex);
+		LocalVariable variable = method.getParameterLValues().get(parameterIndex).localVariable;
+		int variableIndex = variable.getIdx();
+		return this.entryIndex.getLocalVariable(owner, variableIndex, variable.getName().getStringName(), true);
 	}
 
 	private FieldEntry getFieldEntry(JavaTypeInstance owner, String name, String desc) {

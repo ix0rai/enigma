@@ -1,6 +1,7 @@
 package cuchaz.enigma.translation.mapping;
 
 import cuchaz.enigma.TestUtil;
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.translation.mapping.serde.MappingFileNameFormat;
 import cuchaz.enigma.translation.mapping.serde.MappingParseException;
 import cuchaz.enigma.translation.mapping.serde.MappingSaveParameters;
@@ -18,8 +19,7 @@ public class TestComments {
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
 		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF);
-		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
-						DIRECTORY);
+		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(DIRECTORY, new EntryIndex());
 
 		new TinyV2Writer("intermediary", "named")
 						.write(mappings, DIRECTORY.resolve("convertedtiny.tiny"), params);

@@ -17,15 +17,14 @@ import com.strobel.decompiler.languages.java.ast.VariableInitializer;
 import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.SourceIndex;
 import cuchaz.enigma.source.procyon.EntryParser;
-import cuchaz.enigma.translation.representation.entry.ClassDefEntry;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
-import cuchaz.enigma.translation.representation.entry.FieldDefEntry;
-import cuchaz.enigma.translation.representation.entry.MethodDefEntry;
+import cuchaz.enigma.translation.representation.entry.FieldEntry;
+import cuchaz.enigma.translation.representation.entry.MethodEntry;
 
 public class SourceIndexClassVisitor extends SourceIndexVisitor {
-	private final ClassDefEntry classEntry;
+	private final ClassEntry classEntry;
 
-	public SourceIndexClassVisitor(ClassDefEntry classEntry, EntryIndex entryIndex) {
+	public SourceIndexClassVisitor(ClassEntry classEntry, EntryIndex entryIndex) {
 		super(entryIndex);
 		this.classEntry = classEntry;
 	}
@@ -34,7 +33,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitTypeDeclaration(TypeDeclaration node, SourceIndex index) {
 		// is this this class, or a subtype?
 		TypeDefinition def = node.getUserData(Keys.TYPE_DEFINITION);
-		ClassDefEntry classEntry = EntryParser.parse(def, this.entryIndex);
+		ClassEntry classEntry = EntryParser.parse(def, this.entryIndex);
 		if (!classEntry.equals(this.classEntry)) {
 			// it's a subtype, recurse
 			index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), classEntry);
@@ -48,7 +47,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitSimpleType(SimpleType node, SourceIndex index) {
 		TypeReference ref = node.getUserData(Keys.TYPE_REFERENCE);
 		if (node.getIdentifierToken().getStartLocation() != TextLocation.EMPTY) {
-			ClassEntry entry = new ClassEntry(ref.getInternalName());
+			ClassEntry entry = this.entryIndex.getClass(ref.getInternalName());
 			index.addReference(TokenFactory.createToken(index, node.getIdentifierToken()), entry, this.classEntry);
 		}
 
@@ -58,7 +57,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitMethodDeclaration(MethodDeclaration node, SourceIndex index) {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
-		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
+		MethodEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		AstNode tokenNode = node.getNameToken();
 		if (methodEntry.isConstructor() && methodEntry.getObfName().equals("<clinit>")) {
 			// for static initializers, check elsewhere for the token node
@@ -72,7 +71,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitConstructorDeclaration(ConstructorDeclaration node, SourceIndex index) {
 		MethodDefinition def = node.getUserData(Keys.METHOD_DEFINITION);
-		MethodDefEntry methodEntry = EntryParser.parse(def, this.entryIndex);
+		MethodEntry methodEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), methodEntry);
 		return node.acceptVisitor(new SourceIndexMethodVisitor(methodEntry, this.entryIndex), index);
 	}
@@ -80,7 +79,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	@Override
 	public Void visitFieldDeclaration(FieldDeclaration node, SourceIndex index) {
 		FieldDefinition def = node.getUserData(Keys.FIELD_DEFINITION);
-		FieldDefEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
+		FieldEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
 		assert (node.getVariables().size() == 1);
 		VariableInitializer variable = node.getVariables().firstOrNullObject();
 		index.addDeclaration(TokenFactory.createToken(index, variable.getNameToken()), fieldEntry);
@@ -91,7 +90,7 @@ public class SourceIndexClassVisitor extends SourceIndexVisitor {
 	public Void visitEnumValueDeclaration(EnumValueDeclaration node, SourceIndex index) {
 		// treat enum declarations as field declarations
 		FieldDefinition def = node.getUserData(Keys.FIELD_DEFINITION);
-		FieldDefEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
+		FieldEntry fieldEntry = EntryParser.parse(def, this.entryIndex);
 		index.addDeclaration(TokenFactory.createToken(index, node.getNameToken()), fieldEntry);
 		return this.visitChildren(node, index);
 	}

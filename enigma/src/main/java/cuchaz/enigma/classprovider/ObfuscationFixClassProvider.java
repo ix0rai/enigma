@@ -51,7 +51,7 @@ public class ObfuscationFixClassProvider implements ClassProvider {
 
 		ClassNode fixedNode = new ClassNode();
 		ClassVisitor visitor = fixedNode;
-		visitor = new LocalVariableFixVisitor(Enigma.ASM_VERSION, visitor);
+		visitor = new LocalVariableFixVisitor(this.jarIndex.getEntryIndex(), Enigma.ASM_VERSION, visitor);
 		visitor = new SourceFixVisitor(Enigma.ASM_VERSION, visitor, this.jarIndex);
 		node.accept(visitor);
 		this.removeRedundantClassCalls(fixedNode);

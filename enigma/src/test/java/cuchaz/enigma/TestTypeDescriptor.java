@@ -67,14 +67,14 @@ public class TestTypeDescriptor {
 
 	@Test
 	public void getClassEntry() {
-		assertThat(new TypeDescriptor("LFoo;").getTypeEntry(), is(newClass("Foo")));
-		assertThat(new TypeDescriptor("Ljava/lang/String;").getTypeEntry(), is(newClass("java/lang/String")));
+		assertThat(new TypeDescriptor("LFoo;").getTypeEntry(new EntryIndex()), is(newClass("Foo")));
+		assertThat(new TypeDescriptor("Ljava/lang/String;").getTypeEntry(new EntryIndex()), is(newClass("java/lang/String")));
 	}
 
 	@Test
 	public void getArrayClassEntry() {
-		assertThat(new TypeDescriptor("[LFoo;").getTypeEntry(), is(newClass("Foo")));
-		assertThat(new TypeDescriptor("[[[Ljava/lang/String;").getTypeEntry(), is(newClass("java/lang/String")));
+		assertThat(new TypeDescriptor("[LFoo;").getTypeEntry(new EntryIndex()), is(newClass("Foo")));
+		assertThat(new TypeDescriptor("[[[Ljava/lang/String;").getTypeEntry(new EntryIndex()), is(newClass("java/lang/String")));
 	}
 
 	@Test

@@ -1,30 +1,39 @@
 package cuchaz.enigma.translation.representation.entry;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.TranslateResult;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
+import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<ClassEntry> {
+public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implements Comparable<ClassEntry> {
 	private final String fullName;
+	private @Nullable ClassDefinition def;
 
-	public ClassEntry(String obfName) {
-		this(getOuterClass(obfName), getInnerName(obfName), EntryMapping.DEFAULT);
+	public ClassEntry(EntryIndex index, String obfName) {
+		this(index, obfName, null);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String obfName) {
-		this(parent, obfName, EntryMapping.DEFAULT);
+
+	public ClassEntry(EntryIndex index, String obfName, @Nullable ClassDefinition def) {
+		this(getOuterClass(index, obfName), getInnerName(obfName), def, EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String obfName, EntryMapping mapping) {
+	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition def) {
+		this(parent, obfName, def, EntryMapping.DEFAULT);
+	}
+
+	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition def, EntryMapping mapping) {
 		super(parent, obfName, mapping);
+		this.def = def;
 		if (parent != null) {
 			this.fullName = parent.getFullName() + "$" + this.getName();
 		} else {
@@ -71,17 +80,21 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		return this.getSimpleName();
 	}
 
+	public ClassDefinition getDefinition() {
+		return this.def;
+	}
+
 	@Override
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		String name = this.getName();
 		if (name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, new EntryMapping(desc.toString())));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, this.def, new EntryMapping(desc.toString())));
 		}
 
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, this.obfName, mapping)
+				new ClassEntry(this.parent, this.obfName, this.def, mapping)
 		);
 	}
 
@@ -92,7 +105,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 
 	@Override
 	public int hashCode() {
-		return this.fullName.hashCode();
+		return this.obfName.hashCode();
 	}
 
 	@Override
@@ -101,7 +114,7 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	public boolean equals(ClassEntry other) {
-		return other != null && Objects.equals(this.parent, other.parent) && this.getName().equals(other.getName());
+		return other != null && Objects.equals(this.parent, other.parent) && this.getObfName().equals(other.getObfName());
 	}
 
 	@Override
@@ -178,12 +191,11 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 	}
 
 	@Nullable
-	public static ClassEntry getOuterClass(String obfName) {
-		// todo this is a bit of an issue. we need to get from an entry index here
+	public static ClassEntry getOuterClass(EntryIndex index, String obfName) {
 		String outerObfName = getOuterClassName(obfName);
 
 		if (outerObfName != null) {
-			return new ClassEntry(outerObfName);
+			return index.getClass(outerObfName);
 		}
 
 		return null;
@@ -227,5 +239,10 @@ public class ClassEntry extends ParentedEntry<ClassEntry> implements Comparable<
 		}
 
 		return name.compareTo(otherFullName);
+	}
+
+	@Override
+	public void setDefinition(@Nonnull ClassDefinition definition) {
+		this.def = definition;
 	}
 }

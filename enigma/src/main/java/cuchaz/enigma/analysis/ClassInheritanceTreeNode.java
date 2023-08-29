@@ -1,5 +1,6 @@
 package cuchaz.enigma.analysis;
 
+import cuchaz.enigma.analysis.index.EntryIndex;
 import cuchaz.enigma.analysis.index.InheritanceIndex;
 import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
@@ -8,8 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
-	public ClassInheritanceTreeNode(Translator translator, String obfClassName) {
-		super(translator, new ClassEntry(obfClassName));
+	private final EntryIndex index;
+
+	public ClassInheritanceTreeNode(Translator translator, EntryIndex index, String obfClassName) {
+		super(translator, new ClassEntry(index, obfClassName));
+		this.index = index;
 	}
 
 	public static ClassInheritanceTreeNode findNode(ClassInheritanceTreeNode node, ClassEntry entry) {
@@ -33,7 +37,7 @@ public class ClassInheritanceTreeNode extends AbstractClassTreeNode {
 		// get all the child nodes
 		List<ClassInheritanceTreeNode> nodes = new ArrayList<>();
 		for (ClassEntry inheritor : ancestries.getChildren(this.entry)) {
-			nodes.add(new ClassInheritanceTreeNode(this.translator, inheritor.getFullName()));
+			nodes.add(new ClassInheritanceTreeNode(this.translator, this.index, inheritor.getFullName()));
 		}
 
 		// add them to this node
