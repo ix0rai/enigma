@@ -94,7 +94,7 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	@Nullable
 	default String getJavadocs() {
 		return this.getMapping().javadoc();
-	};
+	}
 
 	default String getSourceRemapName() {
 		return this.getName();
@@ -121,7 +121,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	Class<P> getParentType();
 
-	void setName(String name, RenamableTokenType tokenType);
+	default void setName(String name, RenamableTokenType tokenType) {
+		this.setMapping(new EntryMapping(name, this.getJavadocs(), tokenType));
+	}
 
 	void setParent(P parent);
 

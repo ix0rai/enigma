@@ -38,7 +38,7 @@ public abstract class ParentedEntry<E extends Entry<?>> implements Entry<E> {
 	@Override
 	public void setName(String name, RenamableTokenType tokenType) {
 		this.setMapping(new EntryMapping(name, this.getJavadocs(), tokenType));
-	};
+	}
 
 	protected abstract TranslateResult<? extends ParentedEntry<E>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
 

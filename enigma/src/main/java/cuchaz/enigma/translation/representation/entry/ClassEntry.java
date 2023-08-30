@@ -15,28 +15,19 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implements Comparable<ClassEntry> {
-	private final String fullName;
+	private final String fullObfName;
 
-	public ClassEntry(EntryIndex index, String obfName) {
-		this(index, obfName, null);
+	public ClassEntry(EntryIndex index, String fullObfName) {
+		this(index, fullObfName, null);
 	}
 
-
-	public ClassEntry(EntryIndex index, String obfName, @Nullable ClassDefinition def) {
-		this(getOuterClass(index, obfName), getInnerName(obfName), def, EntryMapping.DEFAULT);
+	public ClassEntry(EntryIndex index, String fullObfName, @Nullable ClassDefinition def) {
+		this(getOuterClass(index, fullObfName), getInnerName(fullObfName), fullObfName, def, EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition def) {
-		this(parent, obfName, def, EntryMapping.DEFAULT);
-	}
-
-	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition definition, EntryMapping mapping) {
+	public ClassEntry(@Nullable ClassEntry parent, String obfName, String fullObfName, @Nullable ClassDefinition definition, EntryMapping mapping) {
 		super(parent, obfName, definition, mapping);
-		if (parent != null) {
-			this.fullName = parent.getFullName() + "$" + this.getName();
-		} else {
-			this.fullName = this.getName();
-		}
+		this.fullObfName = fullObfName;
 
 		if (parent == null && obfName.indexOf('.') >= 0) {
 			throw new IllegalArgumentException("Class name must be in JVM format. ie, path/to/package/class$inner : " + obfName);
@@ -61,7 +52,15 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 
 	@Override
 	public String getFullName() {
-		return this.fullName;
+		if (this.isObfuscated()) {
+			return this.fullObfName;
+		}
+
+		if (this.getParent() != null) {
+			return this.parent.getFullName() + "$" + this.getName();
+		} else {
+			return this.getName();
+		}
 	}
 
 	@Override
@@ -83,12 +82,12 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 		String name = this.getName();
 		if (name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, this.definition, new EntryMapping(desc.toString())));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, this.fullObfName, this.definition, new EntryMapping(desc.toString())));
 		}
 
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, this.obfName, this.definition, mapping)
+				new ClassEntry(this.parent, this.obfName, this.fullObfName, this.definition, mapping)
 		);
 	}
 
@@ -132,7 +131,7 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 	}
 
 	public String getPackageName() {
-		return getParentPackage(this.fullName);
+		return getParentPackage(this.getFullName());
 	}
 
 	/**
@@ -161,6 +160,7 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 		return packageName != null && (packageName.startsWith("java/") || packageName.startsWith("javax/"));
 	}
 
+	@Nullable
 	public static String getParentPackage(String name) {
 		int pos = name.lastIndexOf('/');
 		if (pos > 0) {

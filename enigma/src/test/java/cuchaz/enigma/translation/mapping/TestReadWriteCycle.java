@@ -13,14 +13,12 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * Tests that a MappingFormat can write out a fixed set of mappings and read them back without losing any information.
@@ -37,21 +35,20 @@ public class TestReadWriteCycle {
 	public TestReadWriteCycle() {
 		EntryIndex index = new EntryIndex();
 
-		testClazz = index.getClass("a/b/c");
-		testClazz.setMapping(new EntryMapping("alpha/beta/charlie", "this is a test class", RenamableTokenType.DEOBFUSCATED));
-		System.out.println(index.getClass("a/b/c").getMapping());
+		this.testClazz = index.getClass("a/b/c");
+		this.testClazz.setMapping(new EntryMapping("alpha/beta/charlie", "this is a test class", RenamableTokenType.DEOBFUSCATED));
 
-		testField1 = index.getField(index.getClass("a/b/c"), "field1", "I");
-		testField1.setMapping(new EntryMapping("mapped1", "this is field 1", RenamableTokenType.DEOBFUSCATED));
+		this.testField1 = index.getField(index.getClass("a/b/c"), "field1", "I");
+		this.testField1.setMapping(new EntryMapping("mapped1", "this is field 1", RenamableTokenType.DEOBFUSCATED));
 
-		testField2 = index.getField(index.getClass("a/b/c"), "field2", "I");
-		testField2.setMapping(new EntryMapping("mapped2", "this is field 2", RenamableTokenType.DEOBFUSCATED));
+		this.testField2 = index.getField(index.getClass("a/b/c"), "field2", "I");
+		this.testField2.setMapping(new EntryMapping("mapped2", "this is field 2", RenamableTokenType.DEOBFUSCATED));
 
-		testMethod1 = index.getMethod(index.getClass("a/b/c"), "method1", "()V");
-		testMethod1.setMapping(new EntryMapping("mapped3", "this is method 1", RenamableTokenType.DEOBFUSCATED));
+		this.testMethod1 = index.getMethod(index.getClass("a/b/c"), "method1", "()V");
+		this.testMethod1.setMapping(new EntryMapping("mapped3", "this is method 1", RenamableTokenType.DEOBFUSCATED));
 
-		testMethod2 = index.getMethod(index.getClass("a/b/c"), "method2", "()V");
-		testMethod2.setMapping(new EntryMapping("mapped4", "this is method 2", RenamableTokenType.DEOBFUSCATED));
+		this.testMethod2 = index.getMethod(index.getClass("a/b/c"), "method2", "()V");
+		this.testMethod2.setMapping(new EntryMapping("mapped4", "this is method 2", RenamableTokenType.DEOBFUSCATED));
 	}
 
 	private void insertMapping(EntryTree<EntryMapping> mappings, Entry<?> entry) {
@@ -78,7 +75,6 @@ public class TestReadWriteCycle {
 
 		mappingFormat.write(testMappings, tempFile.toPath(), ProgressListener.none(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
-		System.out.println(Files.readString(tempFile.toPath()));
 
 		EntryIndex index = new EntryIndex();
 		EntryTree<EntryMapping> loadedMappings = mappingFormat.read(tempFile.toPath(), index, ProgressListener.none());

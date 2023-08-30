@@ -33,24 +33,32 @@ public class EntryIndex implements JarIndexer {
 
 	@Override
 	public void indexClass(ClassEntry classEntry) {
-		this.obfToClass.put(classEntry.getObfName(), classEntry);
-		this.classes.add(classEntry);
+		if (!classEntry.isJre() && !this.classes.contains(classEntry)) {
+			this.obfToClass.put(classEntry.getObfName(), classEntry);
+			this.classes.add(classEntry);
+		}
 	}
 
 	@Override
 	public void indexMethod(MethodEntry methodEntry) {
-		this.obfToMethod.put(new Triplet<>(methodEntry.getParent(), methodEntry.getObfName(), methodEntry.getDesc()), methodEntry);
-		this.methods.add(methodEntry);
+		if (!this.methods.contains(methodEntry)) {
+			this.obfToMethod.put(new Triplet<>(methodEntry.getParent(), methodEntry.getObfName(), methodEntry.getDesc()), methodEntry);
+			this.methods.add(methodEntry);
+		}
 	}
 
 	@Override
 	public void indexField(FieldEntry fieldEntry) {
-		this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
-		this.fields.add(fieldEntry);
+		if (!this.fields.contains(fieldEntry)) {
+			this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
+			this.fields.add(fieldEntry);
+		}
 	}
 
 	public void indexLocalVariable(LocalVariableEntry variableEntry) {
-		this.obfToVariable.put(new Pair<>(variableEntry.getParent(), variableEntry.getIndex()), variableEntry);
+		if (!this.obfToVariable.containsValue(variableEntry)) {
+			this.obfToVariable.put(new Pair<>(variableEntry.getParent(), variableEntry.getIndex()), variableEntry);
+		}
 	}
 
 	public ClassEntry getClass(String obfName) {
