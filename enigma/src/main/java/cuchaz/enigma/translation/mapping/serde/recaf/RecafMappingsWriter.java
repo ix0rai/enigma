@@ -53,20 +53,20 @@ public class RecafMappingsWriter implements MappingsWriter {
 		try {
 			if (mapping != null && mapping.targetName() != null) {
 				if (entry instanceof ClassEntry classEntry) {
-					writer.write(classEntry.getObfName());
+					writer.write(classEntry.getFullObfName());
 					writer.write(" ");
-					writer.write(mapping.targetName());
+					writer.write(entry.getMapping().targetName());
 				} else if (entry instanceof FieldEntry fieldEntry) {
-					writer.write(fieldEntry.getObfName());
+					writer.write(fieldEntry.getFullObfName());
 					writer.write(" ");
 					writer.write(fieldEntry.getDesc().toString());
 					writer.write(" ");
-					writer.write(mapping.targetName());
+					writer.write(entry.getMapping().targetName());
 				} else if (entry instanceof MethodEntry methodEntry) {
-					writer.write(methodEntry.getObfName());
+					writer.write(methodEntry.getFullObfName());
 					writer.write(methodEntry.getDesc().toString());
 					writer.write(" ");
-					writer.write(mapping.targetName());
+					writer.write(entry.getMapping().targetName());
 				}
 
 				writer.write("\n");

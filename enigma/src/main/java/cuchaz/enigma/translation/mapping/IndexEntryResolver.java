@@ -75,10 +75,10 @@ public class IndexEntryResolver implements EntryResolver {
 		List<Entry<?>> ancestry = entry.getAncestry();
 		for (int i = ancestry.size() - 1; i > 0; i--) {
 			Entry<?> child = ancestry.get(i);
-			Entry<ClassEntry> cast = child.castParent(ClassEntry.class);
-			if (!(cast instanceof ClassEntry) && cast instanceof DefinedEntry<ClassEntry, ?> defined) {
+			DefinedEntry<ClassEntry, ?> cast = child.castParent(ClassEntry.class);
+			if (!(cast instanceof ClassEntry) && cast != null) {
 				// we found the entry which is a child of a class, we are now able to resolve the owner of this entry
-				return defined;
+				return cast;
 			}
 		}
 

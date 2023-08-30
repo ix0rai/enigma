@@ -27,12 +27,12 @@ public class PackageVisibilityIndexTest {
 
 	@Test
 	public void test() {
-		ClassEntry keep = newClass("cuchaz/enigma/inputs/Keep");
-		ClassEntry base = newClass("a");
-		ClassEntry samePackageChild = newClass("b");
-		ClassEntry samePackageChildInner = newClass("b$a");
-		ClassEntry otherPackageChild = newClass("c");
-		ClassEntry otherPackageChildInner = newClass("c$a");
+		ClassEntry keep = this.newClass("cuchaz/enigma/inputs/Keep");
+		ClassEntry base = this.newClass("a");
+		ClassEntry samePackageChild = this.newClass("b");
+		ClassEntry samePackageChildInner = this.newClass("b$a");
+		ClassEntry otherPackageChild = this.newClass("c");
+		ClassEntry otherPackageChildInner = this.newClass("c$a");
 
 		PackageVisibilityIndex visibilityIndex = this.jarIndex.getPackageVisibilityIndex();
 		assertThat(visibilityIndex.getPartition(base), containsInAnyOrder(base, samePackageChild, samePackageChildInner));

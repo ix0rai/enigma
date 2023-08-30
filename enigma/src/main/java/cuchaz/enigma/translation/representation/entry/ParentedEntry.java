@@ -53,6 +53,11 @@ public abstract class ParentedEntry<E extends Entry<?>> implements Entry<E> {
 	}
 
 	@Override
+	public String getFullObfName() {
+		return this.parent.getFullObfName() + "." + this.getObfName();
+	}
+
+	@Override
 	public String getContextualName() {
 		return this.parent.getContextualName() + "." + this.getName();
 	}
@@ -86,12 +91,7 @@ public abstract class ParentedEntry<E extends Entry<?>> implements Entry<E> {
 		if (mapping == null) {
 			throw new RuntimeException();
 		}
-		if (this.getParent() == null) {
-			return this.extendedTranslate(translator, mapping);
-		}
 
-		E translatedParent = translator.translate(this.getParent());
-		this.setParent(translatedParent);
 		return this.extendedTranslate(translator, mapping);
 	}
 

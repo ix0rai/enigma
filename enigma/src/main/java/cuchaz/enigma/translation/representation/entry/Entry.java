@@ -75,6 +75,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 	 */
 	String getFullName();
 
+	String getFullObfName();
+
 	/**
 	 * Returns the contextual name of this entry.
 	 *
@@ -241,9 +243,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	@SuppressWarnings("unchecked")
 	@Nullable
-	default <C extends Entry<?>> Entry<C> castParent(Class<C> parentType) {
+	default <C extends Entry<?>> DefinedEntry<C, ?> castParent(Class<C> parentType) {
 		if (parentType.equals(this.getParentType())) {
-			return (Entry<C>) this;
+			return (DefinedEntry<C, ?>) this;
 		}
 
 		return null;

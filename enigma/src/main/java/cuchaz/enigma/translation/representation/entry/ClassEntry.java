@@ -53,13 +53,22 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 	@Override
 	public String getFullName() {
 		if (this.isObfuscated()) {
-			return this.fullObfName;
+			return this.getFullObfName();
 		}
 
 		if (this.getParent() != null) {
 			return this.parent.getFullName() + "$" + this.getName();
 		} else {
 			return this.getName();
+		}
+	}
+
+	@Override
+	public String getFullObfName() {
+		if (this.getParent() != null) {
+			return this.parent.getFullObfName() + "$" + this.getObfName();
+		} else {
+			return this.fullObfName;
 		}
 	}
 
