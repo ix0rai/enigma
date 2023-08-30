@@ -10,8 +10,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.FieldEntry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.translation.representation.entry.ParentedEntry;
-import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;

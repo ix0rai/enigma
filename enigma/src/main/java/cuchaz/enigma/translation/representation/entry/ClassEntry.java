@@ -16,7 +16,6 @@ import java.util.Objects;
 
 public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implements Comparable<ClassEntry> {
 	private final String fullName;
-	private @Nullable ClassDefinition def;
 
 	public ClassEntry(EntryIndex index, String obfName) {
 		this(index, obfName, null);
@@ -31,9 +30,8 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 		this(parent, obfName, def, EntryMapping.DEFAULT);
 	}
 
-	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition def, EntryMapping mapping) {
-		super(parent, obfName, mapping);
-		this.def = def;
+	public ClassEntry(@Nullable ClassEntry parent, String obfName, @Nullable ClassDefinition definition, EntryMapping mapping) {
+		super(parent, obfName, definition, mapping);
 		if (parent != null) {
 			this.fullName = parent.getFullName() + "$" + this.getName();
 		} else {
@@ -80,21 +78,17 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 		return this.getSimpleName();
 	}
 
-	public ClassDefinition getDefinition() {
-		return this.def;
-	}
-
 	@Override
 	public TranslateResult<? extends ClassEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		String name = this.getName();
 		if (name.charAt(0) == '[') {
 			TranslateResult<TypeDescriptor> translatedName = translator.extendedTranslate(new TypeDescriptor(name));
-			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, this.def, new EntryMapping(desc.toString())));
+			return translatedName.map(desc -> new ClassEntry(this.parent, this.obfName, this.definition, new EntryMapping(desc.toString())));
 		}
 
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new ClassEntry(this.parent, this.obfName, this.def, mapping)
+				new ClassEntry(this.parent, this.obfName, this.definition, mapping)
 		);
 	}
 
@@ -239,10 +233,5 @@ public class ClassEntry extends DefinedEntry<ClassEntry, ClassDefinition> implem
 		}
 
 		return name.compareTo(otherFullName);
-	}
-
-	@Override
-	public void setDefinition(@Nonnull ClassDefinition definition) {
-		this.def = definition;
 	}
 }

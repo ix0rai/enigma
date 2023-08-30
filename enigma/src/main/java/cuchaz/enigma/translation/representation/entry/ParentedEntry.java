@@ -8,19 +8,16 @@ import cuchaz.enigma.translation.mapping.EntryMap;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.EntryResolver;
 import cuchaz.enigma.translation.mapping.ResolutionStrategy;
-import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
-import cuchaz.enigma.translation.representation.entry.definition.Definition;
-import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
-	protected P parent;
+public abstract class ParentedEntry<E extends Entry<?>> implements Entry<E> {
+	protected E parent;
 	protected final String obfName;
 	protected EntryMapping mapping;
 
-	protected ParentedEntry(P parent, String obfName, EntryMapping mapping) {
+	protected ParentedEntry(E parent, String obfName, EntryMapping mapping) {
 		this.parent = parent;
 		this.mapping = mapping;
 		this.obfName = obfName;
@@ -30,18 +27,20 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	}
 
 	@Override
-	public ParentedEntry<P> withParent(P parent) {
+	public void setParent(E parent) {
+		if (this.parent != null) {
+			throw new IllegalStateException("cannot reassign parent!");
+		}
+
 		this.parent = parent;
-		return this;
 	}
 
 	@Override
-	public ParentedEntry<P> withName(String name, RenamableTokenType tokenType) {
+	public void setName(String name, RenamableTokenType tokenType) {
 		this.setMapping(new EntryMapping(name, this.getJavadocs(), tokenType));
-		return this;
 	};
 
-	protected abstract TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
+	protected abstract TranslateResult<? extends ParentedEntry<E>> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping);
 
 	@Override
 	public String getObfName() {
@@ -60,7 +59,7 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 
 	@Override
 	@Nullable
-	public P getParent() {
+	public E getParent() {
 		return this.parent;
 	}
 
@@ -81,7 +80,7 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	}
 
 	@Override
-	public TranslateResult<? extends ParentedEntry<P>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
+	public TranslateResult<? extends ParentedEntry<E>> extendedTranslate(Translator translator, EntryResolver resolver, EntryMap<EntryMapping> mappings) {
 		EntryMapping mapping = this.resolveMapping(resolver, mappings);
 		// todo remove
 		if (mapping == null) {
@@ -91,12 +90,13 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 			return this.extendedTranslate(translator, mapping);
 		}
 
-		P translatedParent = translator.translate(this.getParent());
-		return this.withParent(translatedParent).extendedTranslate(translator, mapping);
+		E translatedParent = translator.translate(this.getParent());
+		this.setParent(translatedParent);
+		return this.extendedTranslate(translator, mapping);
 	}
 
 	private EntryMapping resolveMapping(EntryResolver resolver, EntryMap<EntryMapping> mappings) {
-		for (ParentedEntry<P> entry : resolver.resolveEntry(this, ResolutionStrategy.RESOLVE_ROOT)) {
+		for (ParentedEntry<E> entry : resolver.resolveEntry(this, ResolutionStrategy.RESOLVE_ROOT)) {
 			EntryMapping mapping = mappings.get(entry);
 			if (mapping != null) {
 				return mapping;

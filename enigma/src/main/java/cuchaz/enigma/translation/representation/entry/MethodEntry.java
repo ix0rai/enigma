@@ -21,36 +21,26 @@ import javax.annotation.Nullable;
 
 public class MethodEntry extends DefinedEntry<ClassEntry, MethodDefinition> implements Comparable<MethodEntry> {
 	protected final MethodDescriptor descriptor;
-	protected @Nullable MethodDefinition def;
 
 	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor) {
 		this(parent, obfName, descriptor, null, EntryMapping.DEFAULT);
 	}
 
-	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition def) {
-		this(parent, obfName, descriptor, def, EntryMapping.DEFAULT);
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition definition) {
+		this(parent, obfName, descriptor, definition, EntryMapping.DEFAULT);
 	}
 
-	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition def, EntryMapping mapping) {
-		super(parent, obfName, mapping);
+	public MethodEntry(ClassEntry parent, String obfName, MethodDescriptor descriptor, @Nullable MethodDefinition definition, EntryMapping mapping) {
+		super(parent, obfName, definition, mapping);
 
 		Preconditions.checkNotNull(parent, "Parent cannot be null");
 		Preconditions.checkNotNull(descriptor, "Method descriptor cannot be null");
 
 		this.descriptor = descriptor;
-		this.def = def;
 	}
 
 	public static MethodEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
 		return new MethodEntry(owner, obfName, new MethodDescriptor(desc), new MethodDefinition(new AccessFlags(access), Signature.createSignature(signature)), EntryMapping.DEFAULT);
-	}
-
-	public MethodDefinition getDefinition() {
-		return this.def;
-	}
-
-	public void setDefinition(MethodDefinition definition) {
-		this.def = definition;
 	}
 
 	@Override
@@ -98,7 +88,7 @@ public class MethodEntry extends DefinedEntry<ClassEntry, MethodDefinition> impl
 	protected TranslateResult<? extends MethodEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new MethodEntry(this.parent, this.obfName, translator.translate(this.descriptor), this.def, mapping)
+				new MethodEntry(this.parent, this.obfName, translator.translate(this.descriptor), this.getDefinition(), mapping)
 		);
 	}
 

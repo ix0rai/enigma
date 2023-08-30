@@ -4,7 +4,6 @@ import cuchaz.enigma.source.RenamableTokenType;
 import cuchaz.enigma.translation.Translatable;
 import cuchaz.enigma.translation.mapping.EntryMapping;
 import cuchaz.enigma.translation.mapping.IdentifierValidation;
-import cuchaz.enigma.translation.representation.entry.definition.DefinitionEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
 import java.util.ArrayList;
@@ -122,9 +121,9 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 
 	Class<P> getParentType();
 
-	Entry<P> withName(String name, RenamableTokenType tokenType);
+	void setName(String name, RenamableTokenType tokenType);
 
-	Entry<P> withParent(P parent);
+	void setParent(P parent);
 
 	/**
 	 * Determines whether this entry can conflict with the given entry.
@@ -230,7 +229,8 @@ public interface Entry<P extends Entry<?>> extends Translatable {
 			return this;
 		}
 
-		return this.withParent((P) parent.replaceAncestor(target, replacement));
+		this.setParent((P) parent.replaceAncestor(target, replacement));
+		return this;
 	}
 
 	default void validateName(ValidationContext vc, String name) {

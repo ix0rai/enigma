@@ -18,7 +18,6 @@ import javax.annotation.Nullable;
 
 public class FieldEntry extends DefinedEntry<ClassEntry, FieldDefinition> implements Comparable<FieldEntry> {
 	private final TypeDescriptor desc;
-	private @Nullable FieldDefinition def;
 
 	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc) {
 		this(parent, obfName, desc, null, EntryMapping.DEFAULT);
@@ -28,14 +27,13 @@ public class FieldEntry extends DefinedEntry<ClassEntry, FieldDefinition> implem
 		this(parent, obfName, desc, def, EntryMapping.DEFAULT);
 	}
 
-	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, @Nullable FieldDefinition def, EntryMapping mapping) {
-		super(parent, obfName, mapping);
+	public FieldEntry(ClassEntry parent, String obfName, TypeDescriptor desc, @Nullable FieldDefinition definition, EntryMapping mapping) {
+		super(parent, obfName, definition, mapping);
 
 		Preconditions.checkNotNull(parent, "Owner cannot be null");
 		Preconditions.checkNotNull(desc, "Field descriptor cannot be null");
 
 		this.desc = desc;
-		this.def = def;
 	}
 
 	public static FieldEntry parse(ClassEntry owner, int access, String obfName, String desc, String signature) {
@@ -51,20 +49,11 @@ public class FieldEntry extends DefinedEntry<ClassEntry, FieldDefinition> implem
 		return this.desc;
 	}
 
-	@Nullable
-	public FieldDefinition getDefinition() {
-		return this.def;
-	}
-
-	public void setDefinition(FieldDefinition definition) {
-		this.def = definition;
-	}
-
 	@Override
 	protected TranslateResult<FieldEntry> extendedTranslate(Translator translator, @Nonnull EntryMapping mapping) {
 		return TranslateResult.of(
 				mapping.targetName() == null ? RenamableTokenType.OBFUSCATED : RenamableTokenType.DEOBFUSCATED,
-				new FieldEntry(this.parent, this.obfName, translator.translate(this.desc), this.def, mapping)
+				new FieldEntry(this.parent, this.obfName, translator.translate(this.desc), this.definition, mapping)
 		);
 	}
 

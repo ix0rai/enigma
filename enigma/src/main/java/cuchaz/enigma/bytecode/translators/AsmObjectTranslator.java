@@ -1,7 +1,6 @@
 package cuchaz.enigma.bytecode.translators;
 
 import cuchaz.enigma.analysis.index.EntryIndex;
-import cuchaz.enigma.translation.Translator;
 import cuchaz.enigma.translation.representation.MethodDescriptor;
 import cuchaz.enigma.translation.representation.TypeDescriptor;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;

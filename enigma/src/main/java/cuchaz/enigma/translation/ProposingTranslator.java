@@ -37,7 +37,12 @@ public class ProposingTranslator implements Translator {
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.findFirst()
-					.map(newName -> TranslateResult.proposed((T) ((Entry<?>) deobfuscated.getValue()).withName(newName, RenamableTokenType.PROPOSED)))
+					.map(newName -> {
+						Entry<?> entry = (Entry<?>) deobfuscated.getValue();
+						entry.setName(newName, RenamableTokenType.PROPOSED);
+
+						return TranslateResult.proposed((T) entry);
+					})
 					.orElse(deobfuscated);
 		}
 

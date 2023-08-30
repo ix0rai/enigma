@@ -13,7 +13,6 @@ import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.translation.representation.entry.DefinedEntry;
 import cuchaz.enigma.translation.representation.entry.Entry;
 import cuchaz.enigma.translation.representation.entry.MethodEntry;
-import cuchaz.enigma.translation.representation.entry.definition.ClassDefinition;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -104,12 +103,12 @@ public class IndexEntryResolver implements EntryResolver {
 		Set<DefinedEntry<ClassEntry, ?>> resolvedEntries = new HashSet<>();
 
 		for (ClassEntry parentClass : this.inheritanceIndex.getParents(ownerClass)) {
-			DefinedEntry<ClassEntry, ?> parentEntry = entry.withParent(parentClass);
+			entry.setParent(parentClass);
 
 			if (strategy == ResolutionStrategy.RESOLVE_ROOT) {
-				resolvedEntries.addAll(this.resolveRoot(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveRoot(entry, strategy));
 			} else {
-				resolvedEntries.addAll(this.resolveClosest(parentEntry, strategy));
+				resolvedEntries.addAll(this.resolveClosest(entry, strategy));
 			}
 		}
 
