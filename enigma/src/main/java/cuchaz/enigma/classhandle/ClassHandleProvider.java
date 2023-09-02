@@ -60,7 +60,7 @@ public final class ClassHandleProvider {
 	 */
 	@Nullable
 	public ClassHandle openClass(ClassEntry entry) {
-		if (!this.project.getJarIndex().getEntryIndex().hasClass(entry)) return null;
+		if (!this.project.getJarIndex().getEntryIndex().isInJar(entry)) return null;
 
 		return withLock(this.lock.writeLock(), () -> {
 			Entry e = this.handles.computeIfAbsent(entry, entry1 -> new Entry(this, entry1));

@@ -142,13 +142,13 @@ public class TestJarIndexLoneClass {
 	@Test
 	public void testContains() {
 		EntryIndex entryIndex = this.index.getEntryIndex();
-		assertThat(entryIndex.hasClass(this.newClass("a")), is(true));
-		assertThat(entryIndex.hasClass(this.newClass("b")), is(false));
-		assertThat(entryIndex.hasField(this.newField("a", "a", "Ljava/lang/String;")), is(true));
-		assertThat(entryIndex.hasField(this.newField("a", "b", "Ljava/lang/String;")), is(false));
-		assertThat(entryIndex.hasField(this.newField("a", "a", "LFoo;")), is(false));
-		assertThat(entryIndex.hasMethod(this.newMethod("a", "a", "()Ljava/lang/String;")), is(true));
-		assertThat(entryIndex.hasMethod(this.newMethod("a", "b", "()Ljava/lang/String;")), is(false));
+		assertThat(entryIndex.isInJar(this.newClass("a")), is(true));
+		assertThat(entryIndex.isInJar(this.newClass("b")), is(false));
+		assertThat(entryIndex.isInJar(this.newField("a", "a", "Ljava/lang/String;")), is(true));
+		assertThat(entryIndex.isInJar(this.newField("a", "b", "Ljava/lang/String;")), is(false));
+		assertThat(entryIndex.isInJar(this.newField("a", "a", "LFoo;")), is(false));
+		assertThat(entryIndex.isInJar(this.newMethod("a", "a", "()Ljava/lang/String;")), is(true));
+		assertThat(entryIndex.isInJar(this.newMethod("a", "b", "()Ljava/lang/String;")), is(false));
 	}
 
 	private ClassEntry newClass(String name) {

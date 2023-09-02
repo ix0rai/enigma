@@ -85,12 +85,12 @@ public class InheritanceIndex implements JarIndexer {
 
 	public Relation computeClassRelation(ClassEntry classEntry, ClassEntry potentialAncestor) {
 		if (potentialAncestor.getObfName().equals("java/lang/Object")) return Relation.RELATED;
-		if (!this.entryIndex.hasClass(classEntry)) return Relation.UNKNOWN;
+		if (!this.entryIndex.isInJar(classEntry)) return Relation.UNKNOWN;
 
 		for (ClassEntry ancestor : this.getAncestors(classEntry)) {
 			if (potentialAncestor.equals(ancestor)) {
 				return Relation.RELATED;
-			} else if (!this.entryIndex.hasClass(ancestor)) {
+			} else if (!this.entryIndex.isInJar(ancestor)) {
 				return Relation.UNKNOWN;
 			}
 		}

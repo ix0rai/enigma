@@ -50,7 +50,7 @@ public class IndexTreeBuilder {
 		// make a root node at the base
 		MethodInheritanceTreeNode rootNode = new MethodInheritanceTreeNode(
 				translator, resolvedEntry,
-				this.index.getEntryIndex().hasMethod(resolvedEntry)
+				this.index.getEntryIndex().isInJar(resolvedEntry)
 		);
 
 		// expand the full tree

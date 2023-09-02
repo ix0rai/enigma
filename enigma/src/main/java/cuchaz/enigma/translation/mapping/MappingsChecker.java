@@ -62,7 +62,7 @@ public class MappingsChecker {
 	}
 
 	private boolean shouldDropBrokenEntry(Entry<?> entry) {
-		if (!this.index.getEntryIndex().hasEntry(entry)) {
+		if (!this.index.getEntryIndex().isInJar(entry)) {
 			return true;
 		}
 

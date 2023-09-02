@@ -60,25 +60,25 @@ public class TestInnerClasses {
 	@Test
 	public void classTree() {
 		// root level
-		assertTrue(this.index.getEntryIndex().hasClass(classTreeRoot));
+		assertTrue(this.index.getEntryIndex().isInJar(classTreeRoot));
 
 		// level 1
 		ClassEntry fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 			+ "$" + classTreeLevel1.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().isInJar(fullClassEntry));
 
 		// level 2
 		fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 				+ "$" + classTreeLevel1.getSimpleName()
 				+ "$" + classTreeLevel2.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().isInJar(fullClassEntry));
 
 		// level 3
 		fullClassEntry = new ClassEntry(entryIndex, classTreeRoot.getName()
 			+ "$" + classTreeLevel1.getSimpleName()
 			+ "$" + classTreeLevel2.getSimpleName()
 			+ "$" + classTreeLevel3.getSimpleName());
-		assertTrue(this.index.getEntryIndex().hasClass(fullClassEntry));
+		assertTrue(this.index.getEntryIndex().isInJar(fullClassEntry));
 	}
 
 	private void decompile(ClassEntry classEntry) {

@@ -185,33 +185,33 @@ public class TestJarIndexInheritanceTree {
 	public void containsEntries() {
 		EntryIndex entryIndex = this.index.getEntryIndex();
 		// classes
-		assertThat(entryIndex.hasClass(BASE_CLASS), is(true));
-		assertThat(entryIndex.hasClass(SUB_CLASS_A), is(true));
-		assertThat(entryIndex.hasClass(SUB_CLASS_AA), is(true));
-		assertThat(entryIndex.hasClass(SUB_CLASS_B), is(true));
+		assertThat(entryIndex.isInJar(BASE_CLASS), is(true));
+		assertThat(entryIndex.isInJar(SUB_CLASS_A), is(true));
+		assertThat(entryIndex.isInJar(SUB_CLASS_AA), is(true));
+		assertThat(entryIndex.isInJar(SUB_CLASS_B), is(true));
 
 		// fields
-		assertThat(entryIndex.hasField(NAME_FIELD), is(true));
-		assertThat(entryIndex.hasField(NUM_THINGS_FIELD), is(true));
+		assertThat(entryIndex.isInJar(NAME_FIELD), is(true));
+		assertThat(entryIndex.isInJar(NUM_THINGS_FIELD), is(true));
 
 		// methods
 		// getName()
-		assertThat(entryIndex.hasMethod(newMethod(BASE_CLASS, "a", "()Ljava/lang/String;")), is(true));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_A, "a", "()Ljava/lang/String;")), is(false));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_AA, "a", "()Ljava/lang/String;")), is(true));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_B, "a", "()Ljava/lang/String;")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(BASE_CLASS, "a", "()Ljava/lang/String;")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_A, "a", "()Ljava/lang/String;")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_AA, "a", "()Ljava/lang/String;")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_B, "a", "()Ljava/lang/String;")), is(false));
 
 		// doBaseThings()
-		assertThat(entryIndex.hasMethod(newMethod(BASE_CLASS, "a", "()V")), is(true));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_A, "a", "()V")), is(false));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_AA, "a", "()V")), is(true));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_B, "a", "()V")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(BASE_CLASS, "a", "()V")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_A, "a", "()V")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_AA, "a", "()V")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_B, "a", "()V")), is(true));
 
 		// doBThings()
-		assertThat(entryIndex.hasMethod(newMethod(BASE_CLASS, "b", "()V")), is(false));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_A, "b", "()V")), is(false));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_AA, "b", "()V")), is(false));
-		assertThat(entryIndex.hasMethod(newMethod(SUB_CLASS_B, "b", "()V")), is(true));
+		assertThat(entryIndex.isInJar(newMethod(BASE_CLASS, "b", "()V")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_A, "b", "()V")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_AA, "b", "()V")), is(false));
+		assertThat(entryIndex.isInJar(newMethod(SUB_CLASS_B, "b", "()V")), is(true));
 	}
 
 	private MethodEntry newMethod(ClassEntry parent, String name, String desc) {

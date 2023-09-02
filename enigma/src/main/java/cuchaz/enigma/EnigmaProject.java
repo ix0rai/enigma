@@ -171,7 +171,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(obfEntry);
+		return this.jarIndex.getEntryIndex().isInJar(obfEntry);
 	}
 
 	public boolean isRenamable(Entry<?> entry) {
@@ -213,7 +213,7 @@ public class EnigmaProject {
 			return false;
 		}
 
-		return this.jarIndex.getEntryIndex().hasEntry(entry);
+		return this.jarIndex.getEntryIndex().isInJar(entry);
 	}
 
 	public boolean isRenamable(EntryReference<Entry<?>, Entry<?>> obfReference) {
@@ -245,7 +245,7 @@ public class EnigmaProject {
 
 	public boolean isSynthetic(Entry<?> entry) {
 		if (entry instanceof DefinedEntry<?,?> defined) {
-			return this.jarIndex.getEntryIndex().hasEntry(entry) && defined.getAccess() != null && defined.getAccess().isSynthetic();
+			return this.jarIndex.getEntryIndex().isInJar(entry) && defined.getAccess() != null && defined.getAccess().isSynthetic();
 		}
 
 		return false;

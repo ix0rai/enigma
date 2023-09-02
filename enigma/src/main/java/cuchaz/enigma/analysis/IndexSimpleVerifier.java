@@ -105,7 +105,7 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 			ClassEntry class1 = this.entryIndex.getClass(type1.getInternalName());
 			ClassEntry class2 = this.entryIndex.getClass(type2.getInternalName());
 
-			if (this.entryIndex.hasClass(class1) && this.entryIndex.hasClass(class2)) {
+			if (this.entryIndex.isInJar(class1) && this.entryIndex.isInJar(class2)) {
 				return this.inheritanceIndex.getAncestors(class2).contains(class1);
 			}
 
@@ -120,7 +120,7 @@ public class IndexSimpleVerifier extends SimpleVerifier {
 				return class1Class.isAssignableFrom(class2Class);
 			}
 
-			if (this.entryIndex.hasClass(class2)) {
+			if (this.entryIndex.isInJar(class2)) {
 				Set<ClassEntry> ancestors = this.inheritanceIndex.getAncestors(class2);
 
 				for (ClassEntry ancestorEntry : ancestors) {

@@ -142,7 +142,7 @@ public class IndexEntryResolver implements EntryResolver {
 	@Override
 	public Set<Entry<?>> resolveEquivalentEntries(Entry<?> entry) {
 		MethodEntry relevantMethod = entry.findAncestor(MethodEntry.class);
-		if (relevantMethod == null || !this.entryIndex.hasMethod(relevantMethod)) {
+		if (relevantMethod == null || !this.entryIndex.isInJar(relevantMethod)) {
 			return Collections.singleton(entry);
 		}
 

@@ -30,29 +30,52 @@ public class EntryIndex implements JarIndexer {
 	private final List<ClassEntry> classes = new ArrayList<>();
 	private final List<MethodEntry> methods = new ArrayList<>();
 	private final List<FieldEntry> fields = new ArrayList<>();
+	private final List<ClassEntry> jarClasses = new ArrayList<>();
+	private final List<MethodEntry> jarMethods = new ArrayList<>();
+	private final List<FieldEntry> jarFields = new ArrayList<>();
 
 	@Override
 	public void indexClass(ClassEntry classEntry) {
-		if (!classEntry.isJre() && !this.classes.contains(classEntry)) {
+		this.indexClass(classEntry, true);
+	}
+
+	public void indexClass(ClassEntry classEntry, boolean duringJarIndexing) {
+		if (!classEntry.isJre()) {
 			this.obfToClass.put(classEntry.getObfName(), classEntry);
+			if (duringJarIndexing) {
+				this.jarClasses.add(classEntry);
+			}
+
 			this.classes.add(classEntry);
 		}
 	}
 
 	@Override
 	public void indexMethod(MethodEntry methodEntry) {
-		if (!this.methods.contains(methodEntry)) {
-			this.obfToMethod.put(new Triplet<>(methodEntry.getParent(), methodEntry.getObfName(), methodEntry.getDesc()), methodEntry);
-			this.methods.add(methodEntry);
+		this.indexMethod(methodEntry, true);
+	}
+
+	public void indexMethod(MethodEntry methodEntry, boolean duringJarIndexing) {
+		this.obfToMethod.put(new Triplet<>(methodEntry.getParent(), methodEntry.getObfName(), methodEntry.getDesc()), methodEntry);
+		if (duringJarIndexing) {
+			this.jarMethods.add(methodEntry);
 		}
+
+		this.methods.add(methodEntry);
 	}
 
 	@Override
 	public void indexField(FieldEntry fieldEntry) {
-		if (!this.fields.contains(fieldEntry)) {
-			this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
-			this.fields.add(fieldEntry);
+		this.indexField(fieldEntry, true);
+	}
+
+	public void indexField(FieldEntry fieldEntry, boolean duringJarIndexing) {
+		this.obfToField.put(new Triplet<>(fieldEntry.getParent(), fieldEntry.getObfName(), fieldEntry.getDesc()), fieldEntry);
+		if (duringJarIndexing) {
+			this.jarFields.add(fieldEntry);
 		}
+
+		this.fields.add(fieldEntry);
 	}
 
 	public void indexLocalVariable(LocalVariableEntry variableEntry) {
@@ -70,7 +93,7 @@ public class EntryIndex implements JarIndexer {
 
 		if (indexed == null) {
 			ClassEntry entry = new ClassEntry(this, obfName, definition);
-			this.indexClass(entry);
+			this.indexClass(entry, false);
 			return entry;
 		}
 
@@ -94,7 +117,7 @@ public class EntryIndex implements JarIndexer {
 
 		if (indexed == null) {
 			MethodEntry entry = new MethodEntry(parent, obfName, descriptor, definition);
-			this.indexMethod(entry);
+			this.indexMethod(entry, false);
 			return entry;
 		}
 
@@ -114,7 +137,7 @@ public class EntryIndex implements JarIndexer {
 
 		if (indexed == null) {
 			FieldEntry entry = new FieldEntry(parent, obfName, descriptor, definition);
-			this.indexField(entry);
+			this.indexField(entry, false);
 			return entry;
 		}
 
@@ -153,27 +176,27 @@ public class EntryIndex implements JarIndexer {
 		return this.obfToVariable.get(new Pair<>(parent, index));
 	}
 
-	public boolean hasClass(ClassEntry entry) {
-		return this.classes.contains(entry);
+	public boolean isInJar(ClassEntry entry) {
+		return this.jarClasses.contains(entry);
 	}
 
-	public boolean hasMethod(MethodEntry entry) {
-		return this.methods.contains(entry);
+	public boolean isInJar(MethodEntry entry) {
+		return this.jarMethods.contains(entry);
 	}
 
-	public boolean hasField(FieldEntry entry) {
-		return this.fields.contains(entry);
+	public boolean isInJar(FieldEntry entry) {
+		return this.jarFields.contains(entry);
 	}
 
-	public boolean hasEntry(Entry<?> entry) {
+	public boolean isInJar(Entry<?> entry) {
 		if (entry instanceof ClassEntry classEntry) {
-			return this.hasClass(classEntry);
+			return this.isInJar(classEntry);
 		} else if (entry instanceof MethodEntry methodEntry) {
-			return this.hasMethod(methodEntry);
+			return this.isInJar(methodEntry);
 		} else if (entry instanceof FieldEntry fieldEntry) {
-			return this.hasField(fieldEntry);
+			return this.isInJar(fieldEntry);
 		} else if (entry instanceof LocalVariableEntry localVariableEntry) {
-			return this.hasMethod(localVariableEntry.getParent());
+			return this.isInJar(localVariableEntry.getParent());
 		}
 
 		return false;
