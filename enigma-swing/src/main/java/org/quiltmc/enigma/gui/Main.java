@@ -15,6 +15,7 @@ import joptsimple.OptionSpec;
 import joptsimple.ValueConverter;
 import org.tinylog.Logger;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -102,8 +103,9 @@ public class Main {
 
 			I18n.setLanguage(Config.main().language.value());
 			setDefaultSystemProperty("apple.laf.useScreenMenuBar", "true");
-			setDefaultSystemProperty("awt.useSystemAAFontSettings", "on");
-			setDefaultSystemProperty("swing.aatext", "true");
+			if (Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints") == null) {
+				setDefaultSystemProperty("awt.useSystemAAFontSettings", "lcd");
+			}
 
 			Themes.setupTheme();
 
