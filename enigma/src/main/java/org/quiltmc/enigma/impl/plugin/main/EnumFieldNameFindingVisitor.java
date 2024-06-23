@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.impl.plugin;
+package org.quiltmc.enigma.impl.plugin.main;
 
 import org.jetbrains.java.decompiler.util.Pair;
 import org.objectweb.asm.ClassVisitor;

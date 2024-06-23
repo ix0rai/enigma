@@ -3,6 +3,7 @@ package org.quiltmc.enigma.translation.mapping;
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
@@ -20,12 +21,16 @@ public class TestComments {
 
 	@Test
 	public void testParseAndWrite() throws IOException, MappingParseException {
+		Enigma enigma = Enigma.create();
+
 		MappingSaveParameters params = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, "intermediary", "named");
 		EntryTree<EntryMapping> mappings = EnigmaMappingsReader.DIRECTORY.read(
-						DIRECTORY);
+						DIRECTORY,
+						JarIndex.empty()
+		);
 
 		Path file = DIRECTORY.resolve("convertedtiny.tiny");
 
-		Enigma.create().getReadWriteService(file).get().write(mappings, MappingDelta.added(mappings), file, ProgressListener.createEmpty(), params);
+		enigma.getReadWriteService(file).get().write(mappings, MappingDelta.added(mappings), file, ProgressListener.createEmpty(), params);
 	}
 }

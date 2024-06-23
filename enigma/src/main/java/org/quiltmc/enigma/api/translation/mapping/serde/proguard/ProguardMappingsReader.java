@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.translation.mapping.serde.proguard;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -30,7 +31,7 @@ public class ProguardMappingsReader implements MappingsReader {
 	private static final Pattern METHOD = Pattern.compile(" {4}(?:[0-9]+:[0-9]+:)?(" + TYPE + ") (" + NAME + ")\\((" + TYPE_LIST + ")\\) -> (" + NAME + ")");
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException {
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, JarIndex index) throws MappingParseException, IOException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 		int lineNumber = 0;

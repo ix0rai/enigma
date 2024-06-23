@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -49,7 +50,7 @@ public class InvertMappingsCommand extends Command {
 		var readService = CommandsUtil.getReader(enigma, sourceFile);
 		var writeService = CommandsUtil.getWriter(enigma, resultFile);
 
-		EntryTree<EntryMapping> source = readService.read(sourceFile);
+		EntryTree<EntryMapping> source = readService.read(sourceFile, JarIndex.empty());
 		EntryTree<EntryMapping> result = MappingOperations.invert(source);
 
 		Utils.delete(resultFile);

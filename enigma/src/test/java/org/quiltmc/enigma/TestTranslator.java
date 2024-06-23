@@ -31,7 +31,9 @@ public class TestTranslator {
 		project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
 		mappings = enigma.getReadWriteService(Path.of("/translation.mappings")).get().read(
 				TestUtil.getResource("/translation.mappings"),
-				ProgressListener.createEmpty());
+				ProgressListener.createEmpty(),
+				project.getJarIndex()
+		);
 		project.setMappings(mappings, ProgressListener.createEmpty());
 		deobfuscator = project.getRemapper().getDeobfuscator();
 	}

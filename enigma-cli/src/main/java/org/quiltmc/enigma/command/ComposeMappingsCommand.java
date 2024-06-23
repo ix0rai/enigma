@@ -2,6 +2,7 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.util.MappingOperations;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
@@ -52,9 +53,9 @@ public class ComposeMappingsCommand extends Command {
 		Enigma enigma = createEnigma();
 
 		MappingsReader leftReader = CommandsUtil.getReader(enigma, leftFile);
-		EntryTree<EntryMapping> left = leftReader.read(leftFile);
+		EntryTree<EntryMapping> left = leftReader.read(leftFile, JarIndex.empty());
 		MappingsReader rightReader = CommandsUtil.getReader(enigma, rightFile);
-		EntryTree<EntryMapping> right = rightReader.read(rightFile);
+		EntryTree<EntryMapping> right = rightReader.read(rightFile, JarIndex.empty());
 		EntryTree<EntryMapping> result = MappingOperations.compose(left, right, keepMode.equals("left") || keepMode.equals("both"), keepMode.equals("right") || keepMode.equals("both"));
 
 		MappingsWriter writer = CommandsUtil.getWriter(enigma, resultFile);

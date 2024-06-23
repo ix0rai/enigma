@@ -4,6 +4,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaProject;
 import org.quiltmc.enigma.api.ProgressListener;
 import org.quiltmc.enigma.TestUtil;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.class_provider.ClasspathClassProvider;
 import org.quiltmc.enigma.api.translation.mapping.serde.enigma.EnigmaMappingsReader;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,6 @@ public final class TestTinyV2InnerClasses {
 	@Test
 	public void testMappings() throws Exception {
 		EnigmaProject project = Enigma.create().openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
-		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(MAPPINGS, ProgressListener.createEmpty()), ProgressListener.createEmpty());
+		project.setMappings(EnigmaMappingsReader.DIRECTORY.read(MAPPINGS, ProgressListener.createEmpty(), JarIndex.empty()), ProgressListener.createEmpty());
 	}
 }

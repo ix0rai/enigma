@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingSaveParameters;
@@ -40,7 +41,7 @@ public class TestDeterministicWrite {
 			String content = Files.readString(file);
 			if (prev != null) Assertions.assertEquals(prev, content, "Iteration " + i + " has a different result from the previous one");
 			prev = content;
-			mappings = enigma.getReadWriteService(file).get().read(file, ProgressListener.createEmpty());
+			mappings = enigma.getReadWriteService(file).get().read(file, ProgressListener.createEmpty(), JarIndex.empty());
 		}
 	}
 

@@ -2,6 +2,7 @@ package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -80,7 +81,7 @@ public class TestReadWriteCycle {
 		readWriteService.write(testMappings, tempFile.toPath(), ProgressListener.createEmpty(), this.parameters);
 		Assertions.assertTrue(tempFile.exists(), "Written file not created");
 
-		EntryTree<EntryMapping> loadedMappings = readWriteService.read(tempFile.toPath(), ProgressListener.createEmpty());
+		EntryTree<EntryMapping> loadedMappings = readWriteService.read(tempFile.toPath(), ProgressListener.createEmpty(), JarIndex.empty());
 
 		Assertions.assertTrue(loadedMappings.contains(this.testClazz.a()), "Loaded mappings don't contain testClazz");
 		Assertions.assertTrue(loadedMappings.contains(this.testField1.a()), "Loaded mappings don't contain testField1");

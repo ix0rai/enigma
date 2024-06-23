@@ -61,7 +61,7 @@ public class MapSpecializedMethodsCommand extends Command {
 
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
 		MappingsReader reader = CommandsUtil.getReader(enigma, sourcePath);
-		EntryTree<EntryMapping> source = reader.read(sourcePath);
+		EntryTree<EntryMapping> source = reader.read(sourcePath, JarIndex.empty());
 
 		EntryTree<EntryMapping> result = run(jarIndex, source, debug);
 

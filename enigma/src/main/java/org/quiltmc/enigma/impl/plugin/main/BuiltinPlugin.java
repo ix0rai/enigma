@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.impl.plugin;
+package org.quiltmc.enigma.impl.plugin.main;
 
 import org.quiltmc.enigma.api.analysis.index.jar.BridgeMethodIndex;
 import org.quiltmc.enigma.api.EnigmaPlugin;
@@ -13,6 +13,7 @@ import org.quiltmc.enigma.api.source.TokenType;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.EntryRemapper;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
+import org.quiltmc.enigma.impl.plugin.mapping_io.MappingIoFormats;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ public final class BuiltinPlugin implements EnigmaPlugin {
 		registerSpecializedMethodNamingService(ctx);
 		registerDecompilerServices(ctx);
 		BuiltinMappingFormats.register(ctx);
+		MappingIoFormats.register(ctx);
 	}
 
 	private static void registerEnumNamingService(EnigmaPluginContext ctx) {

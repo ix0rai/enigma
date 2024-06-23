@@ -2,6 +2,7 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
@@ -49,7 +50,7 @@ public class ConvertMappingsCommand extends Command {
 		Enigma enigma = createEnigma();
 
 		MappingsReader reader = CommandsUtil.getReader(enigma, source);
-		EntryTree<EntryMapping> mappings = reader.read(source);
+		EntryTree<EntryMapping> mappings = reader.read(source, JarIndex.empty());
 
 		Utils.delete(output);
 		MappingsWriter writer = CommandsUtil.getWriter(enigma, output);

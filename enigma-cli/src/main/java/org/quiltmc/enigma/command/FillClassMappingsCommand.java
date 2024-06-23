@@ -60,7 +60,7 @@ public class FillClassMappingsCommand extends Command {
 
 		Logger.info("Reading mappings...");
 		MappingSaveParameters saveParameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, obfuscatedNamespace, deobfuscatedNamespace);
-		EntryTree<EntryMapping> sourceMappings = readMappings(enigma, source, ProgressListener.createEmpty());
+		EntryTree<EntryMapping> sourceMappings = readMappings(enigma, source, ProgressListener.createEmpty(), JarIndex.empty());
 
 		EntryTree<EntryMapping> resultMappings = exec(jarIndex, sourceMappings, fillAll, debug);
 

@@ -1,4 +1,4 @@
-package org.quiltmc.enigma.impl.plugin;
+package org.quiltmc.enigma.impl.plugin.main;
 
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.service.ReadWriteService;

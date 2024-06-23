@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.translation.mapping.serde.tinyv2;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.impl.translation.mapping.serde.MappingHelper;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingParseException;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
@@ -41,11 +42,11 @@ public final class TinyV2Reader implements MappingsReader {
 	private static final int[] INDENT_CLEAR_START = {IN_HEADER, IN_METHOD, IN_PARAMETER, STATE_SIZE};
 
 	@Override
-	public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws IOException, MappingParseException {
-		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress);
+	public EntryTree<EntryMapping> read(Path path, ProgressListener progress, JarIndex index) throws IOException, MappingParseException {
+		return this.read(path, Files.readAllLines(path, StandardCharsets.UTF_8), progress, index);
 	}
 
-	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress) throws MappingParseException {
+	private EntryTree<EntryMapping> read(Path path, List<String> lines, ProgressListener progress, JarIndex index) throws MappingParseException {
 		EntryTree<EntryMapping> mappings = new HashEntryTree<>();
 
 		progress.init(lines.size(), I18n.translate("progress.mappings.tiny_v2.loading"));

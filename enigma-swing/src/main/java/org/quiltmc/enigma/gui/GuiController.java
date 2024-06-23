@@ -166,7 +166,7 @@ public class GuiController implements ClientPacketHandler {
 
 		return ProgressDialog.runOffThread(this.gui, progress -> {
 			try {
-				EntryTree<EntryMapping> mappings = readWriteService.read(path);
+				EntryTree<EntryMapping> mappings = readWriteService.read(path, this.gui.getController().getProject().getJarIndex());
 				this.project.setMappings(mappings, progress);
 
 				this.readWriteService = readWriteService;

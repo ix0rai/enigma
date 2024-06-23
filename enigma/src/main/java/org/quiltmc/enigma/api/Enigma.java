@@ -349,7 +349,8 @@ public class Enigma {
 						&& rwService.getFileType().isDirectory() == otherRwService.getFileType().isDirectory()) {
 					for (String extension : rwService.getFileType().getExtensions()) {
 						if (otherRwService.getFileType().getExtensions().contains(extension)) {
-							throw new IllegalStateException("Multiple read/write services found supporting the same extension: " + extension + " (id: " + service.getId() + ", other id: " + otherService.getId() + ")");
+							// todo graceful handling of multiple services -- define the service that takes priority in the profile?
+							//throw new IllegalStateException("Multiple read/write services found supporting the same extension: " + extension + " (id: " + service.getId() + ", other id: " + otherService.getId() + ")");
 						}
 					}
 				}

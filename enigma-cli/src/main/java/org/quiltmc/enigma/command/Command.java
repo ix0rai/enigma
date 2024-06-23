@@ -153,7 +153,7 @@ public abstract class Command {
 		if (fileMappings != null) {
 			Logger.info("Reading mappings...");
 
-			EntryTree<EntryMapping> mappings = readMappings(enigma, fileMappings, progress);
+			EntryTree<EntryMapping> mappings = readMappings(enigma, fileMappings, progress, project.getJarIndex());
 
 			project.setMappings(mappings, new ConsoleProgressListener());
 		}
@@ -161,9 +161,9 @@ public abstract class Command {
 		return project;
 	}
 
-	protected static EntryTree<EntryMapping> readMappings(Enigma enigma, Path path, ProgressListener progress) throws MappingParseException, IOException {
+	protected static EntryTree<EntryMapping> readMappings(Enigma enigma, Path path, ProgressListener progress, JarIndex index) throws MappingParseException, IOException {
 		MappingsReader reader = CommandsUtil.getReader(enigma, path);
-		return reader.read(path, progress);
+		return reader.read(path, progress, index);
 	}
 
 	protected static File getWritableFile(String path) {

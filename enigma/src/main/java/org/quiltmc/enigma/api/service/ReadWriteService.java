@@ -1,6 +1,7 @@
 package org.quiltmc.enigma.api.service;
 
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.FileType;
@@ -53,12 +54,12 @@ public interface ReadWriteService extends EnigmaService, MappingsWriter, Mapping
 			}
 
 			@Override
-			public EntryTree<EntryMapping> read(Path path, ProgressListener progress) throws MappingParseException, IOException {
+			public EntryTree<EntryMapping> read(Path path, ProgressListener progress, JarIndex index) throws MappingParseException, IOException {
 				if (reader == null) {
 					throw new UnsupportedOperationException("This service does not support reading!");
 				}
 
-				return reader.read(path, progress);
+				return reader.read(path, progress, index);
 			}
 
 			@Override

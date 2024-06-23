@@ -2,6 +2,7 @@ package org.quiltmc.enigma.translation.mapping;
 
 import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingFileNameFormat;
@@ -18,7 +19,7 @@ public final class TestV2Main {
 
 		MappingSaveParameters parameters = new MappingSaveParameters(MappingFileNameFormat.BY_DEOBF, false, "obf", "deobf");
 
-		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path);
+		EntryTree<EntryMapping> tree = EnigmaMappingsReader.DIRECTORY.read(path, JarIndex.empty());
 		Path file = Paths.get("currentYarn.tiny");
 
 		Enigma.create().getReadWriteService(file).get().write(tree, MappingDelta.added(tree), file, ProgressListener.createEmpty(), parameters);

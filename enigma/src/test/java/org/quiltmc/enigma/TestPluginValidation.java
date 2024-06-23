@@ -6,6 +6,7 @@ import org.quiltmc.enigma.api.Enigma;
 import org.quiltmc.enigma.api.EnigmaPlugin;
 import org.quiltmc.enigma.api.EnigmaPluginContext;
 import org.quiltmc.enigma.api.ProgressListener;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.service.ReadWriteService;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.MappingDelta;
@@ -43,7 +44,7 @@ public class TestPluginValidation {
 			}
 
 			@Override
-			public EntryTree<EntryMapping> read(Path path, ProgressListener progress) {
+			public EntryTree<EntryMapping> read(Path path, ProgressListener progress, JarIndex index) {
 				return null;
 			}
 

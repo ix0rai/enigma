@@ -17,6 +17,8 @@ dependencies {
 
 	implementation libs.quilt.config
 
+	implementation libs.mapping.io
+
 	proGuard libs.proguard
 
 	testImplementation libs.jimfs

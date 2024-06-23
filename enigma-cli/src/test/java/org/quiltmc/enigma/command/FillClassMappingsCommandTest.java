@@ -2,6 +2,7 @@ package org.quiltmc.enigma.command;
 
 import org.quiltmc.enigma.TestUtil;
 import org.quiltmc.enigma.api.Enigma;
+import org.quiltmc.enigma.api.analysis.index.jar.JarIndex;
 import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 import org.quiltmc.enigma.api.translation.mapping.serde.MappingsReader;
 import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
@@ -51,7 +52,7 @@ public class FillClassMappingsCommandTest extends CommandTest {
 		FillClassMappingsCommand.run(JAR, MAPPINGS, resultFile, false, null, null);
 
 		MappingsReader reader = CommandsUtil.getReader(Enigma.create(), resultFile);
-		EntryTree<EntryMapping> result = reader.read(resultFile);
+		EntryTree<EntryMapping> result = reader.read(resultFile, JarIndex.empty());
 
 		assertEquals("A_Anonymous", getName(result, A));
 		assertNotNull(result.findNode(A_ANONYMOUS));
