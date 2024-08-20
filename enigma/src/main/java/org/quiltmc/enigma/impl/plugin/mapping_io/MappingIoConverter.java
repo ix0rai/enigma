@@ -41,7 +41,7 @@ public class MappingIoConverter {
 				.filter(node -> node.getEntry() instanceof ClassEntry)
 				.toList();
 
-			progress.init(classes.size(), I18n.translate("progress.mappings.converting.to_mappingio"));
+			progress.init(classes.size(), I18n.translate("progress.mappings.converting.to_mapping_io"));
 			int stepsDone = 0;
 
 			MemoryMappingTree mappingTree = new MemoryMappingTree();
@@ -178,7 +178,7 @@ public class MappingIoConverter {
 
 	public static EntryTree<EntryMapping> fromMappingIo(VisitableMappingTree mappingTree, ProgressListener progress, @Nullable JarIndex index) {
 		EntryTree<EntryMapping> dstMappingTree = new HashEntryTree<>();
-		progress.init(mappingTree.getClasses().size(), I18n.translate("progress.mappings.converting.from_mappingio"));
+		progress.init(mappingTree.getClasses().size(), I18n.translate("progress.mappings.converting.from_mapping_io"));
 		int steps = 0;
 
 		for (MappingTree.ClassMapping classMapping : mappingTree.getClasses()) {
