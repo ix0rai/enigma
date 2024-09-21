@@ -1,3 +1,12 @@
+rework this
+- description
+- setup
+  - plugins
+  - server (link to separate file)
+- dev (link to separate file)
+- credits
+- licensing
+
 # Enigma
 
 A tool for deobfuscation of Java bytecode. Forked from <https://bitbucket.org/cuchaz/enigma>, originally created by [Jeff Martin](https://www.cuchazinteractive.com/).
