@@ -45,9 +45,9 @@ Enigma is split up into 4 components:
 - `enigma-server`, which depends on `enigma` to provide a TCP socket server allowing online collaboration in remapping.
 - `enigma-swing`, which serves as a [swing](https://docs.oracle.com/javase/tutorial/uiswing/) frontend for `enigma-server` to allow easy mapping manipulation.
 
-## enigma
+### enigma
 
-### plugins
+#### plugins
 
 Enigma's core is built around a plugin system. Our goal as developers is to abstract as much functionality as possible into these plugins, which are comprised of several *services* each. The types of services currently usable are:
 - `DecompilerService`: a service that implements a decompiler to provide visual representation of sources for frontends.
@@ -78,7 +78,7 @@ The profile does two things:
 - Dictates which services are enabled: most services are disabled by default (each service type's javadoc specifies if it is enabled by default or not), and must be manually toggled on by the profile. Providing the `id` like in the above example enables the service.
 - Provides arguments for the services: when a service is registered to a plugin, it is provided the context of everything in its JSON block. This means that services can use that `EnigmaServiceContext<EnigmaService>` object to check for arguments that provide context for its functionality.
 
-### entries
+#### entries
 
 The way that Enigma represents elements of the code being mapped is through `Entry` objects. These entry objects will be instantiated as `ParentedEntry` objects, which usually reference their containing class as the parent. The `Entry` objects that you'll encounter are:
 - `ClassEntry`: represents a class. Importantly, this class can be either a top-level class, with no parent, or an inner class, in which case the parent will be null.
@@ -88,7 +88,7 @@ The way that Enigma represents elements of the code being mapped is through `Ent
 
 Entries also have a `DefEntry` form, that provides additional information. Def entries (excluding local variable entries) always provide access flags which give properties such as the entry's access, whether it's static, etc. They are accessed via the `EntryIndex`, which can be received from a project with the code `project.getJarIndex().getIndex(EntryIndex.class)`.
 
-### testing
+#### testing
 
 The main way that enigma's core is developed is through unit tests. Enigma's test system compiles inputs into jar files which are sent as input into tests. Using this system, most tests will be set up like this:
 ```java
