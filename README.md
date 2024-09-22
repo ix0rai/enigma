@@ -36,3 +36,70 @@ Pre-compiled jars can be found on the [Quilt maven](https://maven.quiltmc.org/re
 ### On the command line
 
 `java -cp enigma.jar org.quiltmc.enigma.command.Main`
+
+## development
+
+Enigma is split up into 4 components:
+- `enigma`, which is the core of the project. This handles essential services such as remapping, mapping read/write, decompilation, plugins, and indexing.
+- `enigma-cli`, which depends on `enigma` to provide commands to work with mappings.
+- `enigma-server`, which depends on `enigma` to provide a TCP socket server allowing online collaboration in remapping.
+- `enigma-swing`, which serves as a [swing](https://docs.oracle.com/javase/tutorial/uiswing/) frontend for `enigma-server` to allow easy mapping manipulation.
+
+## enigma
+
+### plugins
+
+Enigma's core is built around a plugin system. Our goal as developers is to abstract as much functionality as possible into these plugins, which are comprised of several *services* each. The types of services currently usable are:
+- `DecompilerService`: a service that implements a decompiler to provide visual representation of sources for frontends.
+- `JarIndexerService`: a service that assembles information on the main project and its libraries for other features to use.
+- `ReadWriteService`: a service that implements a reader and/or writer for saving mappings to the disk.
+- `ObfuscationTestService`: a service that tests any given entry to see if it is deobfuscated.
+- `NameProposalService`: a service that provides a name for an obfuscated entry, using data from the bytecode and other mappings.
+
+These services are assembled into plugins and configured using an *enigma profile*. This profile looks something like this:
+```json
+{
+	"services": {
+		"jar_indexer": [
+			{
+				"id": "enigma:enum_initializer_indexer"
+			}
+		],
+		"name_proposal": [
+			{
+				"id": "enigma:enum_name_proposer"
+			}
+		]
+	}
+}
+```
+
+The profile does two things:
+- Dictates which services are enabled: most services are disabled by default (each service type's javadoc specifies if it is enabled by default or not), and must be manually toggled on by the profile. Providing the `id` like in the above example enables the service.
+- Provides arguments for the services: when a service is registered to a plugin, it is provided the context of everything in its JSON block. This means that services can use that `EnigmaServiceContext<EnigmaService>` object to check for arguments that provide context for its functionality.
+
+### entries
+
+The way that Enigma represents elements of the code being mapped is through `Entry` objects. These entry objects will be instantiated as `ParentedEntry` objects, which usually reference their containing class as the parent. The `Entry` objects that you'll encounter are:
+- `ClassEntry`: represents a class. Importantly, this class can be either a top-level class, with no parent, or an inner class, in which case the parent will be null.
+- `FieldEntry`: represents a field. Contains a `desc` object that encodes the type of the field.
+- `MethodEntry`: represents a method. Contains a `desc` object that encodes both the arguments and return type of the method. Importantly, does not contain references to each argument, meaning the obfuscated entries for each parameter cannot be accessed with just a method entry.
+- `LocalVariableEntry`: represents a local variable or a parameter. Is parented by a `MethodEntry` instead of a `ClassEntry`. Contains a boolean for whether it is a parameter and, if that boolean is true, an index representing its position in the arguments for its parent method. Note that if non-static, this index will be shifted by `1` as the first argument is always an instance of the method's parent class.
+
+Entries also have a `DefEntry` form, that provides additional information. Def entries (excluding local variable entries) always provide access flags which give properties such as the entry's access, whether it's static, etc. They are accessed via the `EntryIndex`, which can be received from a project with the code `project.getJarIndex().getIndex(EntryIndex.class)`.
+
+### testing
+
+The main way that enigma's core is developed is through unit tests. Enigma's test system compiles inputs into jar files which are sent as input into tests. Using this system, most tests will be set up like this:
+```java
+public static final Path JAR = TestUtil.obfJar("JAR_NAME");
+private static EnigmaProject project;
+
+@BeforeAll
+static void setupEnigma() throws IOException {
+	Enigma enigma = Enigma.create();
+	project = enigma.openJar(JAR, new ClasspathClassProvider(), ProgressListener.createEmpty());
+}
+```
+
+`JAR_NAME` will be replaced with one of the packages in the `org.quiltmc.enigma.input` package. This allows you to set up classes that will reproduce the issue or demonstrate the feature you're developing, then pass them into a project to be tested. When you create a new package inside the `input` package, all classes inside that package will be automatically compiled into a jar. A gradle task will also be created to pass that jar into `enigma-swing` for other testing.
