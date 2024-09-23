@@ -43,7 +43,7 @@ Enigma is split up into 4 components:
 - `enigma`, which is the core of the project. This handles essential services such as remapping, mapping read/write, decompilation, plugins, and indexing.
 - `enigma-cli`, which depends on `enigma` to provide commands to work with mappings.
 - `enigma-server`, which depends on `enigma` to provide a TCP socket server allowing online collaboration in remapping.
-- `enigma-swing`, which serves as a [swing](https://docs.oracle.com/javase/tutorial/uiswing/) frontend for `enigma-server` to allow easy mapping manipulation.
+- `enigma-swing`, which serves as a [swing](https://docs.oracle.com/javase/tutorial/uiswing/) frontend for `enigma` with `enigma-server` integration.
 
 ### enigma
 
@@ -81,12 +81,20 @@ The profile does two things:
 #### entries
 
 The way that Enigma represents elements of the code being mapped is through `Entry` objects. These entry objects will be instantiated as `ParentedEntry` objects, which usually reference their containing class as the parent. The `Entry` objects that you'll encounter are:
-- `ClassEntry`: represents a class. Importantly, this class can be either a top-level class, with no parent, or an inner class, in which case the parent will be null.
+- `ClassEntry`: represents a class. Importantly, this class can be either a top-level class, with no parent, or an inner class, in which case the parent will be the class one level above.
 - `FieldEntry`: represents a field. Contains a `desc` object that encodes the type of the field.
 - `MethodEntry`: represents a method. Contains a `desc` object that encodes both the arguments and return type of the method. Importantly, does not contain references to each argument, meaning the obfuscated entries for each parameter cannot be accessed with just a method entry.
 - `LocalVariableEntry`: represents a local variable or a parameter. Is parented by a `MethodEntry` instead of a `ClassEntry`. Contains a boolean for whether it is a parameter and, if that boolean is true, an index representing its position in the arguments for its parent method. Note that if non-static, this index will be shifted by `1` as the first argument is always an instance of the method's parent class.
 
 Entries also have a `DefEntry` form, that provides additional information. Def entries (excluding local variable entries) always provide access flags which give properties such as the entry's access, whether it's static, etc. They are accessed via the `EntryIndex`, which can be received from a project with the code `project.getJarIndex().getIndex(EntryIndex.class)`.
+
+TODO: index entry resolver
+
+#### indexing
+
+Enigma assembles information about the main project in the `JarIndex`, which can be accessed via `EnigmaProject#getJarIndex`.
+
+Available indexes can be found in `org.quiltmc.enigma.api.analysis.index.jar` package, and gotten from a `JarIndex` object via `JarIndex#getIndex(Class<T>)`.
 
 #### testing
 
