@@ -116,7 +116,9 @@ This isn't the only way to develop enigma, but we appreciate it, and it makes su
 
 #### `Enigma` vs `EnigmaProject`
 
-- not the same thing!
+Two important classes in enigma are `Enigma` and `EnigmaProject`. These two, despite the similar naming, are completely different:
+- `Enigma` deals with setting up the program itself: it reads the profile and assembles the plugin services. This is where you'll go if you need to find a service.
+- `EnigmaProject` deals with project-specific information such as the index of the current jar and the current mappings.
 
 #### mapping storage
 
