@@ -7,12 +7,13 @@ import org.quiltmc.enigma.api.translation.mapping.EntryMapping;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class LocalVariableEntry extends ParentedEntry<MethodEntry> implements Comparable<LocalVariableEntry> {
 	protected final int index;
 	protected final boolean parameter;
 
-	public LocalVariableEntry(MethodEntry parent, int index, String name, boolean parameter, String javadoc) {
+	public LocalVariableEntry(MethodEntry parent, int index, String name, boolean parameter, @Nullable String javadoc) {
 		super(parent, name, javadoc);
 
 		Preconditions.checkNotNull(parent, "Variable owner cannot be null");

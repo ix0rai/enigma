@@ -11,6 +11,7 @@ import org.quiltmc.enigma.api.translation.mapping.tree.EntryTree;
 import org.quiltmc.enigma.api.translation.representation.entry.Entry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 
 import java.nio.file.Path;
 
@@ -138,6 +139,18 @@ public class TestTranslator {
 
 		// methods
 		this.assertMapping(TestEntryFactory.newMethod("i$b", "a", "()Ljava/lang/Object;"), TestEntryFactory.newMethod("deobf/I_Generics$B_Generic", "m1", "()Ljava/lang/Object;"));
+	}
+
+	@Test
+	public void testParameters() {
+		MethodEntry voidMethodObf = TestEntryFactory.newMethod("a", "a", "(I)V");
+		MethodEntry voidMethodDeobf = TestEntryFactory.newMethod("deobf/A_Basic", "m3", "(I)V");
+		MethodEntry intMethodObf = TestEntryFactory.newMethod("a", "a", "(I)I");
+		MethodEntry intMethodDeobf = TestEntryFactory.newMethod("deobf/A_Basic", "m4", "(I)I");
+
+		// parameters
+		this.assertMapping(TestEntryFactory.newParameter(voidMethodObf, 1), TestEntryFactory.newParameter(voidMethodDeobf, 1, "p1"));
+		this.assertMapping(TestEntryFactory.newParameter(intMethodObf, 1), TestEntryFactory.newParameter(intMethodDeobf, 1, "p1"));
 	}
 
 	private void assertMapping(Entry<?> obf, Entry<?> deobf) {

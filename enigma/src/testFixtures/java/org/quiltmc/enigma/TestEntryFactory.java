@@ -33,7 +33,11 @@ public final class TestEntryFactory {
 	}
 
 	public static LocalVariableEntry newParameter(MethodEntry parent, int index) {
-		return new LocalVariableEntry(parent, index);
+		return newParameter(parent, index, "");
+	}
+
+	public static LocalVariableEntry newParameter(MethodEntry parent, int index, String name) {
+		return new LocalVariableEntry(parent, index, name, true, null);
 	}
 
 	public static EntryReference<FieldEntry, MethodEntry> newFieldReferenceByMethod(FieldEntry fieldEntry, String callerClassName, String callerName, String callerSignature) {

@@ -16,7 +16,7 @@ public abstract class ParentedEntry<P extends Entry<?>> implements Entry<P> {
 	protected final String name;
 	protected final @Nullable String javadocs;
 
-	protected ParentedEntry(P parent, String name, String javadocs) {
+	protected ParentedEntry(P parent, String name, @Nullable String javadocs) {
 		this.parent = parent;
 		this.name = name;
 		this.javadocs = javadocs;

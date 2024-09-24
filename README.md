@@ -88,7 +88,7 @@ The way that Enigma represents elements of the code being mapped is through `Ent
 
 Entries also have a `DefEntry` form, that provides additional information. Def entries (excluding local variable entries) always provide access flags which give properties such as the entry's access, whether it's static, etc. They are accessed via the `EntryIndex`, which can be received from a project with the code `project.getJarIndex().getIndex(EntryIndex.class)`.
 
-TODO: index entry resolver
+Important to note is that when getting mappings via an `EntryRemapper` object, you'll sometimes get an empty mapping for an entry that is mapped. This usually occurs when you're working with inheritance: as each entry is parented by a specific class, only the root entry will own the real mapping. For entries parented by inheriting classes, you can use an instance of `IndexEntryResolver` with the `#resolveEntry` method to find the root entry and obtain the mapping.
 
 #### indexing
 
@@ -111,3 +111,14 @@ static void setupEnigma() throws IOException {
 ```
 
 `JAR_NAME` will be replaced with one of the packages in the `org.quiltmc.enigma.input` package. This allows you to set up classes that will reproduce the issue or demonstrate the feature you're developing, then pass them into a project to be tested. When you create a new package inside the `input` package, all classes inside that package will be automatically compiled into a jar. A gradle task will also be created to pass that jar into `enigma-swing` for other testing.
+
+This isn't the only way to develop enigma, but we appreciate it, and it makes sure your changes won't break in the future!
+
+#### `Enigma` vs `EnigmaProject`
+
+- not the same thing!
+
+#### mapping storage
+
+- EntryTree
+- the wild proposal system

@@ -5,7 +5,9 @@ CLASS a deobf/A_Basic
 	METHOD a m1 ()V
 	METHOD a m2 ()I
 	METHOD a m3 (I)V
+		ARG 1 p1
 	METHOD a m4 (I)I
+		ARG 1 p1
 CLASS b deobf/B_BaseClass
 	FIELD a f1 I
 	FIELD a f2 C
