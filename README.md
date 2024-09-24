@@ -122,5 +122,9 @@ Two important classes in enigma are `Enigma` and `EnigmaProject`. These two, des
 
 #### mapping storage
 
-- EntryTree
-- the wild proposal system
+Mappings are stored internally in a tree-based system, similar to the way that mappings are stored in the enigma `.mapping` file format. Due to proposals, it's possible for a single entry to have up to three mappings at once. These mappings stack in the following order:
+1. Manual mapping (`DEOBFUSCATED` token type)
+2. Dynamically proposed mapping (`DYNAMIC_PROPOSED` token type)
+3. Jar proposed mapping (`JAR_PROPOSED` token type)
+
+These mappings are all stored together in order to not have to recompute information when a mapping in the stack is removed.
