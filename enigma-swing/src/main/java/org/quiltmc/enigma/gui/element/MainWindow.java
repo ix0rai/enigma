@@ -6,6 +6,10 @@ import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -18,6 +22,8 @@ public class MainWindow {
 	private final StatusBar statusBar = new StatusBar();
 	private final DockerSelector rightDockerSelector;
 	private final DockerSelector leftDockerSelector;
+
+	private final List<WindowResizeListener> windowResizeListeners = new ArrayList<>();
 
 	public MainWindow(Gui gui, String title) {
 		this.rightDockerSelector = new DockerSelector(gui.getDockerManager(), Docker.Side.RIGHT);
@@ -32,6 +38,14 @@ public class MainWindow {
 		contentPane.add(this.statusBar.getUi(), BorderLayout.SOUTH);
 		contentPane.add(this.rightDockerSelector, BorderLayout.EAST);
 		contentPane.add(this.leftDockerSelector, BorderLayout.WEST);
+
+		this.frame.addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent componentEvent) {
+				for (WindowResizeListener listener : MainWindow.this.windowResizeListeners) {
+					listener.onWindowResized(MainWindow.this.frame.getWidth(), MainWindow.this.frame.getHeight());
+				}
+			}
+		});
 	}
 
 	public void setVisible(boolean visible) {
@@ -60,5 +74,14 @@ public class MainWindow {
 
 	public void setTitle(String title) {
 		this.frame.setTitle(title);
+	}
+
+	public void addWindowResizeListener(WindowResizeListener listener) {
+		this.windowResizeListeners.add(listener);
+		listener.onWindowResized(this.frame.getWidth(), this.frame.getHeight());
+	}
+
+	public interface WindowResizeListener {
+		void onWindowResized(int newWidth, int newHeight);
 	}
 }

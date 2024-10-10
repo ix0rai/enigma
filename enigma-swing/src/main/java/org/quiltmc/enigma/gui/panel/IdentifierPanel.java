@@ -20,13 +20,17 @@ import org.quiltmc.enigma.api.translation.representation.entry.FieldEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.LocalVariableEntry;
 import org.quiltmc.enigma.api.translation.representation.entry.MethodEntry;
 import org.quiltmc.enigma.util.I18n;
+import org.quiltmc.enigma.util.Pair;
 import org.quiltmc.enigma.util.validation.ValidationContext;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,6 +38,7 @@ import javax.swing.JPanel;
 public class IdentifierPanel {
 	private final Gui gui;
 
+	private final JPanel superUi = new JPanel();
 	private final JPanel ui = new JPanel();
 
 	private Entry<?> lastEntry;
@@ -48,10 +53,9 @@ public class IdentifierPanel {
 		this.gui = gui;
 		this.vc = new ValidationContext(this.gui.getNotificationManager());
 
-		this.ui.setLayout(new GridBagLayout());
-		this.ui.setPreferredSize(ScaleUtil.getDimension(0, 150));
-		this.ui.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
-		this.ui.setEnabled(false);
+		this.superUi.setPreferredSize(ScaleUtil.getDimension(0, 150));
+		this.retranslateUi();
+		this.superUi.setEnabled(false);
 	}
 
 	public void setReference(Entry<?> entry) {
@@ -110,8 +114,8 @@ public class IdentifierPanel {
 
 		this.nameField = null;
 
-		TableHelper th = new TableHelper(this.ui, this.entry, this.gui);
-		th.begin();
+		TableHelper th = new TableHelper(this.superUi, this.ui, this.entry, this.gui);
+
 		if (this.entry == null) {
 			this.ui.setEnabled(false);
 		} else {
@@ -124,6 +128,10 @@ public class IdentifierPanel {
 
 				if (ce.getParent() != null) {
 					th.addCopiableStringRow(I18n.translate("info_panel.identifier.outer_class"), ce.getParent().getFullName());
+
+					if (ce.getParent().isInnerClass()) {
+						th.addCopiableStringRow(I18n.translate("info_panel.identifier.top_level_class"), ce.getTopLevelClass().getFullName());
+					}
 				}
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
 				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
@@ -183,7 +191,7 @@ public class IdentifierPanel {
 			}
 		}
 
-		th.end();
+		th.initialize();
 
 		if (this.nameField != null) {
 			this.nameField.addListener(new ConvertingTextFieldListener() {
@@ -258,39 +266,38 @@ public class IdentifierPanel {
 	}
 
 	public void retranslateUi() {
-		this.ui.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
+		this.superUi.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
 		this.refreshReference();
 	}
 
 	public JPanel getUi() {
-		return this.ui;
+		return this.superUi;
 	}
 
 	private static final class TableHelper {
+		private final List<JPanel> components = new ArrayList<>();
+
+		private final JPanel topLevel;
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;
-		private int row;
+		private int row = 1;
+		private int column = 0;
 
-		TableHelper(Container c, Entry<?> e, Gui gui) {
+		TableHelper(JPanel topLevel, Container c, Entry<?> e, Gui gui) {
+			this.topLevel = topLevel;
 			this.c = c;
 			this.e = e;
 			this.gui = gui;
 		}
 
-		public void begin() {
-			this.c.removeAll();
-			this.c.setLayout(new GridBagLayout());
-		}
-
 		public void addRow(Component c1, Component c2) {
-			GridBagConstraintsBuilder cb = GridBagConstraintsBuilder.create()
-					.insets(2)
-					.anchor(GridBagConstraints.WEST);
-			this.c.add(c1, cb.pos(0, this.row).build());
-			this.c.add(c2, cb.pos(1, this.row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+			GridBagConstraintsBuilder cb = createCB();
+			JPanel panel = new JPanel(new GridBagLayout());
+			panel.add(c1, cb.pos(0, 0).build());
+			panel.add(c2, cb.pos(1, 0).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
 
-			this.row += 1;
+			this.components.add(panel);
 		}
 
 		public void addCopiableRow(JLabel c1, JLabel c2) {
@@ -323,7 +330,7 @@ public class IdentifierPanel {
 				field.setEditable(this.gui.isEditable(type));
 				return field;
 			} else {
-				this.addStringRow(description, c2);
+				this.addRow(new JLabel(description), GuiUtil.unboldLabel(new JLabel(c2)));
 				return null;
 			}
 		}
@@ -336,9 +343,50 @@ public class IdentifierPanel {
 			this.addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
 		}
 
-		public void end() {
+		public void initialize() {
+			// todo this is the wrong way to do this, we should be listening for dockers resizing
+			this.gui.getMainWindow().addWindowResizeListener(((newWidth, newHeight) -> {
+				this.setup();
+			}));
+		}
+
+		private void setup() {
+			this.begin();
+
+			for (int i = 0; i < this.components.size(); i++) {
+				this.addComponent(this.components.get(i), i);
+			}
+
 			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
 			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, this.row).weight(0.0, 1.0).build());
+		}
+
+		private void addComponent(JPanel component, int index) {
+			if (index == 0) {
+				this.topLevel.add(component, BorderLayout.NORTH);
+			} else {
+				GridBagConstraintsBuilder cb = createCB();
+				this.c.add(component, cb.pos(this.column, 1).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+
+				this.row += 1;
+				this.column += 1;
+			}
+		}
+
+		private void begin() {
+			this.c.removeAll();
+			this.c.setLayout(new GridBagLayout());
+
+			this.topLevel.removeAll();
+			this.topLevel.setLayout(new BorderLayout());
+
+			this.topLevel.add(this.c, BorderLayout.CENTER);
+		}
+
+		private GridBagConstraintsBuilder createCB() {
+			return GridBagConstraintsBuilder.create()
+				.insets(2)
+				.anchor(GridBagConstraints.WEST);
 		}
 	}
 }
