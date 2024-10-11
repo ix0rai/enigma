@@ -34,6 +34,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 public class IdentifierPanel {
 	private final Gui gui;
@@ -281,8 +282,6 @@ public class IdentifierPanel {
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;
-		private int row = 1;
-		private int column = 0;
 
 		TableHelper(JPanel topLevel, Container c, Entry<?> e, Gui gui) {
 			this.topLevel = topLevel;
@@ -296,6 +295,8 @@ public class IdentifierPanel {
 			JPanel panel = new JPanel(new GridBagLayout());
 			panel.add(c1, cb.pos(0, 0).build());
 			panel.add(c2, cb.pos(1, 0).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+			panel.setBackground(Config.currentTheme().getSyntaxPaneColors().lineNumbersBackground.value());
+			panel.setBorder(new LineBorder(Config.getCurrentSyntaxPaneColors().lineNumbersSelected.value(), ScaleUtil.scale(1)));
 
 			this.components.add(panel);
 		}
@@ -344,32 +345,45 @@ public class IdentifierPanel {
 		}
 
 		public void initialize() {
-			// todo this is the wrong way to do this, we should be listening for dockers resizing
-			this.gui.getMainWindow().addWindowResizeListener(((newWidth, newHeight) -> {
-				this.setup();
-			}));
+			this.gui.getDockerManager().addDockerResizeListener((side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth));
+			this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
 		}
 
-		private void setup() {
+		private void setup(int width) {
 			this.begin();
 
+			// width will be the real weight in pixels, so we need to normalize it
+			int scaled = ScaleUtil.invert(width);
+			int columns = scaled / ScaleUtil.scale(300);
+
+			int column = 0;
+			int row = 1;
 			for (int i = 0; i < this.components.size(); i++) {
-				this.addComponent(this.components.get(i), i);
+				if (i == 0) {
+					this.addComponent(this.components.get(i), i, 0, 0);
+				} else {
+					this.addComponent(this.components.get(i), i, column, row);
+
+					column++;
+
+					if (column != 0 && column % (columns + 1) == 0) {
+						column = 0;
+						row++;
+					}
+				}
 			}
 
 			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
-			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, this.row).weight(0.0, 1.0).build());
+			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
 		}
 
-		private void addComponent(JPanel component, int index) {
+		private void addComponent(JPanel component, int index, int column, int row) {
 			if (index == 0) {
 				this.topLevel.add(component, BorderLayout.NORTH);
 			} else {
 				GridBagConstraintsBuilder cb = createCB();
-				this.c.add(component, cb.pos(this.column, 1).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
-
-				this.row += 1;
-				this.column += 1;
+				cb.padding(ScaleUtil.scale(10));
+				this.c.add(component, cb.pos(column, row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
 			}
 		}
 

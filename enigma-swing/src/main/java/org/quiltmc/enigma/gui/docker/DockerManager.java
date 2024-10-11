@@ -39,11 +39,14 @@ public class DockerManager {
 		return new ComponentAdapter() {
 			public void componentResized(ComponentEvent componentEvent) {
 				for (DockerResizeListener listener : DockerManager.this.dockerResizeListeners) {
-					int totalDockerWidth = DockerManager.this.leftDockerSelector.getWidth() + DockerManager.this.leftDock.getWidth() + DockerManager.this.rightDockerSelector.getWidth() + DockerManager.this.rightDock.getWidth();
-					listener.onDockerResized(side, DockerManager.this.getDock(side).getWidth(), gui.getMainWindow().getFrame().getWidth() - totalDockerWidth);
+					listener.onDockerResized(side, DockerManager.this.getDock(side).getWidth(), DockerManager.this.getMainAreaWidth(gui));
 				}
 			}
 		};
+	}
+
+	public int getMainAreaWidth(Gui gui) {
+		return gui.getMainWindow().getFrame().getWidth() - (DockerManager.this.leftDockerSelector.getWidth() + DockerManager.this.leftDock.getWidth() + DockerManager.this.rightDockerSelector.getWidth() + DockerManager.this.rightDock.getWidth());
 	}
 
 	/**

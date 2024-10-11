@@ -1,9 +1,7 @@
 package org.quiltmc.enigma.gui.element;
 
-import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.Docker;
 import org.quiltmc.enigma.gui.docker.DockerManager;
-import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
