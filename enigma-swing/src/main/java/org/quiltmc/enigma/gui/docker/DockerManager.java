@@ -1,22 +1,49 @@
 package org.quiltmc.enigma.gui.docker;
 
 import org.quiltmc.enigma.gui.Gui;
+import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DockerManager {
+	private final List<DockerResizeListener> dockerResizeListeners = new ArrayList<>();
+
 	private final Map<Class<? extends Docker>, Docker> dockers = new LinkedHashMap<>();
 	private final Map<String, Class<? extends Docker>> dockerClasses = new HashMap<>();
 
 	private final Dock rightDock;
 	private final Dock leftDock;
+	private final DockerSelector rightDockerSelector;
+	private final DockerSelector leftDockerSelector;
 
 	public DockerManager(Gui gui) {
+		this.rightDockerSelector = new DockerSelector(this, Docker.Side.RIGHT);
+		this.leftDockerSelector = new DockerSelector(this, Docker.Side.LEFT);
+
 		this.rightDock = new Dock(gui, Docker.Side.RIGHT);
 		this.leftDock = new Dock(gui, Docker.Side.LEFT);
+
+		this.rightDock.addComponentListener(createResizeListener(gui, Docker.Side.RIGHT));
+		this.leftDock.addComponentListener(createResizeListener(gui, Docker.Side.LEFT));
+	}
+
+	private ComponentListener createResizeListener(Gui gui, Docker.Side side) {
+		return new ComponentAdapter() {
+			public void componentResized(ComponentEvent componentEvent) {
+				for (DockerResizeListener listener : DockerManager.this.dockerResizeListeners) {
+					int totalDockerWidth = DockerManager.this.leftDockerSelector.getWidth() + DockerManager.this.leftDock.getWidth() + DockerManager.this.rightDockerSelector.getWidth() + DockerManager.this.rightDock.getWidth();
+					listener.onDockerResized(side, DockerManager.this.getDock(side).getWidth(), gui.getMainWindow().getFrame().getWidth() - totalDockerWidth);
+				}
+			}
+		};
 	}
 
 	/**
@@ -33,6 +60,18 @@ public class DockerManager {
 	 */
 	public Dock getLeftDock() {
 		return this.leftDock;
+	}
+
+	public Dock getDock(Docker.Side side) {
+		return side == Docker.Side.LEFT ? this.leftDock : this.rightDock;
+	}
+
+	public DockerSelector getDockerSelector(Docker.Side side) {
+		return side == Docker.Side.LEFT ? this.leftDockerSelector : this.rightDockerSelector;
+	}
+
+	public void addDockerResizeListener(DockerResizeListener listener) {
+		this.dockerResizeListeners.add(listener);
 	}
 
 	/**
@@ -110,5 +149,9 @@ public class DockerManager {
 	 */
 	public Collection<Docker> getDockers() {
 		return this.dockers.values();
+	}
+
+	public interface DockerResizeListener {
+		void onDockerResized(Docker.Side side, int newWidth, int newMainAreaSize);
 	}
 }

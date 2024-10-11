@@ -171,7 +171,7 @@ public class Dock extends JPanel {
 
 			if (previousLocation != null && previousLocation.side() != this.side) {
 				DockerButton button = docker.getButton();
-				DockerSelector selector = this.gui.getMainWindow().getDockerSelector(this.side);
+				DockerSelector selector = this.gui.getDockerManager().getDockerSelector(this.side);
 				Container parent = button.getParent();
 
 				parent.remove(button);
@@ -308,7 +308,7 @@ public class Dock extends JPanel {
 		return false;
 	}
 
-	public DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
+	private DockerContainer getDock(Docker.VerticalLocation verticalLocation) {
 		return switch (verticalLocation) {
 			case TOP -> this.topDock;
 			case BOTTOM -> this.bottomDock;

@@ -2,6 +2,7 @@ package org.quiltmc.enigma.gui.element;
 
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.docker.Docker;
+import org.quiltmc.enigma.gui.docker.DockerManager;
 import org.quiltmc.enigma.gui.docker.component.DockerSelector;
 
 import java.awt.BorderLayout;
@@ -20,15 +21,10 @@ public class MainWindow {
 
 	private final JMenuBar menuBar = new JMenuBar();
 	private final StatusBar statusBar = new StatusBar();
-	private final DockerSelector rightDockerSelector;
-	private final DockerSelector leftDockerSelector;
 
 	private final List<WindowResizeListener> windowResizeListeners = new ArrayList<>();
 
-	public MainWindow(Gui gui, String title) {
-		this.rightDockerSelector = new DockerSelector(gui.getDockerManager(), Docker.Side.RIGHT);
-		this.leftDockerSelector = new DockerSelector(gui.getDockerManager(), Docker.Side.LEFT);
-
+	public MainWindow(DockerManager dockerManager, String title) {
 		this.frame = new JFrame(title);
 		this.frame.setJMenuBar(this.menuBar);
 
@@ -36,8 +32,8 @@ public class MainWindow {
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(this.workArea, BorderLayout.CENTER);
 		contentPane.add(this.statusBar.getUi(), BorderLayout.SOUTH);
-		contentPane.add(this.rightDockerSelector, BorderLayout.EAST);
-		contentPane.add(this.leftDockerSelector, BorderLayout.WEST);
+		contentPane.add(dockerManager.getDockerSelector(Docker.Side.RIGHT), BorderLayout.EAST);
+		contentPane.add(dockerManager.getDockerSelector(Docker.Side.LEFT), BorderLayout.WEST);
 
 		this.frame.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent componentEvent) {
@@ -50,10 +46,6 @@ public class MainWindow {
 
 	public void setVisible(boolean visible) {
 		this.frame.setVisible(visible);
-	}
-
-	public DockerSelector getDockerSelector(Docker.Side side) {
-		return side == Docker.Side.LEFT ? this.leftDockerSelector : this.rightDockerSelector;
 	}
 
 	public JMenuBar getMenuBar() {

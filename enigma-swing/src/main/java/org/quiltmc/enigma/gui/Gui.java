@@ -104,7 +104,7 @@ public class Gui {
 
 	public Gui(EnigmaProfile profile, Set<EditableType> editableTypes, boolean visible) {
 		this.dockerManager = new DockerManager(this);
-		this.mainWindow = new MainWindow(this, Enigma.NAME);
+		this.mainWindow = new MainWindow(this.dockerManager, Enigma.NAME);
 		this.centerPanel = new JPanel(new BorderLayout());
 		this.editableTypes = editableTypes;
 		this.controller = new GuiController(this, profile);
@@ -157,7 +157,7 @@ public class Gui {
 
 		// set up selectors
 		for (Docker.Side side : Docker.Side.values()) {
-			this.mainWindow.getDockerSelector(side).configure();
+			this.dockerManager.getDockerSelector(side).configure();
 		}
 	}
 
