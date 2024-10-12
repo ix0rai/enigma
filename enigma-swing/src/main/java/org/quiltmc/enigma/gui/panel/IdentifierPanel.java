@@ -8,7 +8,9 @@ import org.quiltmc.enigma.api.translation.representation.TypeDescriptor;
 import org.quiltmc.enigma.gui.EditableType;
 import org.quiltmc.enigma.gui.Gui;
 import org.quiltmc.enigma.gui.config.Config;
+import org.quiltmc.enigma.gui.docker.DockerManager;
 import org.quiltmc.enigma.gui.element.ConvertingTextField;
+import org.quiltmc.enigma.gui.element.MainWindow;
 import org.quiltmc.enigma.gui.event.ConvertingTextFieldListener;
 import org.quiltmc.enigma.gui.util.GridBagConstraintsBuilder;
 import org.quiltmc.enigma.gui.util.GuiUtil;
@@ -45,6 +47,7 @@ public class IdentifierPanel {
 	private Entry<?> lastEntry;
 	private Entry<?> entry;
 	private Entry<?> deobfEntry;
+	private TableHelper infoTable;
 
 	private ConvertingTextField nameField;
 
@@ -115,7 +118,11 @@ public class IdentifierPanel {
 
 		this.nameField = null;
 
-		TableHelper th = new TableHelper(this.superUi, this.ui, this.entry, this.gui);
+		if (this.infoTable != null) {
+			this.infoTable.uninstall();
+		}
+
+		this.infoTable = new TableHelper(this.superUi, this.ui, this.entry, this.gui);
 
 		if (this.entry == null) {
 			this.ui.setEnabled(false);
@@ -124,35 +131,35 @@ public class IdentifierPanel {
 
 			if (this.deobfEntry instanceof ClassEntry ce) {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
-				this.nameField = th.addRenameTextField(EditableType.CLASS, name);
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				this.nameField = this.infoTable.addRenameTextField(EditableType.CLASS, name);
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
 
 				if (ce.getParent() != null) {
-					th.addCopiableStringRow(I18n.translate("info_panel.identifier.outer_class"), ce.getParent().getFullName());
+					this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.outer_class"), ce.getParent().getFullName());
 
 					if (ce.getParent().isInnerClass()) {
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.top_level_class"), ce.getTopLevelClass().getFullName());
+						this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.top_level_class"), ce.getTopLevelClass().getFullName());
 					}
 				}
 			} else if (this.deobfEntry instanceof FieldEntry fe) {
-				this.nameField = th.addRenameTextField(EditableType.FIELD, fe.getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(fe.getDesc()));
+				this.nameField = this.infoTable.addRenameTextField(EditableType.FIELD, fe.getName());
+				this.infoTable.addStringRow(I18n.translate("info_panel.identifier.class"), fe.getParent().getFullName());
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(fe.getDesc()));
 			} else if (this.deobfEntry instanceof MethodEntry me) {
 				if (me.isConstructor()) {
 					ClassEntry ce = me.getParent();
 					if (ce != null) {
 						String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
-						this.nameField = th.addRenameTextField(EditableType.CLASS, name);
+						this.nameField = this.infoTable.addRenameTextField(EditableType.CLASS, name);
 					}
 				} else {
-					this.nameField = th.addRenameTextField(EditableType.METHOD, me.getName());
-					th.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
+					this.nameField = this.infoTable.addRenameTextField(EditableType.METHOD, me.getName());
+					this.infoTable.addStringRow(I18n.translate("info_panel.identifier.class"), me.getParent().getFullName());
 				}
 
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.obfuscated"), this.entry.getName());
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.method_descriptor"), me.getDesc().toString());
 			} else if (this.deobfEntry instanceof LocalVariableEntry lve) {
 				EditableType type;
 
@@ -162,10 +169,10 @@ public class IdentifierPanel {
 					type = EditableType.LOCAL_VARIABLE;
 				}
 
-				this.nameField = th.addRenameTextField(type, lve.getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
-				th.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
-				th.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
+				this.nameField = this.infoTable.addRenameTextField(type, lve.getName());
+				this.infoTable.addStringRow(I18n.translate("info_panel.identifier.class"), lve.getContainingClass().getFullName());
+				this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.method"), lve.getParent().getName());
+				this.infoTable.addStringRow(I18n.translate("info_panel.identifier.index"), Integer.toString(lve.getIndex()));
 
 				// type
 				JarIndex index = this.gui.getController().getProject().getJarIndex();
@@ -175,7 +182,7 @@ public class IdentifierPanel {
 
 				for (ArgumentDescriptor arg : args) {
 					if (i == lve.getIndex()) {
-						th.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(arg));
+						this.infoTable.addCopiableStringRow(I18n.translate("info_panel.identifier.type"), toReadableType(arg));
 						break;
 					}
 
@@ -188,11 +195,11 @@ public class IdentifierPanel {
 
 			var mapping = this.gui.getController().getProject().getRemapper().getMapping(this.entry);
 			if (Config.main().development.showMappingSourcePlugin.value() && mapping.tokenType().isProposed()) {
-				th.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
+				this.infoTable.addStringRow(I18n.translate("dev.source_plugin"), mapping.sourcePluginId());
 			}
 		}
 
-		th.initialize();
+		this.infoTable.initialize();
 
 		if (this.nameField != null) {
 			this.nameField.addListener(new ConvertingTextFieldListener() {
@@ -282,12 +289,17 @@ public class IdentifierPanel {
 		private final Container c;
 		private final Entry<?> e;
 		private final Gui gui;
+		private final MainWindow.WindowResizeListener windowListener;
+		private final DockerManager.DockerResizeListener dockerListener;
 
 		TableHelper(JPanel topLevel, Container c, Entry<?> e, Gui gui) {
 			this.topLevel = topLevel;
 			this.c = c;
 			this.e = e;
 			this.gui = gui;
+
+			this.windowListener = (newWidth, newHeight) -> this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
+			this.dockerListener = (side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth);
 		}
 
 		public void addRow(Component c1, Component c2) {
@@ -345,9 +357,14 @@ public class IdentifierPanel {
 		}
 
 		public void initialize() {
-			this.gui.getDockerManager().addDockerResizeListener((side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth));
-			//this.gui.getMainWindow().addWindowResizeListener(((newWidth, newHeight) -> this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui))));
+			this.gui.getDockerManager().addDockerResizeListener(this.dockerListener);
+			this.gui.getMainWindow().addWindowResizeListener(this.windowListener);
 			this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
+		}
+
+		public void uninstall() {
+			this.gui.getDockerManager().removeDockerResizeListener(this.dockerListener);
+			this.gui.getMainWindow().removeWindowResizeListener(this.windowListener);
 		}
 
 		private void setup(int width) {
@@ -365,7 +382,7 @@ public class IdentifierPanel {
 			// todo change forced width to largest panel if bigger (Math.max)
 			int largestPanelWidth = 0;
 			for (JPanel panel : this.components) {
-				if (panel.getWidth() > largestPanelWidth) {
+				if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
 					largestPanelWidth = panel.getWidth();
 				}
 			}

@@ -70,6 +70,10 @@ public class MainWindow {
 		this.windowResizeListeners.add(listener);
 	}
 
+	public void removeWindowResizeListener(WindowResizeListener listener) {
+		this.windowResizeListeners.remove(listener);
+	}
+
 	public interface WindowResizeListener {
 		void onWindowResized(int newWidth, int newHeight);
 	}

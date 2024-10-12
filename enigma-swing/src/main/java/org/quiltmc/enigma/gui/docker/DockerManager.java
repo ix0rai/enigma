@@ -77,6 +77,10 @@ public class DockerManager {
 		this.dockerResizeListeners.add(listener);
 	}
 
+	public void removeDockerResizeListener(DockerResizeListener listener) {
+		this.dockerResizeListeners.remove(listener);
+	}
+
 	/**
 	 * Hosts a docker, making it visible, in the location provided.
 	 * @param docker the docker to be hosted
