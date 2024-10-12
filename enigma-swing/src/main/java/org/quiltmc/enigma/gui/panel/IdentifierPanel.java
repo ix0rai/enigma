@@ -28,10 +28,14 @@ import org.quiltmc.enigma.util.validation.ValidationContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -40,9 +44,6 @@ import javax.swing.border.LineBorder;
 
 public class IdentifierPanel {
 	private final Gui gui;
-
-	private final JPanel superUi = new JPanel();
-	private final JPanel ui = new JPanel();
 
 	private Entry<?> lastEntry;
 	private Entry<?> entry;
@@ -57,9 +58,10 @@ public class IdentifierPanel {
 		this.gui = gui;
 		this.vc = new ValidationContext(this.gui.getNotificationManager());
 
-		this.superUi.setPreferredSize(ScaleUtil.getDimension(0, 150));
+		this.infoTable = new TableHelper(null, this.gui);
+		this.infoTable.setPreferredSize(ScaleUtil.getDimension(0, 150));
 		this.retranslateUi();
-		this.superUi.setEnabled(false);
+		this.infoTable.setEnabled(false);
 	}
 
 	public void setReference(Entry<?> entry) {
@@ -118,16 +120,12 @@ public class IdentifierPanel {
 
 		this.nameField = null;
 
-		if (this.infoTable != null) {
-			this.infoTable.uninstall();
-		}
-
-		this.infoTable = new TableHelper(this.superUi, this.ui, this.entry, this.gui);
+		this.infoTable.begin(this.entry);
 
 		if (this.entry == null) {
-			this.ui.setEnabled(false);
+			this.infoTable.setEnabled(false);
 		} else {
-			this.ui.setEnabled(true);
+			this.infoTable.setEnabled(true);
 
 			if (this.deobfEntry instanceof ClassEntry ce) {
 				String name = ce.isInnerClass() ? ce.getName() : ce.getFullName();
@@ -199,7 +197,7 @@ public class IdentifierPanel {
 			}
 		}
 
-		this.infoTable.initialize();
+		this.infoTable.end();
 
 		if (this.nameField != null) {
 			this.nameField.addListener(new ConvertingTextFieldListener() {
@@ -236,8 +234,8 @@ public class IdentifierPanel {
 			});
 		}
 
-		this.ui.validate();
-		this.ui.repaint();
+		this.infoTable.validate();
+		this.infoTable.repaint();
 	}
 
 	private static String toReadableType(TypeDescriptor descriptor) {
@@ -274,32 +272,32 @@ public class IdentifierPanel {
 	}
 
 	public void retranslateUi() {
-		this.superUi.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
+		this.infoTable.setBorder(BorderFactory.createTitledBorder(I18n.translate("info_panel.identifier")));
 		this.refreshReference();
 	}
 
 	public JPanel getUi() {
-		return this.superUi;
+		return this.infoTable;
 	}
 
-	private static final class TableHelper {
-		private final List<JPanel> components = new ArrayList<>();
-
-		private final JPanel topLevel;
-		private final Container c;
-		private final Entry<?> e;
+	private static final class TableHelper extends JPanel {
+		private Entry<?> e;
 		private final Gui gui;
-		private final MainWindow.WindowResizeListener windowListener;
-		private final DockerManager.DockerResizeListener dockerListener;
+		private int row;
 
-		TableHelper(JPanel topLevel, Container c, Entry<?> e, Gui gui) {
-			this.topLevel = topLevel;
-			this.c = c;
+		private boolean setUp;
+		private int prevSize;
+
+		TableHelper(Entry<?> e, Gui gui) {
 			this.e = e;
 			this.gui = gui;
+		}
 
-			this.windowListener = (newWidth, newHeight) -> this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
-			this.dockerListener = (side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth);
+		public void begin(Entry<?> e) {
+			this.e = e;
+			this.setUp = false;
+			this.removeAll();
+			this.setLayout(new GridBagLayout());
 		}
 
 		public void addRow(Component c1, Component c2) {
@@ -310,7 +308,8 @@ public class IdentifierPanel {
 			panel.setBackground(Config.currentTheme().getSyntaxPaneColors().lineNumbersBackground.value());
 			panel.setBorder(new LineBorder(Config.getCurrentSyntaxPaneColors().lineNumbersSelected.value(), ScaleUtil.scale(1)));
 
-			this.components.add(panel);
+			this.add(panel);
+			this.row += 1;
 		}
 
 		public void addCopiableRow(JLabel c1, JLabel c2) {
@@ -343,7 +342,7 @@ public class IdentifierPanel {
 				field.setEditable(this.gui.isEditable(type));
 				return field;
 			} else {
-				this.addRow(new JLabel(description), GuiUtil.unboldLabel(new JLabel(c2)));
+				this.addStringRow(description, c2);
 				return null;
 			}
 		}
@@ -356,88 +355,88 @@ public class IdentifierPanel {
 			this.addCopiableRow(new JLabel(c1), GuiUtil.unboldLabel(new JLabel(c2)));
 		}
 
-		public void initialize() {
-			this.gui.getDockerManager().addDockerResizeListener(this.dockerListener);
-			this.gui.getMainWindow().addWindowResizeListener(this.windowListener);
-			this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
+		public void end() {
+			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
+			this.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, this.row).weight(0.0, 1.0).build());
 		}
 
-		public void uninstall() {
-			this.gui.getDockerManager().removeDockerResizeListener(this.dockerListener);
-			this.gui.getMainWindow().removeWindowResizeListener(this.windowListener);
-		}
+		@Override
+		public void paint(Graphics graphics) {
+			int width = this.gui.getDockerManager().getMainAreaWidth(this.gui);
 
-		private void setup(int width) {
-			if (width == 0) {
-				return;
-			}
-
-			this.begin();
-
-			// width will be the real weight in pixels, so we need to normalize it
-			int scaled = ScaleUtil.invert(width);
-			// todo column number should be dependent on panel size
-
-			// todo: force all panels to be the same width
-			// todo change forced width to largest panel if bigger (Math.max)
-			int largestPanelWidth = 0;
-			for (JPanel panel : this.components) {
-				if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
-					largestPanelWidth = panel.getWidth();
+			if (!this.setUp || this.prevSize != width) {
+				if (width == 0) {
+					return;
 				}
-			}
 
-			int preferredColumnCount = scaled / ScaleUtil.scale(300);
-			if (preferredColumnCount == 0) {
-				preferredColumnCount = 1;
-			}
+				this.setLayout(new GridBagLayout());
 
-			int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
+				// width will be the real weight in pixels, so we need to normalize it
+				int scaled = ScaleUtil.invert(width);
+				// todo column number should be dependent on panel size
 
-			int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
-			int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
-
-			int column = 0;
-			int row = 1;
-			for (int i = 0; i < this.components.size(); i++) {
-				this.components.get(i).setSize(panelWidth, this.components.get(i).getHeight());
-
-				if (i == 0) {
-					this.addComponent(this.components.get(i), i, 0, 0);
-				} else {
-					this.addComponent(this.components.get(i), i, column, row);
-
-					column++;
-
-					if (column != 0 && column % (columnCount + 1) == 0) {
-						column = 0;
-						row++;
+				// todo: force all panels to be the same width
+				// todo change forced width to largest panel if bigger (Math.max)
+				int largestPanelWidth = 0;
+				for (Component panel : this.getComponents()) {
+					if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
+						largestPanelWidth = panel.getWidth();
 					}
 				}
+
+				int preferredColumnCount = scaled / ScaleUtil.scale(300);
+				if (preferredColumnCount == 0) {
+					preferredColumnCount = 1;
+				}
+
+				int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
+
+				int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
+				int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
+
+				List<Component> components = Arrays.asList(this.getComponents());
+				this.removeAll();
+
+				int column = 0;
+				int row = 1;
+				for (int i = 0; i < components.size(); i++) {
+
+					if (i == 0) {
+						this.addComponent(components.get(i), i, 0, 0);
+					} else {
+						this.addComponent(components.get(i), i, column, row);
+
+						column++;
+
+						if (columnCount == 1 || (column != 0 && column % (columnCount + 1) == 0)) {
+							column = 0;
+							row++;
+						}
+					}
+
+					components.get(i).setSize(panelWidth, components.get(i).getHeight());
+				}
+
+				// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
+				this.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
+
+				this.setUp = true;
+				this.revalidate();
 			}
 
-			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
-			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
+			this.prevSize = this.gui.getDockerManager().getMainAreaWidth(this.gui);
+
+			super.paint(graphics);
 		}
 
-		private void addComponent(JPanel component, int index, int column, int row) {
+		private void addComponent(Component component, int index, int column, int row) {
 			if (index == 0) {
-				this.topLevel.add(component, BorderLayout.NORTH);
+				//this.topLevel.add(component, BorderLayout.NORTH);
 			} else {
 				GridBagConstraintsBuilder cb = createCB();
 				cb.padding(ScaleUtil.scale(10));
-				this.c.add(component, cb.pos(column, row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+				this.add(component, cb.pos(column, row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
 			}
-		}
-
-		private void begin() {
-			this.c.removeAll();
-			this.c.setLayout(new GridBagLayout());
-
-			this.topLevel.removeAll();
-			this.topLevel.setLayout(new BorderLayout());
-
-			this.topLevel.add(this.c, BorderLayout.CENTER);
 		}
 
 		private GridBagConstraintsBuilder createCB() {
