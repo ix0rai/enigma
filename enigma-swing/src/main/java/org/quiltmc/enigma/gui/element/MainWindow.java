@@ -68,7 +68,6 @@ public class MainWindow {
 
 	public void addWindowResizeListener(WindowResizeListener listener) {
 		this.windowResizeListeners.add(listener);
-		listener.onWindowResized(this.frame.getWidth(), this.frame.getHeight());
 	}
 
 	public interface WindowResizeListener {

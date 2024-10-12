@@ -346,19 +346,45 @@ public class IdentifierPanel {
 
 		public void initialize() {
 			this.gui.getDockerManager().addDockerResizeListener((side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth));
+			//this.gui.getMainWindow().addWindowResizeListener(((newWidth, newHeight) -> this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui))));
 			this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
 		}
 
 		private void setup(int width) {
+			if (width == 0) {
+				return;
+			}
+
 			this.begin();
 
 			// width will be the real weight in pixels, so we need to normalize it
 			int scaled = ScaleUtil.invert(width);
-			int columns = scaled / ScaleUtil.scale(300);
+			// todo column number should be dependent on panel size
+
+			// todo: force all panels to be the same width
+			// todo change forced width to largest panel if bigger (Math.max)
+			int largestPanelWidth = 0;
+			for (JPanel panel : this.components) {
+				if (panel.getWidth() > largestPanelWidth) {
+					largestPanelWidth = panel.getWidth();
+				}
+			}
+
+			int preferredColumnCount = scaled / ScaleUtil.scale(300);
+			if (preferredColumnCount == 0) {
+				preferredColumnCount = 1;
+			}
+
+			int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
+
+			int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
+			int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
 
 			int column = 0;
 			int row = 1;
 			for (int i = 0; i < this.components.size(); i++) {
+				this.components.get(i).setSize(panelWidth, this.components.get(i).getHeight());
+
 				if (i == 0) {
 					this.addComponent(this.components.get(i), i, 0, 0);
 				} else {
@@ -366,7 +392,7 @@ public class IdentifierPanel {
 
 					column++;
 
-					if (column != 0 && column % (columns + 1) == 0) {
+					if (column != 0 && column % (columnCount + 1) == 0) {
 						column = 0;
 						row++;
 					}
