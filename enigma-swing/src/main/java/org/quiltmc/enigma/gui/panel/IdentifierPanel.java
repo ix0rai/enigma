@@ -31,6 +31,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -439,6 +440,9 @@ public class IdentifierPanel {
 				// todo: force all panels to be the same width
 				// todo change forced width to largest panel if bigger (Math.max)
 				int largestPanelWidth = 0;
+
+				// todo instead of this stupidity and waiting for it to be laid out, use DockerButton's method of getting text length in paint
+				// todo on the two strings, add some padding, get the largest there, and then layout then
 				for (JPanel panel : this.components) {
 					if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
 						largestPanelWidth = panel.getWidth();
@@ -455,12 +459,15 @@ public class IdentifierPanel {
 				int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
 				int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
 
+				this.c.removeAll();
+
+				// horizontal struts to force column size to be uniform
+				// FIXME: this makes it impossible to resize the code view
 				for (int i = 0; i < columnCount; i++) {
 					var cb = createCB().pos(i, 0);
 					this.c.add(Box.createHorizontalStrut(panelWidth), cb.build());
 				}
 
-				this.c.removeAll();
 				int column = 0;
 				int row = 1;
 				for (int i = 0; i < this.components.size(); i++) {
@@ -471,7 +478,7 @@ public class IdentifierPanel {
 
 						column++;
 
-						if (column != 0 && column % (columnCount + 1) == 0) {
+						if (columnCount == 1 || (column == columnCount)) {
 							column = 0;
 							row++;
 						}
@@ -490,7 +497,7 @@ public class IdentifierPanel {
 		private void addComponent(JPanel component, int index, int column, int row, int columnCount) {
 			GridBagConstraintsBuilder cb = createCB();
 			if (index == 0) {
-				cb = cb.size(columnCount + 1, 1);
+				cb = cb.size(columnCount, 1);
 			} else {
 				cb = cb.size(1, 1);
 			}
