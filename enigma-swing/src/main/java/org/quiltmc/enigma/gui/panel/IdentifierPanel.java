@@ -28,12 +28,14 @@ import org.quiltmc.enigma.util.validation.ValidationContext;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
@@ -291,6 +293,7 @@ public class IdentifierPanel {
 		private final Gui gui;
 		private final MainWindow.WindowResizeListener windowListener;
 		private final DockerManager.DockerResizeListener dockerListener;
+		private boolean setup;
 
 		TableHelper(JPanel topLevel, Container c, Entry<?> e, Gui gui) {
 			this.topLevel = topLevel;
@@ -298,8 +301,14 @@ public class IdentifierPanel {
 			this.e = e;
 			this.gui = gui;
 
-			this.windowListener = (newWidth, newHeight) -> this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
-			this.dockerListener = (side, dockerWidth, mainAreaWidth) -> this.setup(mainAreaWidth);
+			this.windowListener = (newWidth, newHeight) -> {
+				this.setup = false;
+				this.setup(this.gui.getDockerManager().getMainAreaWidth(this.gui));
+			};
+			this.dockerListener = (side, dockerWidth, mainAreaWidth) -> {
+				this.setup = false;
+				this.setup(mainAreaWidth);
+			};
 		}
 
 		public void addRow(Component c1, Component c2) {
@@ -372,62 +381,121 @@ public class IdentifierPanel {
 				return;
 			}
 
-			this.begin();
+			if (!this.setup) {
+				this.begin();
 
-			// width will be the real weight in pixels, so we need to normalize it
-			int scaled = ScaleUtil.invert(width);
-			// todo column number should be dependent on panel size
+				// width will be the real weight in pixels, so we need to normalize it
+				int scaled = ScaleUtil.invert(width);
+				// todo column number should be dependent on panel size
 
-			// todo: force all panels to be the same width
-			// todo change forced width to largest panel if bigger (Math.max)
-			int largestPanelWidth = 0;
-			for (JPanel panel : this.components) {
-				if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
-					largestPanelWidth = panel.getWidth();
-				}
-			}
-
-			int preferredColumnCount = scaled / ScaleUtil.scale(300);
-			if (preferredColumnCount == 0) {
-				preferredColumnCount = 1;
-			}
-
-			int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
-
-			int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
-			int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
-
-			int column = 0;
-			int row = 1;
-			for (int i = 0; i < this.components.size(); i++) {
-				this.components.get(i).setSize(panelWidth, this.components.get(i).getHeight());
-
-				if (i == 0) {
-					this.addComponent(this.components.get(i), i, 0, 0);
-				} else {
-					this.addComponent(this.components.get(i), i, column, row);
-
-					column++;
-
-					if (column != 0 && column % (columnCount + 1) == 0) {
-						column = 0;
-						row++;
+				// todo: force all panels to be the same width
+				// todo change forced width to largest panel if bigger (Math.max)
+				int largestPanelWidth = 0;
+				for (JPanel panel : this.components) {
+					if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
+						largestPanelWidth = panel.getWidth();
 					}
 				}
-			}
 
-			// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
-			this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
+				int preferredColumnCount = scaled / ScaleUtil.scale(300);
+				if (preferredColumnCount == 0) {
+					preferredColumnCount = 1;
+				}
+
+				int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
+
+				int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
+				int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
+
+				int column = 0;
+				int row = 1;
+				for (int i = 0; i < this.components.size(); i++) {
+					this.components.get(i).setSize(panelWidth, this.components.get(i).getHeight());
+
+					if (i == 0) {
+						this.addComponent(this.components.get(i), i, 0, 0, columnCount);
+					} else {
+						this.addComponent(this.components.get(i), i, column, row, columnCount);
+
+						column++;
+
+						if (column != 0 && column % (columnCount + 1) == 0) {
+							column = 0;
+							row++;
+						}
+					}
+				}
+
+				// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
+				this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
+				this.c.revalidate();
+				this.setup = true;
+				this.setup(width);
+			} else {
+				// width will be the real weight in pixels, so we need to normalize it
+				int scaled = ScaleUtil.invert(width);
+				// todo column number should be dependent on panel size
+
+				// todo: force all panels to be the same width
+				// todo change forced width to largest panel if bigger (Math.max)
+				int largestPanelWidth = 0;
+				for (JPanel panel : this.components) {
+					if (panel.getPreferredSize().getWidth() > largestPanelWidth) {
+						largestPanelWidth = panel.getWidth();
+					}
+				}
+
+				int preferredColumnCount = scaled / ScaleUtil.scale(300);
+				if (preferredColumnCount == 0) {
+					preferredColumnCount = 1;
+				}
+
+				int preferredPanelWidth = (scaled - ScaleUtil.scale(10 * preferredColumnCount)) / preferredColumnCount;
+
+				int panelWidth = Math.max(preferredPanelWidth, largestPanelWidth);
+				int columnCount = panelWidth > preferredPanelWidth ? scaled / preferredPanelWidth : preferredColumnCount;
+
+				for (int i = 0; i < columnCount; i++) {
+					var cb = createCB().pos(i, 0);
+					this.c.add(Box.createHorizontalStrut(panelWidth), cb.build());
+				}
+
+				this.c.removeAll();
+				int column = 0;
+				int row = 1;
+				for (int i = 0; i < this.components.size(); i++) {
+					if (i == 0) {
+						this.addComponent(this.components.get(i), i, 0, 0, columnCount);
+					} else {
+						this.addComponent(this.components.get(i), i, column, row, columnCount);
+
+						column++;
+
+						if (column != 0 && column % (columnCount + 1) == 0) {
+							column = 0;
+							row++;
+						}
+					}
+
+					this.components.get(i).setPreferredSize(new Dimension(panelWidth, this.components.get(i).getHeight()));
+				}
+
+				// Add an empty panel with y-weight=1 so that all the other elements get placed at the top edge
+				this.c.add(new JPanel(), GridBagConstraintsBuilder.create().pos(0, row + 1).weight(0.0, 1.0).build());
+				this.c.revalidate();
+				this.c.repaint();
+			}
 		}
 
-		private void addComponent(JPanel component, int index, int column, int row) {
+		private void addComponent(JPanel component, int index, int column, int row, int columnCount) {
+			GridBagConstraintsBuilder cb = createCB();
 			if (index == 0) {
-				this.topLevel.add(component, BorderLayout.NORTH);
+				cb = cb.size(columnCount + 1, 1);
 			} else {
-				GridBagConstraintsBuilder cb = createCB();
-				cb.padding(ScaleUtil.scale(10));
-				this.c.add(component, cb.pos(column, row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
+				cb = cb.size(1, 1);
 			}
+
+			this.c.add(component, cb.pos(column, row).weightX(1.0).fill(GridBagConstraints.HORIZONTAL).build());
 		}
 
 		private void begin() {
